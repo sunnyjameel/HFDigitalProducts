@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General and Math Quiz</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel CDN - for JSX transformation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        // Static General Knowledge Quiz questions
+        const staticQuizQuestions = [
+            {
+                id: "gk1",
+                question: "What is the capital city of France?",
+                options: ["London", "Berlin", "Paris", "Rome"],
+                answer: "Paris",
+                category: "Geography"
+            },
+            {
+                id: "gk2",
+                question: "Which planet is known as the 'Red Planet'?",
+                options: ["Earth", "Mars", "Jupiter", "Venus"],
+                answer: "Mars",
+                category: "Science"
+            },
+            {
+                id: "gk3",
+                question: "What is the largest ocean on Earth?",
+                options: ["Atlantic Ocean", "Indian Ocean", "Southern Ocean", "Pacific Ocean"],
+                answer: "Pacific Ocean",
+                category: "Geography"
+            },
+            {
+                id: "gk4",
+                question: "Who painted the Mona Lisa?",
+                options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"],
+                answer: "Leonardo da Vinci",
+                category: "Art & History"
+            },
+            {
+                id: "gk5",
+                question: "What is the capital city of Japan?",
+                options: ["Beijing", "Seoul", "Tokyo", "Bangkok"],
+                answer: "Tokyo",
+                category: "Geography"
+            },
+            {
+                id: "gk6",
+                question: "Which animal is known as the 'King of the Jungle'?",
+                options: ["Tiger", "Lion", "Elephant", "Bear"],
+                answer: "Lion",
+                category: "Animals"
+            },
+            {
+                id: "gk7",
+                question: "What is the chemical symbol for water?",
+                options: ["O2", "H2O", "CO2", "N2"],
+                answer: "H2O",
+                category: "Science"
+            },
+            {
+                id: "gk8",
+                question: "How many continents are there in the world?",
+                options: ["5", "6", "7", "8"],
+                answer: "7",
+                category: "Geography"
+            },
+            {
+                id: "gk9",
+                question: "Which famous scientist developed the theory of relativity?",
+                options: ["Isaac Newton", "Galileo Galilei", "Albert Einstein", "Stephen Hawking"],
+                answer: "Albert Einstein",
+                category: "Science"
+            },
+            {
+                id: "gk10",
+                question: "What is the largest land animal?",
+                options: ["Giraffe", "Hippopotamus", "African Elephant", "Rhinoceros"],
+                answer: "African Elephant",
+                category: "Animals"
+            },
+            {
+                id: "gk11",
+                question: "Which country is famous for the Great Wall?",
+                options: ["India", "China", "Egypt", "Russia"],
+                answer: "China",
+                category: "History"
+            },
+            {
+                id: "gk12",
+                question: "What is the smallest planet in our solar system?",
+                options: ["Mars", "Mercury", "Venus", "Pluto (Dwarf Planet)"],
+                answer: "Mercury",
+                category: "Science"
+            },
+            {
+                id: "gk13",
+                question: "Which gas do plants absorb from the atmosphere?",
+                options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+                answer: "Carbon Dioxide",
+                category: "Science"
+            },
+            {
+                id: "gk14",
+                question: "What is the highest mountain in Africa?",
+                options: ["Mount Everest", "Mount Kilimanjaro", "Mount Fuji", "Mount Blanc"],
+                answer: "Mount Kilimanjaro",
+                category: "Geography"
+            },
+            {
+                id: "gk15",
+                question: "Who wrote 'Romeo and Juliet'?",
+                options: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
+                answer: "William Shakespeare",
+                category: "Literature"
+            },
+            {
+                id: "gk16",
+                question: "What is the currency of the United Kingdom?",
+                options: ["Euro", "Dollar", "Pound Sterling", "Yen"],
+                answer: "Pound Sterling",
+                category: "General Knowledge"
+            },
+            {
+                id: "gk17",
+                question: "Which bird can fly backwards?",
+                options: ["Sparrow", "Eagle", "Hummingbird", "Owl"],
+                answer: "Hummingbird",
+                category: "Animals"
+            },
+            {
+                id: "gk18",
+                question: "What is the largest desert in the world?",
+                options: ["Sahara Desert", "Gobi Desert", "Arabian Desert", "Antarctic Polar Desert"],
+                answer: "Antarctic Polar Desert",
+                category: "Geography"
+            },
+            {
+                id: "gk19",
+                question: "What is the main ingredient in bread?",
+                options: ["Rice", "Potatoes", "Flour", "Corn"],
+                answer: "Flour",
+                category: "Food"
+            },
+            {
+                id: "gk20",
+                question: "How many bones are in the adult human body?",
+                options: ["206", "210", "198", "212"],
+                answer: "206",
+                category: "Science"
+            },
+            {
+                id: "gk21",
+                question: "Which country is known as the 'Land of the Rising Sun'?",
+                options: ["China", "South Korea", "Japan", "Thailand"],
+                answer: "Japan",
+                category: "Geography"
+            },
+            {
+                id: "gk22",
+                question: "What is the fastest land animal?",
+                options: ["Lion", "Cheetah", "Gazelle", "Horse"],
+                answer: "Cheetah",
+                category: "Animals"
+            },
+            {
+                id: "gk23",
+                question: "What is the capital of Australia?",
+                options: ["Sydney", "Melbourne", "Canberra", "Perth"],
+                answer: "Canberra",
+                category: "Geography"
+            },
+            {
+                id: "gk24",
+                question: "Which instrument has 88 keys?",
+                options: ["Guitar", "Violin", "Piano", "Drums"],
+                answer: "Piano",
+                category: "Music"
+            },
+            {
+                id: "gk25",
+                question: "What is the largest organ in the human body?",
+                options: ["Heart", "Brain", "Liver", "Skin"],
+                answer: "Skin",
+                category: "Science"
+            },
+            {
+                id: "gk26",
+                question: "Which famous landmark is in Paris, France?",
+                options: ["Big Ben", "Statue of Liberty", "Eiffel Tower", "Colosseum"],
+                answer: "Eiffel Tower",
+                category: "Landmarks"
+            },
+            {
+                id: "gk27",
+                question: "What is the process by which plants make their own food?",
+                options: ["Respiration", "Transpiration", "Photosynthesis", "Germination"],
+                answer: "Photosynthesis",
+                category: "Science"
+            },
+            {
+                id: "gk28",
+                question: "What is the primary language spoken in Brazil?",
+                options: ["Spanish", "English", "Portuguese", "French"],
+                answer: "Portuguese",
+                category: "Geography"
+            },
+            {
+                id: "gk29",
+                question: "Which planet is known for its rings?",
+                options: ["Mars", "Jupiter", "Saturn", "Uranus"],
+                answer: "Saturn",
+                category: "Science"
+            },
+            {
+                id: "gk30",
+                question: "What is the name of the galaxy our solar system is in?",
+                options: ["Andromeda", "Triangulum", "Whirlpool", "Milky Way"],
+                answer: "Milky Way",
+                category: "Science"
+            }
+        ];
+
+        // Fisher-Yates (Knuth) shuffle algorithm
+        const shuffleArray = (array) => {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        };
+
+        // Function to generate a random math question
+        const generateMathQuestion = () => {
+            const num1 = Math.floor(Math.random() * 20) + 1; // 1 to 20
+            const num2 = Math.floor(Math.random() * 20) + 1; // 1 to 20
+            const operationTypes = ['+', '-', '*', '/'];
+            const operation = operationTypes[Math.floor(Math.random() * operationTypes.length)];
+            let questionText, answer, options;
+
+            switch (operation) {
+                case '+':
+                    questionText = `What is ${num1} + ${num2}?`;
+                    answer = (num1 + num2).toString();
+                    break;
+                case '-':
+                    const n1 = Math.max(num1, num2);
+                    const n2 = Math.min(num1, num2);
+                    questionText = `What is ${n1} - ${n2}?`;
+                    answer = (n1 - n2).toString();
+                    break;
+                case '*':
+                    questionText = `What is ${num1} * ${num2}?`;
+                    answer = (num1 * num2).toString();
+                    break;
+                case '/':
+                    let divisor = Math.floor(Math.random() * 10) + 1; // 1 to 10
+                    let dividend = num1 * divisor; // Ensure it's perfectly divisible
+                    questionText = `What is ${dividend} / ${divisor}?`;
+                    answer = (dividend / divisor).toString();
+                    break;
+                default:
+                    break;
+            }
+
+            // Generate options: correct answer + 3 incorrect ones
+            const correctAnswerNum = parseInt(answer);
+            options = new Set();
+            options.add(answer); // Add correct answer
+
+            while (options.size < 4) {
+                let incorrectAnswer;
+                const variation = Math.floor(Math.random() * 10) - 5; // -5 to +4
+                incorrectAnswer = correctAnswerNum + variation;
+                if (incorrectAnswer < 0) incorrectAnswer = Math.abs(incorrectAnswer); // Keep positive
+                if (incorrectAnswer === correctAnswerNum) {
+                    incorrectAnswer += (Math.random() > 0.5 ? 1 : -1); // Ensure it's different
+                }
+                options.add(incorrectAnswer.toString());
+            }
+            options = Array.from(options);
+            shuffleArray(options); // Shuffle options
+
+            return {
+                id: `math-${Date.now()}-${Math.random()}`, // Unique ID for math questions
+                question: questionText,
+                options: options,
+                answer: answer,
+                category: "Math"
+            };
+        };
+
+
+        // Main App component for the Quiz Game
+        const App = () => {
+            // Game state variables
+            const [currentRoundQuestions, setCurrentRoundQuestions] = React.useState([]); // 10 questions for the current round
+            const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0); // Index within currentRoundQuestions
+            const [roundScore, setRoundScore] = React.useState(0); // Score for the current 10-question round
+            const [totalScore, setTotalScore] = React.useState(0); // Overall score across all rounds
+            const [roundCount, setRoundCount] = React.useState(0); // Number of rounds completed
+            const [answeredQuestionIds, setAnsweredQuestionIds] = React.useState(new Set()); // IDs of all questions asked so far
+            const [gamePhase, setGamePhase] = React.useState('initial'); // 'initial', 'playing', 'answered', 'roundResult', 'gameOver'
+            const [isGameReady, setIsGameReady] = React.useState(false); // New state to control rendering after initial setup
+            const [feedback, setFeedback] = React.useState(null); // Feedback state
+
+            const questionsPerRound = 10;
+
+            // Function to select 10 unique questions for a round
+            const selectUniqueQuestionsForRound = React.useCallback(() => {
+                const availableStaticQuestions = staticQuizQuestions.filter(q => !answeredQuestionIds.has(q.id));
+                let selected = [];
+                const newAnsweredIdsForThisRound = new Set(); // Track new IDs for this round
+
+                // Prioritize static questions first
+                const numStaticToPick = Math.min(Math.floor(questionsPerRound / 2), availableStaticQuestions.length); // Try to get half static
+                const shuffledAvailableStatic = shuffleArray([...availableStaticQuestions]);
+                selected = shuffledAvailableStatic.slice(0, numStaticToPick);
+                selected.forEach(q => newAnsweredIdsForThisRound.add(q.id)); // Add to temp set
+
+                // Fill remaining slots with math questions
+                const numMathToGenerate = questionsPerRound - selected.length;
+                for (let i = 0; i < numMathToGenerate; i++) {
+                    const mathQ = generateMathQuestion();
+                    selected.push(mathQ);
+                    newAnsweredIdsForThisRound.add(mathQ.id); // Add math question ID
+                }
+
+                // Update the main answeredQuestionIds state immutably
+                setAnsweredQuestionIds(prev => new Set([...prev, ...newAnsweredIdsForThisRound]));
+
+                return shuffleArray(selected); // Shuffle the final 10 questions
+            }, [answeredQuestionIds, questionsPerRound]);
+
+            // Function to start a new round (selects 10 new questions)
+            const startNewRound = React.useCallback(() => {
+                const newRoundQuestions = selectUniqueQuestionsForRound();
+
+                // If no more questions can be generated (e.g., all static exhausted and math generation fails for some reason)
+                if (newRoundQuestions.length === 0 && answeredQuestionIds.size >= staticQuizQuestions.length) {
+                    setGamePhase('gameOver');
+                    return;
+                }
+
+                setCurrentRoundQuestions(newRoundQuestions);
+                setCurrentQuestionIndex(0);
+                setRoundScore(0);
+                setFeedback(null); // Reset feedback for new round
+                setGamePhase('playing'); // Set phase to playing for new round
+            }, [selectUniqueQuestionsForRound, answeredQuestionIds, setCurrentRoundQuestions, setCurrentQuestionIndex, setRoundScore, setFeedback, setGamePhase]);
+
+            // Function to start a new game (resets everything)
+            const startNewGame = () => { // Removed useCallback
+                setTotalScore(0);
+                setRoundCount(0);
+                setAnsweredQuestionIds(new Set()); // Reset answered questions for a new game
+                setFeedback(null); // Reset feedback
+                setGamePhase('initial'); // Set to initial phase while loading
+                startNewRound(); // Start the first round
+                setIsGameReady(true); // Now the game is ready to be displayed
+            };
+
+            // Effect to start a new game when the component mounts
+            React.useEffect(() => {
+                // Use setTimeout to ensure all state setters are initialized
+                const timer = setTimeout(() => {
+                    startNewGame();
+                }, 0); // 0ms delay means it runs on the next tick of the event loop
+
+                return () => clearTimeout(timer); // Cleanup the timer if component unmounts
+            }, []); // Empty dependency array to run only once on mount
+
+            // Get the current question from the round's questions
+            const currentQuestion = currentRoundQuestions[currentQuestionIndex];
+
+            // Function to handle an option click
+            const handleOptionClick = (selectedOption) => {
+                if (gamePhase !== 'playing') return; // Only allow answering in 'playing' phase
+
+                // Disable options immediately after click
+                setGamePhase('answered');
+
+                if (currentQuestion && selectedOption === currentQuestion.answer) { // Added currentQuestion check
+                    setRoundScore(prevScore => prevScore + 1);
+                    setTotalScore(prevTotalScore => prevTotalScore + 1);
+                    setFeedback('correct');
+                } else {
+                    setFeedback('incorrect');
+                }
+            };
+
+            // Function to handle moving to the next question or round result
+            const handleContinue = () => {
+                if (currentQuestionIndex < questionsPerRound - 1) {
+                    // Move to next question in the current round
+                    setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+                    setFeedback(null);
+                    setGamePhase('playing');
+                } else {
+                    // End of round, show results
+                    setRoundCount(prevCount => prevCount + 1);
+                    setGamePhase('roundResult');
+                }
+            };
+
+            // Check if there are enough static questions left for a new round
+            const hasMoreStaticQuestions = staticQuizQuestions.length - answeredQuestionIds.size > 0;
+            // We can start a new round if there are more static questions available OR
+            // if we can fill the round with math questions (which are infinite)
+            const canStartNewRound = hasMoreStaticQuestions || (questionsPerRound - (staticQuizQuestions.length - answeredQuestionIds.size) > 0);
+
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center p-4 font-inter text-gray-800">
+                    <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-2xl w-full flex flex-col items-center transform transition-all duration-300 hover:scale-[1.01] border-4 border-pink-400">
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-purple-700 mb-4 text-center">
+                            🧠 General aur Math Quiz 📚
+                        </h1>
+                        <p className="text-lg text-gray-700 mb-8 text-center">
+                            Apne ilm ko jaanchen aur maza karen! Har 10 sawal ke baad natija dekhen.
+                            <br />
+                            (Test your knowledge and have fun! See results after every 10 questions.)
+                        </p>
+
+                        {/* Initial Loading State */}
+                        {gamePhase === 'initial' || !isGameReady ? (
+                            <div className="flex flex-col items-center text-purple-700 mt-8">
+                                <i className="fas fa-spinner fa-spin text-6xl mb-4"></i>
+                                <p className="text-2xl font-bold">Sawal load ho rahe hain... (Loading questions...)</p>
+                            </div>
+                        ) : (gamePhase === 'playing' || gamePhase === 'answered') ? (
+                            // Quiz Questions Display
+                            <div className="w-full">
+                                <div className="bg-purple-50 p-6 rounded-2xl shadow-md border border-purple-200 mb-6">
+                                    <p className="text-xl font-semibold text-purple-800 mb-4">
+                                        Sawal {currentQuestionIndex + 1} / {questionsPerRound} (Total Score: {totalScore})
+                                    </p>
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                                        {currentQuestion ? currentQuestion.question : 'Error: Question not loaded.'}
+                                    </h2>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {currentQuestion && currentQuestion.options.map((option, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => handleOptionClick(option)}
+                                                disabled={gamePhase === 'answered'}
+                                                className={`p-4 rounded-xl text-lg font-semibold text-left transition duration-200 ease-in-out transform
+                                                            ${gamePhase === 'answered'
+                                                                ? (option === currentQuestion.answer
+                                                                    ? 'bg-green-200 text-green-800 border-green-400 cursor-not-allowed'
+                                                                    : (option === feedback && feedback === 'incorrect'
+                                                                        ? 'bg-red-200 text-red-800 border-red-400 cursor-not-allowed'
+                                                                        : 'bg-gray-100 text-gray-600 border-gray-300 cursor-not-allowed'))
+                                                                : 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200 hover:scale-105'
+                                                            }
+                                                            border-2 shadow-sm
+                                                        `}
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Feedback Message */}
+                                {feedback && (
+                                    <div className={`p-4 rounded-xl text-center text-xl font-bold mb-6
+                                        ${feedback === 'correct' ? 'bg-green-100 text-green-700 border-green-400' : 'bg-red-100 text-red-700 border-red-400'}
+                                        border-2`}>
+                                        {feedback === 'correct' ? 'Sahi jawab! 🎉 (Correct Answer!)' : `Ghalat jawab! 😔 Sahi jawab: "${currentQuestion.answer}" (Wrong Answer! Correct: "${currentQuestion.answer}")`}
+                                    </div>
+                                )}
+
+                                {/* Continue Button */}
+                                {gamePhase === 'answered' && (
+                                    <button
+                                        onClick={handleContinue}
+                                        className="bg-pink-600 text-white py-3 px-8 rounded-full text-lg font-bold
+                                                   hover:bg-pink-700 transition duration-300 ease-in-out transform hover:scale-105
+                                                   shadow-lg flex items-center justify-center gap-2 mx-auto"
+                                    >
+                                        <i className="fas fa-arrow-right mr-2"></i> Jaari Rakhen (Continue)
+                                    </button>
+                                )}
+                            </div>
+                        ) : gamePhase === 'roundResult' ? (
+                            // Round Result Screen
+                            <div className="w-full text-center bg-purple-50 p-8 rounded-2xl shadow-md border border-purple-200">
+                                <h2 className="text-3xl font-bold text-purple-800 mb-4">
+                                    Round {roundCount} ka Natija (Round {roundCount} Result!)
+                                </h2>
+                                <p className="text-xl text-gray-700 mb-6">
+                                    Aapka score is round mein: <span className="text-pink-600 text-3xl font-extrabold">{roundScore}</span> / {questionsPerRound}
+                                </p>
+                                <p className="text-2xl text-gray-800 mb-6">
+                                    Kul Score: <span className="text-purple-600 text-4xl font-extrabold">{totalScore}</span>
+                                </p>
+                                {canStartNewRound ? (
+                                    <button
+                                        onClick={startNewRound}
+                                        className="bg-green-600 text-white py-3 px-8 rounded-full text-lg font-bold
+                                                   hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105
+                                                   shadow-lg flex items-center justify-center gap-2 mx-auto"
+                                    >
+                                        <i className="fas fa-play mr-2"></i> Naya Round Shuru Karen (Start New Round)
+                                    </button>
+                                ) : (
+                                    <div className="text-center">
+                                        <h2 className="text-3xl font-bold text-purple-800 mb-4">
+                                            Quiz Khatam! (Quiz Finished!)
+                                        </h2>
+                                        <p className="text-xl text-gray-700 mb-6">
+                                            Aapne sabhi available questions poore kar liye hain.
+                                            <br />
+                                            (You have completed all available questions.)
+                                        </p>
+                                        <button
+                                            onClick={startNewGame}
+                                            className="bg-green-600 text-white py-3 px-8 rounded-full text-lg font-bold
+                                                       hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105
+                                                       shadow-lg flex items-center justify-center gap-2 mx-auto"
+                                        >
+                                            <i className="fas fa-redo mr-2"></i> Dobara Khelen (Play Again)
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            // Game Over Screen (if all static questions exhausted and no more rounds can be started)
+                            <div className="w-full text-center bg-purple-50 p-8 rounded-2xl shadow-md border border-purple-200">
+                                <h2 className="text-3xl font-bold text-purple-800 mb-4">
+                                    Quiz Khatam! (Quiz Finished!)
+                                </h2>
+                                <p className="text-xl text-gray-700 mb-6">
+                                    Aapne sabhi available questions poore kar liye hain.
+                                    <br />
+                                    (You have completed all available questions.)
+                                </p>
+                                <p className="text-2xl text-gray-800 mb-6">
+                                    Aapka Kul Score: <span className="text-purple-600 text-4xl font-extrabold">{totalScore}</span>
+                                </p>
+                                <button
+                                    onClick={startNewGame}
+                                    className="bg-green-600 text-white py-3 px-8 rounded-full text-lg font-bold
+                                               hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105
+                                               shadow-lg flex items-center justify-center gap-2 mx-auto"
+                                >
+                                    <i className="fas fa-redo mr-2"></i> Dobara Khelen (Play Again)
+                                </button>
+                            </div>
+                        )}
+
+                        <p className="text-gray-500 text-xs mt-8">
+                            Note: Yeh game puri tarah se offline chalta hai.
+                            <br />
+                            (Note: This game runs completely offline.)
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the App component into the root div
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

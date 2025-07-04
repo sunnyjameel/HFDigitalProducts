@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI کیلکولیٹر</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for Urdu - Noto Nastaliq Urdu for better readability */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Noto Nastaliq Urdu', 'Inter', sans-serif;
+        }
+        /* For English content, ensure Inter font is used and direction is LTR */
+        .lang-en {
+            font-family: 'Inter', sans-serif;
+            direction: ltr;
+        }
+        /* Hide scrollbar for cleaner look */
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        body {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen flex flex-col items-center p-4">
+
+    <!-- Message Box (for internal messages, not user alerts) -->
+    <div id="message-box" class="fixed top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 hidden animate-bounce text-center text-sm max-w-[90%] break-words" role="alert">
+        یہ ایک پیغام ہے
+    </div>
+
+    <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 max-w-xl w-full mx-auto my-4 sm:my-8 border-t-8 border-purple-600">
+        <div class="flex justify-between items-center mb-4">
+            <h1 id="main-title" class="text-3xl md:text-4xl font-extrabold text-center text-purple-800 leading-tight">
+                BMI کیلکولیٹر
+            </h1>
+            <select id="language-selector" class="p-2 rounded-md bg-purple-100 text-purple-700 border border-purple-300 focus:ring-2 focus:ring-purple-500 text-sm">
+                <option value="ur">اردو</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+        <p id="subtitle" class="text-center text-gray-700 mb-6 text-md md:text-lg">
+            اپنا BMI معلوم کریں اور اپنی صحت کا اندازہ لگائیں۔
+        </p>
+
+        <!-- User ID Display (Firebase boilerplate, though not functionally used for offline data) -->
+        <div id="user-id-display" class="text-sm text-gray-500 text-center mb-6 p-2 bg-gray-50 rounded-md hidden">
+            <span id="user-id-label">آپ کی صارف ID: </span><span id="user-id-value" class="font-mono text-gray-700 break-all"></span>
+        </div>
+
+        <!-- Input Fields -->
+        <div class="mb-6 p-4 bg-purple-50 rounded-lg shadow-inner border border-purple-200">
+            <div class="mb-4">
+                <label for="weight" id="weight-label" class="block text-lg font-semibold text-purple-700 mb-2">
+                    وزن (کلوگرام میں):
+                </label>
+                <input
+                    type="number"
+                    id="weight"
+                    placeholder="مثال: 70"
+                    class="w-full p-3 border border-purple-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-lg text-right"
+                >
+            </div>
+            <div>
+                <label for="height" id="height-label" class="block text-lg font-semibold text-purple-700 mb-2">
+                    قد (میٹر میں):
+                </label>
+                <input
+                    type="number"
+                    id="height"
+                    placeholder="مثال: 1.75"
+                    step="0.01"
+                    class="w-full p-3 border border-purple-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-lg text-right"
+                >
+            </div>
+        </div>
+
+        <!-- Calculate Button -->
+        <div class="text-center mb-6">
+            <button
+                id="calculate-btn"
+                class="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-purple-300"
+            >
+                BMI معلوم کریں
+            </button>
+        </div>
+
+        <!-- Result Display -->
+        <div class="p-4 bg-white rounded-lg shadow-lg border border-gray-200">
+            <h2 id="result-title" class="text-xl font-semibold text-gray-800 mb-3">آپ کا BMI:</h2>
+            <div class="flex justify-between items-center mb-4">
+                <span id="bmi-value-label" class="text-lg font-medium text-gray-700">BMI:</span>
+                <span id="bmi-value-display" class="text-3xl font-bold text-blue-600">--</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span id="category-label" class="text-lg font-medium text-gray-700">کیٹیگری:</span>
+                <span id="bmi-category-display" class="text-xl font-bold text-gray-800">--</span>
+            </div>
+            <p id="health-tip" class="text-sm text-gray-600 mt-4 text-center"></p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 text-gray-500 text-sm text-center">
+        <span id="footer-text">© 2025 BMI کیلکولیٹر. تمام حقوق محفوظ ہیں۔</span>
+        <p id="offline-note" class="mt-1">یہ ایپلیکیشن مکمل طور پر آف لائن کام کرتی ہے۔</p>
+    </footer>
+
+    <script type="module">
+        // Firebase Boilerplate (required by environment, but not actively used for offline data)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let db, auth, userId;
+
+        // Function to show temporary messages
+        function showMessage(msg, type = 'info') {
+            const msgBox = document.getElementById('message-box');
+            msgBox.textContent = msg;
+            msgBox.classList.remove('hidden', 'bg-blue-500', 'bg-red-500', 'bg-green-500');
+            if (type === 'error') {
+                msgBox.classList.add('bg-red-500');
+            } else if (type === 'success') {
+                msgBox.classList.add('bg-green-500');
+            } else {
+                msgBox.classList.add('bg-blue-500');
+            }
+            setTimeout(() => {
+                msgBox.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Initialize Firebase (boilerplate)
+        window.onload = async function() {
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+                const app = initializeApp(firebaseConfig);
+                // db = getFirestore(app); // Not used for offline data
+                // auth = getAuth(app); // Not used for offline data
+
+                // Firebase auth boilerplate for environment compliance, not functional for this app's core
+                // onAuthStateChanged(auth, async (user) => {
+                //     if (user) {
+                //         userId = user.uid;
+                //         document.getElementById('user-id-value').textContent = userId;
+                //         document.getElementById('user-id-display').classList.remove('hidden');
+                //         console.log("User is signed in:", userId);
+                //     } else {
+                //         console.log("No user signed in. Attempting anonymous sign-in.");
+                //         try {
+                //             if (typeof __initial_auth_token !== 'undefined') {
+                //                 await signInWithCustomToken(auth, __initial_auth_token);
+                //                 userId = auth.currentUser?.uid;
+                //                 document.getElementById('user-id-value').textContent = userId;
+                //                 document.getElementById('user-id-display').classList.remove('hidden');
+                //                 console.log("Signed in with custom token.");
+                //             } else {
+                //                 await signInAnonymously(auth);
+                //                 userId = auth.currentUser?.uid;
+                //                 document.getElementById('user-id-value').textContent = userId;
+                //                 document.getElementById('user-id-display').classList.remove('hidden');
+                //                 console.log("Signed in anonymously.");
+                //             }
+                //         } catch (error) {
+                //             console.error("Firebase Auth Error:", error);
+                //             showMessage(`${uiContent[currentLanguage].errorAuthFailed} ${error.message}`, 'error');
+                //         }
+                //     }
+                // });
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                showMessage(`${uiContent[currentLanguage].errorFirebaseInit} ${error.message}`, 'error');
+            }
+
+            // --- Core BMI Calculator Logic ---
+            const languageSelector = document.getElementById('language-selector');
+            const mainTitle = document.getElementById('main-title');
+            const subtitle = document.getElementById('subtitle');
+            const userIdLabel = document.getElementById('user-id-label'); // Firebase ID label
+            const weightLabel = document.getElementById('weight-label');
+            const weightInput = document.getElementById('weight');
+            const heightLabel = document.getElementById('height-label');
+            const heightInput = document.getElementById('height');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resultTitle = document.getElementById('result-title');
+            const bmiValueLabel = document.getElementById('bmi-value-label');
+            const bmiValueDisplay = document.getElementById('bmi-value-display');
+            const categoryLabel = document.getElementById('category-label');
+            const bmiCategoryDisplay = document.getElementById('bmi-category-display');
+            const healthTip = document.getElementById('health-tip');
+            const footerText = document.getElementById('footer-text');
+            const offlineNote = document.getElementById('offline-note');
+            const bodyElement = document.body;
+
+            let currentLanguage = localStorage.getItem('bmiAppLanguage') || 'ur'; // Load saved language or default to Urdu
+            languageSelector.value = currentLanguage; // Set selector to saved language
+
+            const uiContent = {
+                ur: {
+                    mainTitle: 'BMI کیلکولیٹر',
+                    subtitle: 'اپنا BMI معلوم کریں اور اپنی صحت کا اندازہ لگائیں۔',
+                    userIdLabel: 'آپ کی صارف ID:',
+                    weightLabel: 'وزن (کلوگرام میں):',
+                    weightPlaceholder: 'مثال: 70',
+                    heightLabel: 'قد (میٹر میں):',
+                    heightPlaceholder: 'مثال: 1.75',
+                    calculateBtn: 'BMI معلوم کریں',
+                    resultTitle: 'آپ کا BMI:',
+                    bmiValueLabel: 'BMI:',
+                    categoryLabel: 'کیٹیگری:',
+                    footerText: '© 2025 BMI کیلکولیٹر. تمام حقوق محفوظ ہیں۔',
+                    offlineNote: 'یہ ایپلیکیشن مکمل طور پر آف لائن کام کرتی ہے۔',
+                    msgInvalidInput: 'براہ کرم وزن اور قد صحیح طریقے سے درج کریں۔',
+                    categoryUnderweight: 'کم وزن',
+                    categoryNormal: 'نارمل وزن',
+                    categoryOverweight: 'زیادہ وزن',
+                    categoryObese: 'موٹاپا',
+                    tipUnderweight: 'آپ کا وزن کم ہے۔ صحت مند وزن بڑھانے کے لیے ماہر ڈاکٹر سے مشورہ کریں۔',
+                    tipNormal: 'آپ کا وزن نارمل ہے۔ اپنی صحت کو برقرار رکھیں۔',
+                    tipOverweight: 'آپ کا وزن زیادہ ہے۔ اپنی خوراک اور ورزش پر توجہ دیں۔',
+                    tipObese: 'آپ موٹاپے کا شکار ہیں۔ صحت مند طرز زندگی اور ماہر ڈاکٹر سے فوری مشورہ ضروری ہے۔',
+                    errorAuthFailed: 'Authentication failed:',
+                    errorFirebaseInit: 'Firebase initialization failed:'
+                },
+                en: {
+                    mainTitle: 'BMI Calculator',
+                    subtitle: 'Calculate your BMI and assess your health.',
+                    userIdLabel: 'Your User ID:',
+                    weightLabel: 'Weight (in kg):',
+                    weightPlaceholder: 'e.g., 70',
+                    heightLabel: 'Height (in meters):',
+                    heightPlaceholder: 'e.g., 1.75',
+                    calculateBtn: 'Calculate BMI',
+                    resultTitle: 'Your BMI:',
+                    bmiValueLabel: 'BMI:',
+                    categoryLabel: 'Category:',
+                    footerText: '© 2025 BMI Calculator. All rights reserved.',
+                    offlineNote: 'This application works completely offline.',
+                    msgInvalidInput: 'Please enter valid weight and height.',
+                    categoryUnderweight: 'Underweight',
+                    categoryNormal: 'Normal Weight',
+                    categoryOverweight: 'Overweight',
+                    categoryObese: 'Obese',
+                    tipUnderweight: 'You are underweight. Consult a doctor for healthy weight gain.',
+                    tipNormal: 'You have a normal weight. Maintain your healthy lifestyle.',
+                    tipOverweight: 'You are overweight. Focus on your diet and exercise.',
+                    tipObese: 'You are obese. A healthy lifestyle and immediate consultation with a doctor are necessary.',
+                    errorAuthFailed: 'Authentication failed:',
+                    errorFirebaseInit: 'Firebase initialization failed:'
+                }
+            };
+
+            // Update UI text based on current language
+            function updateUIText() {
+                const content = uiContent[currentLanguage];
+                mainTitle.textContent = content.mainTitle;
+                subtitle.textContent = content.subtitle;
+                // userIdLabel.textContent = content.userIdLabel; // Firebase ID label - hidden for now
+                weightLabel.textContent = content.weightLabel;
+                weightInput.placeholder = content.weightPlaceholder;
+                heightLabel.textContent = content.heightLabel;
+                heightInput.placeholder = content.heightPlaceholder;
+                calculateBtn.textContent = content.calculateBtn;
+                resultTitle.textContent = content.resultTitle;
+                bmiValueLabel.textContent = content.bmiValueLabel;
+                categoryLabel.textContent = content.categoryLabel;
+                footerText.textContent = content.footerText;
+                offlineNote.textContent = content.offlineNote;
+
+                // Update body direction
+                if (currentLanguage === 'ur') {
+                    bodyElement.classList.remove('lang-en');
+                    bodyElement.classList.add('lang-ur');
+                    bodyElement.setAttribute('dir', 'rtl');
+                } else {
+                    bodyElement.classList.remove('lang-ur');
+                    bodyElement.classList.add('lang-en');
+                    bodyElement.setAttribute('dir', 'ltr');
+                }
+                // Update category and tip if already calculated
+                if (bmiValueDisplay.textContent !== '--') {
+                    const bmi = parseFloat(bmiValueDisplay.textContent);
+                    displayBMIResult(bmi);
+                }
+            }
+
+            // Function to calculate BMI
+            function calculateBMI() {
+                const content = uiContent[currentLanguage];
+                const weight = parseFloat(weightInput.value);
+                const height = parseFloat(heightInput.value);
+
+                if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) {
+                    showMessage(content.msgInvalidInput, 'error');
+                    bmiValueDisplay.textContent = '--';
+                    bmiCategoryDisplay.textContent = '--';
+                    healthTip.textContent = '';
+                    return;
+                }
+
+                const bmi = weight / (height * height);
+                displayBMIResult(bmi);
+            }
+
+            // Function to display BMI result and category
+            function displayBMIResult(bmi) {
+                const content = uiContent[currentLanguage];
+                bmiValueDisplay.textContent = bmi.toFixed(2);
+                let category = '';
+                let tip = '';
+                let textColorClass = '';
+
+                if (bmi < 18.5) {
+                    category = content.categoryUnderweight;
+                    tip = content.tipUnderweight;
+                    textColorClass = 'text-orange-500';
+                } else if (bmi >= 18.5 && bmi < 24.9) {
+                    category = content.categoryNormal;
+                    tip = content.tipNormal;
+                    textColorClass = 'text-green-600';
+                } else if (bmi >= 25 && bmi < 29.9) {
+                    category = content.categoryOverweight;
+                    tip = content.tipOverweight;
+                    textColorClass = 'text-yellow-600';
+                } else {
+                    category = content.categoryObese;
+                    tip = content.tipObese;
+                    textColorClass = 'text-red-600';
+                }
+
+                bmiCategoryDisplay.textContent = category;
+                bmiCategoryDisplay.className = `text-xl font-bold ${textColorClass}`; // Apply color
+                healthTip.textContent = tip;
+            }
+
+            // Event Listener for Language Selector
+            languageSelector.addEventListener('change', (e) => {
+                currentLanguage = e.target.value;
+                localStorage.setItem('bmiAppLanguage', currentLanguage); // Save language preference
+                updateUIText();
+            });
+
+            // Event Listener for Calculate Button
+            calculateBtn.addEventListener('click', calculateBMI);
+
+            // Initial UI text update
+            updateUIText();
+        };
+    </script>
+</body>
+</html>

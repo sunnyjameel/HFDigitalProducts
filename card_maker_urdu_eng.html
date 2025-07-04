@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Digital Invitation Card Maker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Additional Fonts for Invitation Card -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Dancing+Script:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for invitation card fonts */
+        .font-great-vibes { font-family: 'Great Vibes', cursive; }
+        .font-dancing-script { font-family: 'Dancing Script', cursive; }
+        .font-playfair-display { font-family: 'Playfair Display', serif; }
+
+        /* Hide print button when printing */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .printable-area {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-200 to-purple-300 min-h-screen flex items-center justify-center p-4">
+    <div id="root"></div>
+
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel CDN - for JSX transformation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- html2canvas for screenshot functionality (optional, but good for download) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script type="text/babel">
+        const themes = {
+            'Classic Elegance': {
+                bgColor: '#F8F1F1', // Off-white
+                textColor: '#4A235A', // Deep Purple
+                fontFamily: 'font-playfair-display',
+                cardBorderColor: '#A78BFA', // Purple-400
+                cardBorderWidth: '4px',
+                titleFontSize: '5xl',
+                namesFontSize: '4xl',
+                detailsFontSize: '2xl',
+                messageFontSize: 'xl',
+                textAlignment: 'center',
+                imageOpacity: 0.6
+            },
+            'Modern Minimal': {
+                bgColor: '#E0F2F7', // Light Blue
+                textColor: '#2C3E50', // Dark Grey
+                fontFamily: 'font-inter',
+                cardBorderColor: '#3498DB', // Blue
+                cardBorderWidth: '2px',
+                titleFontSize: '4xl',
+                namesFontSize: '3xl',
+                detailsFontSize: 'xl',
+                messageFontSize: 'lg',
+                textAlignment: 'left',
+                imageOpacity: 0.7
+            },
+            'Vibrant Celebration': {
+                bgColor: '#FFF3E0', // Light Orange
+                textColor: '#D35400', // Orange-Red
+                fontFamily: 'font-dancing-script',
+                cardBorderColor: '#F39C12', // Orange
+                cardBorderWidth: '6px',
+                titleFontSize: '6xl',
+                namesFontSize: '5xl',
+                detailsFontSize: '3xl',
+                messageFontSize: '2xl',
+                textAlignment: 'center',
+                imageOpacity: 0.5
+            }
+        };
+
+        const translations = {
+            en: {
+                appTitle: "Professional Digital Invitation Card Maker",
+                tagline: "Create professional-looking digital invitation cards for any event.",
+                invitationDetails: "Invitation Details",
+                themeTemplate: "Theme / Template",
+                eventType: "Event Type",
+                wedding: "Wedding",
+                birthday: "Birthday",
+                engagement: "Engagement",
+                anniversary: "Anniversary",
+                eidMubarak: "Eid Mubarak",
+                graduation: "Graduation",
+                other: "Other",
+                titleHeading: "Title / Heading",
+                names: "Names",
+                date: "Date",
+                time: "Time",
+                venue: "Venue",
+                message: "Message",
+                textAlignment: "Text Alignment",
+                left: "Left",
+                center: "Center",
+                right: "Right",
+                backgroundColor: "Background Color",
+                textColor: "Text Color",
+                fontStyle: "Font Style",
+                cardBorder: "Card Border",
+                width: "Width",
+                borderColor: "Border Color",
+                backgroundImage: "Background Image (Optional)",
+                imageOpacity: "Image Opacity",
+                downloadCard: "Download Card (PNG)",
+                downloadFailMessage: "If download fails, you can take a screenshot of the card",
+                loadingFonts: "Loading fonts...",
+                errorImageSize: "Image size should not exceed 2MB.",
+                fontSize: "Font Size",
+                inter: "Inter (Default)",
+                greatVibes: "Great Vibes (Elegant)",
+                dancingScript: "Dancing Script (Handwritten)",
+                playfairDisplay: "Playfair Display (Classic)",
+                selectLanguage: "Select Language:"
+            },
+            ur: {
+                appTitle: "پیشہ ورانہ ڈیجیٹل دعوت نامہ کارڈ میکر",
+                tagline: "کسی بھی تقریب کے لیے پیشہ ورانہ ڈیجیٹل دعوت نامے بنائیں۔",
+                invitationDetails: "دعوت نامہ کی تفصیلات",
+                themeTemplate: "تھیم / ٹیمپلیٹ",
+                eventType: "تقریب کی قسم",
+                wedding: "شادی",
+                birthday: "سالگرہ",
+                engagement: "منگنی",
+                anniversary: "سالگرہ",
+                eidMubarak: "عید مبارک",
+                graduation: "گریجویشن",
+                other: "دیگر",
+                titleHeading: "عنوان / ہیڈنگ",
+                names: "نام",
+                date: "تاریخ",
+                time: "وقت",
+                venue: "مقام",
+                message: "پیغام",
+                textAlignment: "متن کی سیدھ",
+                left: "بائیں",
+                center: "مرکز",
+                right: "دائیں",
+                backgroundColor: "پس منظر کا رنگ",
+                textColor: "متن کا رنگ",
+                fontStyle: "فونٹ کا انداز",
+                cardBorder: "کارڈ بارڈر",
+                width: "چوڑائی",
+                borderColor: "بارڈر کا رنگ",
+                backgroundImage: "پس منظر کی تصویر (اختیاری)",
+                imageOpacity: "تصویر کی شفافیت",
+                downloadCard: "کارڈ ڈاؤن لوڈ کریں (PNG)",
+                downloadFailMessage: "اگر ڈاؤن لوڈ کام نہ کرے، تو کارڈ کا اسکرین شاٹ لے سکتے ہیں",
+                loadingFonts: "فونٹس لوڈ ہو رہے ہیں...",
+                errorImageSize: "تصویر کا سائز 2MB سے زیادہ نہیں ہونا چاہیے۔",
+                fontSize: "فونٹ کا سائز",
+                inter: "انٹر (ڈیفالٹ)",
+                greatVibes: "گریٹ وائبز (خوبصورت)",
+                dancingScript: "ڈانسنگ اسکرپٹ (ہاتھ سے لکھا ہوا)",
+                playfairDisplay: "پلے فیئر ڈسپلے (کلاسیکی)",
+                selectLanguage: "زبان منتخب کریں:"
+            }
+        };
+
+        const App = () => {
+            const [language, setLanguage] = React.useState('ur'); // Default to Urdu
+            const t = translations[language]; // Get current language translations
+
+            const [cardDetails, setCardDetails] = React.useState({
+                eventType: 'Wedding',
+                title: 'You are Invited!',
+                names: 'Bride & Groom',
+                date: 'January 1, 2025',
+                time: '7:00 PM onwards',
+                venue: 'The Grand Marquee, Lahore',
+                message: 'Join us to celebrate our special day.',
+                backgroundImage: '', // Base64 image
+                imageOpacity: 0.5, // Opacity for background image
+                // Theme-related states (initialized with a default theme)
+                ...themes['Classic Elegance']
+            });
+
+            // Ref for the printable area
+            const cardRef = React.useRef(null);
+
+            // Handle input changes
+            const handleChange = (e) => {
+                const { name, value } = e.target;
+                setCardDetails(prev => ({ ...prev, [name]: value }));
+            };
+
+            // Handle theme selection
+            const handleThemeChange = (e) => {
+                const selectedThemeName = e.target.value;
+                setCardDetails(prev => ({
+                    ...prev,
+                    ...themes[selectedThemeName]
+                }));
+            };
+
+            // Handle image upload
+            const handleImageUpload = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    // Basic file size validation (e.g., max 2MB)
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert(t.errorImageSize);
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setCardDetails(prev => ({
+                            ...prev,
+                            backgroundImage: reader.result // Store Base64 string
+                        }));
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            // Function to download the card as an image
+            const downloadCard = () => {
+                if (cardRef.current) {
+                    html2canvas(cardRef.current, {
+                        useCORS: true, // Important for images loaded from data URLs
+                        allowTaint: true // Allow tainting for local images
+                    }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.download = `${cardDetails.eventType}_Invitation.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    }).catch(err => {
+                        console.error("Error generating image:", err);
+                        alert(t.downloadFailMessage);
+                    });
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center py-10 w-full">
+                    <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-6xl w-full flex flex-col lg:flex-row gap-8 transform transition-all duration-300 hover:scale-[1.005] border-4 border-purple-400">
+                        {/* Input Form Section */}
+                        <div className="w-full lg:w-1/2 p-4 border-r-0 lg:border-r-2 border-purple-200 pr-8 no-print">
+                            <h2 className="text-3xl font-extrabold text-purple-700 mb-6 text-center">
+                                {t.invitationDetails}
+                            </h2>
+
+                            {/* Language Selector */}
+                            <div className="mb-4 flex justify-end items-center gap-2 no-print">
+                                <label htmlFor="language-select" className="block text-gray-700 text-sm font-bold">{t.selectLanguage}</label>
+                                <select
+                                    id="language-select"
+                                    value={language}
+                                    onChange={(e) => setLanguage(e.target.value)}
+                                    className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="ur">اردو (Urdu)</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+
+                            {/* Theme Selection */}
+                            <div className="mb-4">
+                                <label htmlFor="theme" className="block text-gray-700 text-sm font-bold mb-2">{t.themeTemplate}</label>
+                                <select
+                                    name="theme"
+                                    id="theme"
+                                    value={Object.keys(themes).find(key => themes[key].fontFamily === cardDetails.fontFamily && themes[key].bgColor === cardDetails.bgColor) || ''}
+                                    onChange={handleThemeChange}
+                                    className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    {Object.keys(themes).map(themeName => (
+                                        <option key={themeName} value={themeName}>{themeName}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Event Type */}
+                            <div className="mb-4">
+                                <label htmlFor="eventType" className="block text-gray-700 text-sm font-bold mb-2">{t.eventType}</label>
+                                <select
+                                    name="eventType"
+                                    id="eventType"
+                                    value={cardDetails.eventType}
+                                    onChange={handleChange}
+                                    className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="Wedding">{t.wedding}</option>
+                                    <option value="Birthday">{t.birthday}</option>
+                                    <option value="Engagement">{t.engagement}</option>
+                                    <option value="Anniversary">{t.anniversary}</option>
+                                    <option value="Eid Mubarak">{t.eidMubarak}</option>
+                                    <option value="Graduation">{t.graduation}</option>
+                                    <option value="Other">{t.other}</option>
+                                </select>
+                            </div>
+
+                            {/* Title */}
+                            <div className="mb-4">
+                                <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">{t.titleHeading}</label>
+                                <input type="text" name="title" id="title" placeholder="e.g., You are Invited!" value={cardDetails.title} onChange={handleChange} className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                <label htmlFor="titleFontSize" className="block text-gray-700 text-xs mt-2 mb-1">{t.fontSize}</label>
+                                <select name="titleFontSize" id="titleFontSize" value={cardDetails.titleFontSize} onChange={handleChange} className="p-2 border border-gray-300 rounded-lg w-full text-sm">
+                                    <option value="3xl">3xl</option><option value="4xl">4xl</option><option value="5xl">5xl</option><option value="6xl">6xl</option>
+                                </select>
+                            </div>
+
+                            {/* Names */}
+                            <div className="mb-4">
+                                <label htmlFor="names" className="block text-gray-700 text-sm font-bold mb-2">{t.names}</label>
+                                <input type="text" name="names" id="names" placeholder="e.g., Ali & Sara" value={cardDetails.names} onChange={handleChange} className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                <label htmlFor="namesFontSize" className="block text-gray-700 text-xs mt-2 mb-1">{t.fontSize}</label>
+                                <select name="namesFontSize" id="namesFontSize" value={cardDetails.namesFontSize} onChange={handleChange} className="p-2 border border-gray-300 rounded-lg w-full text-sm">
+                                    <option value="2xl">2xl</option><option value="3xl">3xl</option><option value="4xl">4xl</option><option value="5xl">5xl</option>
+                                </select>
+                            </div>
+
+                            {/* Date */}
+                            <div className="mb-4">
+                                <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">{t.date}</label>
+                                <input type="text" name="date" id="date" placeholder="e.g., January 1, 2025" value={cardDetails.date} onChange={handleChange} className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                            </div>
+
+                            {/* Time */}
+                            <div className="mb-4">
+                                <label htmlFor="time" className="block text-gray-700 text-sm font-bold mb-2">{t.time}</label>
+                                <input type="text" name="time" id="time" placeholder="e.g., 7:00 PM onwards" value={cardDetails.time} onChange={handleChange} className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                            </div>
+
+                            {/* Venue */}
+                            <div className="mb-4">
+                                <label htmlFor="venue" className="block text-gray-700 text-sm font-bold mb-2">{t.venue}</label>
+                                <input type="text" name="venue" id="venue" placeholder="e.g., The Grand Marquee, Lahore" value={cardDetails.venue} onChange={handleChange} className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                <label htmlFor="detailsFontSize" className="block text-gray-700 text-xs mt-2 mb-1">{t.fontSize}</label>
+                                <select name="detailsFontSize" id="detailsFontSize" value={cardDetails.detailsFontSize} onChange={handleChange} className="p-2 border border-gray-300 rounded-lg w-full text-sm">
+                                    <option value="lg">lg</option><option value="xl">xl</option><option value="2xl">2xl</option><option value="3xl">3xl</option>
+                                </select>
+                            </div>
+
+                            {/* Message */}
+                            <div className="mb-4">
+                                <label htmlFor="message" className="block text-gray-700 text-sm font-bold mb-2">{t.message}</label>
+                                <textarea name="message" id="message" placeholder="e.g., Join us to celebrate our special day." value={cardDetails.message} onChange={handleChange} rows="3" className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                <label htmlFor="messageFontSize" className="block text-gray-700 text-xs mt-2 mb-1">{t.fontSize}</label>
+                                <select name="messageFontSize" id="messageFontSize" value={cardDetails.messageFontSize} onChange={handleChange} className="p-2 border border-gray-300 rounded-lg w-full text-sm">
+                                    <option value="base">base</option><option value="lg">lg</option><option value="xl">xl</option><option value="2xl">2xl</option>
+                                </select>
+                            </div>
+
+                            {/* Global Text Alignment */}
+                            <div className="mb-4">
+                                <label htmlFor="textAlignment" className="block text-gray-700 text-sm font-bold mb-2">{t.textAlignment}</label>
+                                <select
+                                    name="textAlignment"
+                                    id="textAlignment"
+                                    value={cardDetails.textAlignment}
+                                    onChange={handleChange}
+                                    className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="left">{t.left}</option>
+                                    <option value="center">{t.center}</option>
+                                    <option value="right">{t.right}</option>
+                                </select>
+                            </div>
+
+                            {/* Background Color */}
+                            <div className="mb-4">
+                                <label htmlFor="bgColor" className="block text-gray-700 text-sm font-bold mb-2">{t.backgroundColor}</label>
+                                <input type="color" name="bgColor" id="bgColor" value={cardDetails.bgColor} onChange={handleChange} className="w-full h-10 rounded-lg cursor-pointer" />
+                            </div>
+
+                            {/* Text Color */}
+                            <div className="mb-4">
+                                <label htmlFor="textColor" className="block text-gray-700 text-sm font-bold mb-2">{t.textColor}</label>
+                                <input type="color" name="textColor" id="textColor" value={cardDetails.textColor} onChange={handleChange} className="w-full h-10 rounded-lg cursor-pointer" />
+                            </div>
+
+                            {/* Font Family */}
+                            <div className="mb-4">
+                                <label htmlFor="fontFamily" className="block text-gray-700 text-sm font-bold mb-2">{t.fontStyle}</label>
+                                <select
+                                    name="fontFamily"
+                                    id="fontFamily"
+                                    value={cardDetails.fontFamily}
+                                    onChange={handleChange}
+                                    className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="font-inter">{t.inter}</option>
+                                    <option value="font-great-vibes">{t.greatVibes}</option>
+                                    <option value="font-dancing-script">{t.dancingScript}</option>
+                                    <option value="font-playfair-display">{t.playfairDisplay}</option>
+                                </select>
+                            </div>
+
+                            {/* Card Border */}
+                            <div className="mb-4">
+                                <label htmlFor="cardBorderWidth" className="block text-gray-700 text-sm font-bold mb-2">{t.cardBorder}</label>
+                                <input type="range" name="cardBorderWidth" id="cardBorderWidth" min="0" max="10" step="1" value={parseInt(cardDetails.cardBorderWidth)} onChange={handleChange} className="w-full" />
+                                <span className="text-sm text-gray-600">{t.width}: {parseInt(cardDetails.cardBorderWidth)}px</span>
+                                <input type="color" name="cardBorderColor" id="cardBorderColor" value={cardDetails.cardBorderColor} onChange={handleChange} className="w-full h-10 rounded-lg cursor-pointer mt-2" />
+                                <label htmlFor="cardBorderColor" className="block text-gray-700 text-xs mt-1">{t.borderColor}</label>
+                            </div>
+
+                            {/* Background Image Upload */}
+                            <div className="mb-4">
+                                <label htmlFor="backgroundImage" className="block text-gray-700 text-sm font-bold mb-2">{t.backgroundImage}</label>
+                                <input
+                                    type="file"
+                                    id="backgroundImage"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="block w-full text-sm text-gray-500
+                                               file:mr-4 file:py-2 file:px-4
+                                               file:rounded-full file:border-0
+                                               file:text-sm file:font-semibold
+                                               file:bg-purple-50 file:text-purple-700
+                                               hover:file:bg-purple-100 cursor-pointer"
+                                />
+                                {cardDetails.backgroundImage && (
+                                    <div className="mt-4">
+                                        <label htmlFor="imageOpacity" className="block text-gray-700 text-sm font-bold mb-2">{t.imageOpacity}</label>
+                                        <input
+                                            type="range"
+                                            id="imageOpacity"
+                                            min="0"
+                                            max="1"
+                                            step="0.1"
+                                            value={cardDetails.imageOpacity}
+                                            onChange={handleChange}
+                                            className="w-full"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Download Button */}
+                            <div className="text-center mt-8">
+                                <button
+                                    onClick={downloadCard}
+                                    className="bg-green-600 text-white py-3 px-8 rounded-full text-lg font-bold
+                                               hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105
+                                               shadow-lg flex items-center justify-center gap-2 mx-auto"
+                                >
+                                    <i className="fas fa-download mr-2"></i> {t.downloadCard}
+                                </button>
+                                <p className="text-gray-500 text-xs mt-2">
+                                    {t.downloadFailMessage}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Live Preview Section */}
+                        <div className="w-full lg:w-1/2 p-4 flex items-center justify-center">
+                            <div
+                                ref={cardRef}
+                                className="printable-area relative w-[300px] h-[450px] md:w-[400px] md:h-[600px] bg-white rounded-xl shadow-xl overflow-hidden flex flex-col justify-center items-center text-center p-6"
+                                style={{
+                                    backgroundColor: cardDetails.bgColor,
+                                    color: cardDetails.textColor,
+                                    fontFamily: cardDetails.fontFamily.replace('font-', ''), // Remove 'font-' prefix for CSS font-family
+                                    backgroundImage: cardDetails.backgroundImage ? `url(${cardDetails.backgroundImage})` : 'none',
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    backgroundRepeat: 'no-repeat',
+                                    position: 'relative', // Ensure relative positioning for overlay
+                                    border: `${cardDetails.cardBorderWidth} solid ${cardDetails.cardBorderColor}`,
+                                }}
+                            >
+                                {/* Overlay for image opacity */}
+                                {cardDetails.backgroundImage && (
+                                    <div
+                                        className="absolute inset-0 z-0"
+                                        style={{ backgroundColor: `rgba(0,0,0,${1 - cardDetails.imageOpacity})` }}
+                                    ></div>
+                                )}
+
+                                <div className={`relative z-10 flex flex-col justify-center items-center h-full w-full p-4 text-${cardDetails.textAlignment}`}>
+                                    <p className={`text-${cardDetails.detailsFontSize} font-semibold mb-2 ${cardDetails.fontFamily}`}>{cardDetails.eventType}</p>
+                                    <h1 className={`text-${cardDetails.titleFontSize} font-bold mb-4 ${cardDetails.fontFamily}`}>{cardDetails.title}</h1>
+                                    <h2 className={`text-${cardDetails.namesFontSize} font-semibold mb-4 ${cardDetails.fontFamily}`}>{cardDetails.names}</h2>
+                                    <p className={`text-${cardDetails.detailsFontSize} mb-2 ${cardDetails.fontFamily}`}>Date: {cardDetails.date}</p>
+                                    <p className={`text-${cardDetails.detailsFontSize} mb-2 ${cardDetails.fontFamily}`}>Time: {cardDetails.time}</p>
+                                    <p className={`text-${cardDetails.detailsFontSize} mb-4 ${cardDetails.fontFamily}`}>Venue: {cardDetails.venue}</p>
+                                    <p className={`text-${cardDetails.messageFontSize} italic ${cardDetails.fontFamily}`}>{cardDetails.message}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the App component into the root div
+        const rootElement = document.getElementById('root');
+        if (rootElement) {
+            const root = ReactDOM.createRoot(rootElement);
+            root.render(<App />);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rangon Ka Jadoo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            padding: 1.5rem;
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        canvas {
+            border: 2px solid #cbd5e1; /* Light gray border */
+            background-color: #ffffff;
+            cursor: crosshair;
+            touch-action: none; /* Prevent default touch actions like scrolling */
+            border-radius: 0.75rem; /* Rounded corners for canvas */
+            width: 100%; /* Make canvas responsive */
+            max-width: 800px; /* Max width for larger screens */
+            aspect-ratio: 16 / 9; /* Maintain aspect ratio */
+        }
+        .color-palette button {
+            width: 40px;
+            height: 40px;
+            border-radius: 9999px; /* Full rounded for circles */
+            border: 2px solid transparent;
+            transition: transform 0.2s, border-color 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .color-palette button.selected {
+            border-color: #3b82f6; /* Blue border for selected color */
+            transform: scale(1.1);
+        }
+        .action-buttons button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem; /* Rounded buttons */
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .action-buttons button:hover {
+            transform: translateY(-2px);
+        }
+        .clear-button {
+            background-color: #ef4444; /* Red */
+            color: white;
+        }
+        .clear-button:hover {
+            background-color: #dc2626; /* Darker red */
+        }
+        .save-button {
+            background-color: #22c55e; /* Green */
+            color: white;
+        }
+        .save-button:hover {
+            background-color: #16a34a; /* Darker green */
+        }
+        .instructions {
+            background-color: #e0f2fe; /* Light blue */
+            border-left: 5px solid #3b82f6; /* Blue border */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: #1e40af; /* Dark blue text */
+            font-size: 0.9rem;
+            width: 100%;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">🎨 رنگوں کا جادو 🎨</h1>
+        <p class="instructions text-center">
+            اپنی پسند کا رنگ چنیں اور کینوس پر خوبصورت تصاویر بنائیں۔
+            <br>
+            (Choose your favorite color and create beautiful pictures on the canvas.)
+        </p>
+
+        <canvas id="drawingCanvas"></canvas>
+
+        <div class="color-palette flex flex-wrap justify-center gap-3 md:gap-4 mb-4">
+            <!-- Color buttons will be dynamically added here -->
+        </div>
+
+        <div class="action-buttons flex flex-wrap justify-center gap-3 md:gap-4">
+            <button id="clearButton" class="clear-button">
+                <i class="fas fa-eraser mr-2"></i> صاف کریں (Clear)
+            </button>
+            <button id="saveButton" class="save-button">
+                <i class="fas fa-save mr-2"></i> محفوظ کریں (Save)
+            </button>
+        </div>
+    </div>
+
+    <!-- Font Awesome for icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js" xintegrity="sha512-pyy8q/Qz/X/V/n/G/z/k/l/m/o/p/q/r/s/t/u/v/w/x/y/z/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z/0/1/2/3/4/5/6/7/8/9/+/=" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+        // Get canvas and context
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set initial canvas dimensions based on container width
+        function resizeCanvas() {
+            const container = document.querySelector('.container');
+            const containerWidth = container.offsetWidth - 32; // Account for padding
+            canvas.width = Math.min(containerWidth, 800); // Max width 800px
+            canvas.height = canvas.width * (9 / 16); // Maintain 16:9 aspect ratio
+        }
+
+        // Resize canvas on load and on window resize
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
+
+        let drawing = false;
+        let currentColor = '#000000'; // Default color: Black
+        let brushSize = 5; // Default brush size
+
+        // Common colors for a kid's palette
+        const colors = [
+            '#FF0000', '#FFA500', '#FFFF00', '#008000', '#0000FF',
+            '#4B0082', '#EE82EE', '#FFC0CB', '#A52A2A', '#808080',
+            '#000000', '#FFFFFF'
+        ];
+
+        const colorPalette = document.querySelector('.color-palette');
+
+        // Function to create color buttons
+        function createColorButtons() {
+            colors.forEach(color => {
+                const button = document.createElement('button');
+                button.className = 'rounded-full focus:outline-none';
+                button.style.backgroundColor = color;
+                button.dataset.color = color; // Store color value
+                button.addEventListener('click', () => {
+                    currentColor = color;
+                    updateSelectedColor();
+                });
+                colorPalette.appendChild(button);
+            });
+            // Select the first color by default
+            currentColor = colors[0];
+            updateSelectedColor();
+        }
+
+        // Function to update selected color styling
+        function updateSelectedColor() {
+            const colorButtons = colorPalette.querySelectorAll('button');
+            colorButtons.forEach(button => {
+                if (button.dataset.color === currentColor) {
+                    button.classList.add('selected');
+                } else {
+                    button.classList.remove('selected');
+                }
+            });
+        }
+
+        // Start drawing
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent scrolling
+            startDrawing(e.touches[0]);
+        }, { passive: false });
+
+        // Draw on canvas
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Prevent scrolling
+            draw(e.touches[0]);
+        }, { passive: false });
+
+        // Stop drawing
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing); // Stop drawing if mouse leaves canvas
+
+        function startDrawing(e) {
+            drawing = true;
+            ctx.beginPath();
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.moveTo(x, y);
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            ctx.lineWidth = brushSize;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentColor;
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath(); // Start a new path for smooth lines
+            ctx.moveTo(x, y);
+        }
+
+        function stopDrawing() {
+            drawing = false;
+            ctx.closePath();
+        }
+
+        // Clear button functionality
+        const clearButton = document.getElementById('clearButton');
+        clearButton.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Re-fill with white background after clearing
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // Save button functionality
+        const saveButton = document.getElementById('saveButton');
+        saveButton.addEventListener('click', () => {
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = 'meri_rangoli.png'; // File name
+            link.href = dataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Initialize the game
+        window.onload = function() {
+            resizeCanvas(); // Ensure canvas is sized correctly on load
+            createColorButtons();
+            // Fill canvas with white background initially
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        };
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tik-Tak Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for X and O icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-pyy8q/Qz/X/V/n/G/z/k/l/m/o/p/q/r/s/t/u/v/w/x/y/z/A/B/C/D/E/F/G/H/I/J/K/L/M/N/O/P/Q/R/S/T/U/V/W/X/Y/Z/0/1/2/3/4/5/6/7/8/9/+/=" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e0f7fa; /* Light cyan background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15); /* Deeper shadow */
+            padding: 2rem;
+            max-width: 450px; /* Max width for the game box */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            border: 4px solid #81d4fa; /* Light blue border */
+        }
+        .game-title {
+            color: #0288d1; /* Darker blue for title */
+            font-size: 2.5rem; /* Larger title */
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .status-display {
+            background-color: #e3f2fd; /* Very light blue */
+            color: #01579b; /* Dark blue text */
+            padding: 0.75rem 1.5rem;
+            border-radius: 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: center;
+            width: 100%;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 0.75rem; /* Gap between cells */
+            width: 100%;
+            max-width: 360px; /* Fixed size for the board */
+            aspect-ratio: 1 / 1; /* Keep it square */
+        }
+        .cell {
+            background-color: #bbdefb; /* Light blue for cells */
+            border-radius: 0.75rem; /* Rounded cell corners */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3.5rem; /* Large X/O */
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            color: #424242; /* Default text color */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .cell:hover {
+            background-color: #90caf9; /* Slightly darker blue on hover */
+            transform: scale(1.02);
+        }
+        .cell.x-mark {
+            color: #ef5350; /* Red for X */
+        }
+        .cell.o-mark {
+            color: #66bb6a; /* Green for O */
+        }
+        .reset-button {
+            background-color: #42a5f5; /* Blue for reset button */
+            color: white;
+            padding: 0.85rem 1.75rem;
+            border-radius: 1rem; /* More rounded */
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: none;
+            cursor: pointer;
+        }
+        .reset-button:hover {
+            background-color: #2196f3; /* Darker blue on hover */
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+        .reset-button:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">✖️⭕ ٹک-ٹاک گیم ⭕✖️</h1>
+        <div id="status" class="status-display">باری ہے: X</div>
+
+        <div class="game-board" id="gameBoard">
+            <!-- Cells will be dynamically generated here -->
+        </div>
+
+        <button id="resetButton" class="reset-button">
+            دوبارہ کھیلیں (Reset Game)
+        </button>
+    </div>
+
+    <script>
+        const gameBoard = document.getElementById('gameBoard');
+        const statusDisplay = document.getElementById('status');
+        const resetButton = document.getElementById('resetButton');
+
+        let board = ['', '', '', '', '', '', '', '', '']; // Represents the 3x3 grid
+        let currentPlayer = 'X'; // 'X' starts the game
+        let gameActive = true; // True if the game is ongoing
+
+        // All possible winning combinations
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]             // Diagonals
+        ];
+
+        // Function to initialize the game board cells
+        function createBoardCells() {
+            gameBoard.innerHTML = ''; // Clear existing cells
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i; // Store index for easy access
+                cell.addEventListener('click', handleCellClick);
+                gameBoard.appendChild(cell);
+            }
+        }
+
+        // Function to update the game status message
+        function updateStatus(message) {
+            statusDisplay.textContent = message;
+        }
+
+        // Function to handle a cell click
+        function handleCellClick(event) {
+            const clickedCell = event.target;
+            const clickedCellIndex = parseInt(clickedCell.dataset.index);
+
+            // If the cell is already filled or game is not active, do nothing
+            if (board[clickedCellIndex] !== '' || !gameActive) {
+                return;
+            }
+
+            // Update the board and display the current player's mark
+            board[clickedCellIndex] = currentPlayer;
+            clickedCell.innerHTML = `<i class="fa-solid fa-${currentPlayer === 'X' ? 'xmark' : 'circle'}"></i>`;
+            clickedCell.classList.add(currentPlayer === 'X' ? 'x-mark' : 'o-mark');
+
+            checkGameStatus(); // Check for win or draw
+            switchPlayer();    // Switch to the next player
+        }
+
+        // Function to check if there's a winner or a draw
+        function checkGameStatus() {
+            let roundWon = false;
+            for (let i = 0; i < winningCombinations.length; i++) {
+                const winCondition = winningCombinations[i];
+                let a = board[winCondition[0]];
+                let b = board[winCondition[1]];
+                let c = board[winCondition[2]];
+
+                // If any cell in the combination is empty, continue
+                if (a === '' || b === '' || c === '') {
+                    continue;
+                }
+                // If all three cells match, a player has won
+                if (a === b && b === c) {
+                    roundWon = true;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                updateStatus(`کھلاڑی ${currentPlayer} جیت گیا! 🎉`); // Player X/O wins!
+                gameActive = false;
+                return;
+            }
+
+            // Check for a draw (if no winner and all cells are filled)
+            let roundDraw = !board.includes('');
+            if (roundDraw) {
+                updateStatus('کھیل برابر ہو گیا! 🤝'); // It's a draw!
+                gameActive = false;
+                return;
+            }
+        }
+
+        // Function to switch player
+        function switchPlayer() {
+            if (gameActive) { // Only switch if the game is still active
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                updateStatus(`باری ہے: ${currentPlayer}`); // Turn: X/O
+            }
+        }
+
+        // Function to reset the game
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            updateStatus('باری ہے: X'); // Turn: X
+            createBoardCells(); // Re-create cells to clear their content and classes
+        }
+
+        // Add event listener for the reset button
+        resetButton.addEventListener('click', resetGame);
+
+        // Initialize the game when the page loads
+        window.onload = function() {
+            createBoardCells();
+            updateStatus('باری ہے: X'); // Initial status
+        };
+    </script>
+</body>
+</html>

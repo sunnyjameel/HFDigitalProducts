@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>گروسری بجٹ ٹریکر: آف لائن</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for Urdu - Noto Nastaliq Urdu for better readability */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Noto Nastaliq Urdu', 'Inter', sans-serif;
+        }
+        /* For English content, ensure Inter font is used and direction is LTR */
+        .lang-en {
+            font-family: 'Inter', sans-serif;
+            direction: ltr;
+        }
+        /* Hide scrollbar for cleaner look */
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        body {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        /* Custom scrollbar for item list */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f0fdf4; /* Light green track */
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #a7f3d0; /* Emerald thumb */
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #6ee7b7; /* Darker emerald on hover */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex flex-col items-center p-4">
+
+    <!-- Message Box (for internal messages, not user alerts) -->
+    <div id="message-box" class="fixed top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 hidden animate-bounce text-center text-sm max-w-[90%] break-words" role="alert">
+        یہ ایک پیغام ہے
+    </div>
+
+    <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 max-w-2xl w-full mx-auto my-4 sm:my-8 border-t-8 border-indigo-600">
+        <div class="flex justify-between items-center mb-4">
+            <h1 id="main-title" class="text-3xl md:text-4xl font-extrabold text-center text-indigo-800 leading-tight">
+                گروسری بجٹ ٹریکر
+            </h1>
+            <select id="language-selector" class="p-2 rounded-md bg-indigo-100 text-indigo-700 border border-indigo-300 focus:ring-2 focus:ring-indigo-500 text-sm">
+                <option value="ur">اردو</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+        <p id="subtitle" class="text-center text-gray-700 mb-6 text-md md:text-lg">
+            آف لائن استعمال کریں، اپنا بجٹ سیٹ کریں اور خریداری کو ٹریک کریں۔
+        </p>
+
+        <!-- User ID Display (Firebase boilerplate, though not functionally used for offline data) -->
+        <div id="user-id-display" class="text-sm text-gray-500 text-center mb-6 p-2 bg-gray-50 rounded-md hidden">
+            <span id="user-id-label">آپ کی صارف ID: </span><span id="user-id-value" class="font-mono text-gray-700 break-all"></span>
+        </div>
+
+        <!-- Budget Input -->
+        <div class="mb-6 p-4 bg-indigo-50 rounded-lg shadow-inner border border-indigo-200">
+            <label for="total-budget" id="budget-label" class="block text-lg font-semibold text-indigo-700 mb-2">
+                کل بجٹ مقرر کریں (PKR میں):
+            </label>
+            <input
+                type="number"
+                id="total-budget"
+                placeholder="مثال: 5000"
+                class="w-full p-3 border border-indigo-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 text-lg text-right"
+            >
+        </div>
+
+        <!-- Add Item Section -->
+        <div class="mb-6 p-4 bg-gray-50 rounded-lg shadow-inner border border-gray-200">
+            <h2 id="add-item-title" class="text-xl font-semibold text-gray-800 mb-3">نئی چیز شامل کریں:</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="item-name" id="item-name-label" class="block text-sm font-medium text-gray-700 mb-1">چیز کا نام:</label>
+                    <input
+                        type="text"
+                        id="item-name"
+                        placeholder="مثال: دودھ"
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    >
+                </div>
+                <div>
+                    <label for="item-price" id="item-price-label" class="block text-sm font-medium text-gray-700 mb-1">موجودہ قیمت (PKR میں):</label>
+                    <input
+                        type="number"
+                        id="item-price"
+                        placeholder="مثال: 200"
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-right"
+                    >
+                </div>
+                <div class="sm:col-span-2">
+                    <label for="previous-item-price" id="previous-item-price-label" class="block text-sm font-medium text-gray-700 mb-1">پچھلی قیمت (اختیاری، PKR میں):</label>
+                    <input
+                        type="number"
+                        id="previous-item-price"
+                        placeholder="مثال: 180"
+                        class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-right"
+                    >
+                </div>
+            </div>
+            <button
+                id="add-item-btn"
+                class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-2.5 px-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-300"
+            >
+                چیز شامل کریں
+            </button>
+        </div>
+
+        <!-- Summary and Item List -->
+        <div class="mb-6 p-4 bg-white rounded-lg shadow-lg border border-gray-200">
+            <h2 id="summary-title" class="text-xl font-semibold text-gray-800 mb-3">خریداری کا خلاصہ:</h2>
+            <div class="flex justify-between items-center mb-4">
+                <span id="total-expenses-label" class="text-lg font-medium text-gray-700">کل خرچ:</span>
+                <span id="total-expenses-display" class="text-2xl font-bold text-green-600">PKR 0</span>
+            </div>
+            <div class="flex justify-between items-center mb-4">
+                <span id="remaining-budget-label" class="text-lg font-medium text-gray-700">باقی بجٹ:</span>
+                <span id="remaining-budget-display" class="text-2xl font-bold text-green-600">PKR 0</span>
+            </div>
+
+            <h3 id="shopping-list-title" class="text-lg font-semibold text-gray-800 mb-2 mt-6">خریداری کی فہرست:</h3>
+            <ul id="shopping-list-display" class="border border-gray-300 rounded-lg max-h-60 overflow-y-auto custom-scrollbar bg-gray-50 p-2">
+                <!-- Items will be added here by JavaScript -->
+                <li id="no-items-message" class="text-center text-gray-500 py-4">ابھی کوئی چیز شامل نہیں کی گئی۔</li>
+            </ul>
+
+            <div class="mt-6 flex flex-col sm:flex-row gap-4">
+                <button
+                    id="clear-list-btn"
+                    class="flex-1 bg-red-500 text-white font-bold py-2.5 px-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-red-300"
+                >
+                    فہرست صاف کریں
+                </button>
+                <button
+                    id="reset-all-btn"
+                    class="flex-1 bg-gray-600 text-white font-bold py-2.5 px-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-gray-300"
+                >
+                    سب کچھ ری سیٹ کریں
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 text-gray-500 text-sm text-center">
+        <span id="footer-text">© 2025 گروسری بجٹ ٹریکر. تمام حقوق محفوظ ہیں۔</span>
+        <p id="offline-note" class="mt-1">یہ ایپلیکیشن مکمل طور پر آف لائن کام کرتی ہے۔ انٹرنیٹ کنکشن کی ضرورت نہیں ہے۔</p>
+    </footer>
+
+    <script type="module">
+        // Firebase Boilerplate (required by environment, but not actively used for offline data)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let db, auth, userId;
+
+        // Language content for UI elements
+        const uiContent = {
+            ur: {
+                mainTitle: 'گروسری بجٹ ٹریکر',
+                subtitle: 'آف لائن استعمال کریں، اپنا بجٹ سیٹ کریں اور خریداری کو ٹریک کریں۔',
+                userIdLabel: 'آپ کی صارف ID:',
+                budgetLabel: 'کل بجٹ مقرر کریں (PKR میں):',
+                budgetPlaceholder: 'مثال: 5000',
+                addItemTitle: 'نئی چیز شامل کریں:',
+                itemNameLabel: 'چیز کا نام:',
+                itemNamePlaceholder: 'مثال: دودھ',
+                itemPriceLabel: 'موجودہ قیمت (PKR میں):',
+                itemPricePlaceholder: 'مثال: 200',
+                previousItemPriceLabel: 'پچھلی قیمت (اختیاری، PKR میں):',
+                previousItemPricePlaceholder: 'مثال: 180',
+                addItemBtn: 'چیز شامل کریں',
+                summaryTitle: 'خریداری کا خلاصہ:',
+                totalExpensesLabel: 'کل خرچ:',
+                remainingBudgetLabel: 'باقی بجٹ:',
+                shoppingListTitle: 'خریداری کی فہرست:',
+                noItemsMessage: 'ابھی کوئی چیز شامل نہیں کی گئی۔',
+                clearListBtn: 'فہرست صاف کریں',
+                resetAllBtn: 'سب کچھ ری سیٹ کریں',
+                footerText: '© 2025 گروسری بجٹ ٹریکر. تمام حقوق محفوظ ہیں۔',
+                offlineNote: 'یہ ایپلیکیشن مکمل طور پر آف لائن کام کرتی ہے۔ انٹرنیٹ کنکشن کی ضرورت نہیں ہے۔',
+                msgItemAdded: 'چیز کامیابی سے شامل کر دی گئی۔',
+                msgInvalidInput: 'براہ کرم چیز کا نام اور صحیح قیمت درج کریں۔',
+                msgItemRemoved: 'چیز فہرست سے ہٹا دی گئی۔',
+                msgListEmpty: 'فہرست پہلے ہی خالی ہے۔',
+                confirmClearList: 'کیا آپ واقعی پوری فہرست صاف کرنا چاہتے ہیں؟',
+                confirmResetAll: 'کیا آپ واقعی بجٹ اور فہرست دونوں کو ری سیٹ کرنا چاہتے ہیں؟',
+                msgListCleared: 'فہرست صاف کر دی گئی۔',
+                msgAllReset: 'بجٹ اور فہرست دونوں ری سیٹ کر دیے گئے۔',
+                msgBudgetCrossed: (amount) => `بجٹ کراس ہو گیا! آپ PKR ${amount.toLocaleString()} زیادہ خرچ کر چکے ہیں۔`,
+                priceIncreased: (amount) => `(PKR ${amount.toLocaleString()} کا اضافہ)`,
+                priceDecreased: (amount) => `(PKR ${amount.toLocaleString()} کی کمی)`,
+                priceNoChange: '(کوئی تبدیلی نہیں)',
+                priceNotProvided: '(پچھلی قیمت فراہم نہیں کی گئی)',
+                errorAuthFailed: 'Authentication failed:',
+                errorFirebaseInit: 'Firebase initialization failed:'
+            },
+            en: {
+                mainTitle: 'Grocery Budget Tracker',
+                subtitle: 'Use offline, set your budget and track your purchases.',
+                userIdLabel: 'Your User ID:',
+                budgetLabel: 'Set Total Budget (in PKR):',
+                budgetPlaceholder: 'e.g., 5000',
+                addItemTitle: 'Add New Item:',
+                itemNameLabel: 'Item Name:',
+                itemNamePlaceholder: 'e.g., Milk',
+                itemPriceLabel: 'Current Price (in PKR):',
+                itemPricePlaceholder: 'e.g., 200',
+                previousItemPriceLabel: 'Previous Price (Optional, in PKR):',
+                previousItemPricePlaceholder: 'e.g., 180',
+                addItemBtn: 'Add Item',
+                summaryTitle: 'Purchase Summary:',
+                totalExpensesLabel: 'Total Expenses:',
+                remainingBudgetLabel: 'Remaining Budget:',
+                shoppingListTitle: 'Shopping List:',
+                noItemsMessage: 'No items added yet.',
+                clearListBtn: 'Clear List',
+                resetAllBtn: 'Reset All',
+                footerText: '© 2025 Grocery Budget Tracker. All rights reserved.',
+                offlineNote: 'This application works completely offline. No internet connection is required.',
+                msgItemAdded: 'Item added successfully.',
+                msgInvalidInput: 'Please enter item name and a valid price.',
+                msgItemRemoved: 'Item removed from list.',
+                msgListEmpty: 'List is already empty.',
+                confirmClearList: 'Are you sure you want to clear the entire list?',
+                confirmResetAll: 'Are you sure you want to reset both budget and list?',
+                msgListCleared: 'List cleared.',
+                msgAllReset: 'Budget and list both reset.',
+                msgBudgetCrossed: (amount) => `Budget crossed! You have spent PKR ${amount.toLocaleString()} more.`,
+                priceIncreased: (amount) => `(Increased by PKR ${amount.toLocaleString()})`,
+                priceDecreased: (amount) => `(Decreased by PKR ${amount.toLocaleString()})`,
+                priceNoChange: '(No change)',
+                priceNotProvided: '(Previous price not provided)',
+                errorAuthFailed: 'Authentication failed:',
+                errorFirebaseInit: 'Firebase initialization failed:'
+            }
+        };
+
+        let currentLanguage = 'ur'; // Default language
+
+        // Function to show temporary messages
+        function showMessage(msg, type = 'info') {
+            const msgBox = document.getElementById('message-box');
+            msgBox.textContent = msg;
+            msgBox.classList.remove('hidden', 'bg-blue-500', 'bg-red-500', 'bg-green-500');
+            if (type === 'error') {
+                msgBox.classList.add('bg-red-500');
+            } else if (type === 'success') {
+                msgBox.classList.add('bg-green-500');
+            } else {
+                msgBox.classList.add('bg-blue-500');
+            }
+            setTimeout(() => {
+                msgBox.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Initialize Firebase (boilerplate)
+        window.onload = async function() {
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+                const app = initializeApp(firebaseConfig);
+                // db = getFirestore(app); // Not used for offline data
+                // auth = getAuth(app); // Not used for offline data
+
+                // Firebase auth boilerplate for environment compliance, not functional for this app's core
+                // onAuthStateChanged(auth, async (user) => {
+                //     if (user) {
+                //         userId = user.uid;
+                //         document.getElementById('user-id-value').textContent = userId;
+                //         document.getElementById('user-id-display').classList.remove('hidden');
+                //         console.log("User is signed in:", userId);
+                //     } else {
+                //         console.log("No user signed in. Attempting anonymous sign-in.");
+                //         try {
+                //             if (typeof __initial_auth_token !== 'undefined') {
+                //                 await signInWithCustomToken(auth, __initial_auth_token);
+                //                 userId = auth.currentUser?.uid;
+                //                 document.getElementById('user-id-value').textContent = userId;
+                //                 document.getElementById('user-id-display').classList.remove('hidden');
+                //                 console.log("Signed in with custom token.");
+                //             } else {
+                //                 await signInAnonymously(auth);
+                //                 userId = auth.currentUser?.uid;
+                //                 document.getElementById('user-id-value').textContent = userId;
+                //                 document.getElementById('user-id-display').classList.remove('hidden');
+                //                 console.log("Signed in anonymously.");
+                //             }
+                //         } catch (error) {
+                //             console.error("Firebase Auth Error:", error);
+                //             showMessage(`${uiContent[currentLanguage].errorAuthFailed} ${error.message}`, 'error');
+                //         }
+                //     }
+                // });
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                showMessage(`${uiContent[currentLanguage].errorFirebaseInit} ${error.message}`, 'error');
+            }
+
+            // --- Core Grocery Budget Tracker Logic ---
+            const languageSelector = document.getElementById('language-selector');
+            const mainTitle = document.getElementById('main-title');
+            const subtitle = document.getElementById('subtitle');
+            const userIdLabel = document.getElementById('user-id-label'); // Firebase ID label
+            const budgetLabel = document.getElementById('budget-label');
+            const totalBudgetInput = document.getElementById('total-budget');
+            const addItemTitle = document.getElementById('add-item-title');
+            const itemNameLabel = document.getElementById('item-name-label');
+            const itemNameInput = document.getElementById('item-name');
+            const itemPriceLabel = document.getElementById('item-price-label');
+            const itemPriceInput = document.getElementById('item-price');
+            const previousItemPriceLabel = document.getElementById('previous-item-price-label');
+            const previousItemPriceInput = document.getElementById('previous-item-price');
+            const addItemBtn = document.getElementById('add-item-btn');
+            const summaryTitle = document.getElementById('summary-title');
+            const totalExpensesLabel = document.getElementById('total-expenses-label');
+            const totalExpensesDisplay = document.getElementById('total-expenses-display');
+            const remainingBudgetLabel = document.getElementById('remaining-budget-label');
+            const remainingBudgetDisplay = document.getElementById('remaining-budget-display');
+            const shoppingListTitle = document.getElementById('shopping-list-title');
+            const shoppingListDisplay = document.getElementById('shopping-list-display');
+            const noItemsMessage = document.getElementById('no-items-message');
+            const clearListBtn = document.getElementById('clear-list-btn');
+            const resetAllBtn = document.getElementById('reset-all-btn');
+            const footerText = document.getElementById('footer-text');
+            const offlineNote = document.getElementById('offline-note');
+            const bodyElement = document.body;
+
+
+            let budget = 0;
+            let shoppingList = [];
+
+            // Update UI text based on current language
+            function updateUIText() {
+                const content = uiContent[currentLanguage];
+                mainTitle.textContent = content.mainTitle;
+                subtitle.textContent = content.subtitle;
+                // userIdLabel.textContent = content.userIdLabel; // Firebase ID label
+                budgetLabel.textContent = content.budgetLabel;
+                totalBudgetInput.placeholder = content.budgetPlaceholder;
+                addItemTitle.textContent = content.addItemTitle;
+                itemNameLabel.textContent = content.itemNameLabel;
+                itemNameInput.placeholder = content.itemNamePlaceholder;
+                itemPriceLabel.textContent = content.itemPriceLabel;
+                itemPriceInput.placeholder = content.itemPricePlaceholder;
+                previousItemPriceLabel.textContent = content.previousItemPriceLabel;
+                previousItemPriceInput.placeholder = content.previousItemPricePlaceholder;
+                addItemBtn.textContent = content.addItemBtn;
+                summaryTitle.textContent = content.summaryTitle;
+                totalExpensesLabel.textContent = content.totalExpensesLabel;
+                remainingBudgetLabel.textContent = content.remainingBudgetLabel;
+                shoppingListTitle.textContent = content.shoppingListTitle;
+                noItemsMessage.textContent = content.noItemsMessage;
+                clearListBtn.textContent = content.clearListBtn;
+                resetAllBtn.textContent = content.resetAllBtn;
+                footerText.textContent = content.footerText;
+                offlineNote.textContent = content.offlineNote;
+
+                // Update body direction
+                if (currentLanguage === 'ur') {
+                    bodyElement.classList.remove('lang-en');
+                    bodyElement.classList.add('lang-ur');
+                    bodyElement.setAttribute('dir', 'rtl');
+                } else {
+                    bodyElement.classList.remove('lang-ur');
+                    bodyElement.classList.add('lang-en');
+                    bodyElement.setAttribute('dir', 'ltr');
+                }
+
+                updateDisplay(); // Re-render list with new language strings
+            }
+
+            // Load data from localStorage on start
+            function loadData() {
+                const savedBudget = localStorage.getItem('groceryBudget');
+                const savedList = localStorage.getItem('shoppingList');
+                const savedLanguage = localStorage.getItem('appLanguage');
+
+                if (savedBudget) {
+                    budget = parseFloat(savedBudget);
+                    totalBudgetInput.value = budget;
+                }
+                if (savedList) {
+                    shoppingList = JSON.parse(savedList);
+                }
+                if (savedLanguage && uiContent[savedLanguage]) {
+                    currentLanguage = savedLanguage;
+                    languageSelector.value = savedLanguage;
+                }
+                updateUIText(); // Update text first
+                updateDisplay();
+            }
+
+            // Save data to localStorage
+            function saveData() {
+                localStorage.setItem('groceryBudget', budget);
+                localStorage.setItem('shoppingList', JSON.stringify(shoppingList));
+                localStorage.setItem('appLanguage', currentLanguage);
+            }
+
+            // Update all display elements
+            function updateDisplay() {
+                const content = uiContent[currentLanguage];
+                let totalExpenses = shoppingList.reduce((sum, item) => sum + item.price, 0);
+                let remainingBudget = budget - totalExpenses;
+
+                totalExpensesDisplay.textContent = `PKR ${totalExpenses.toLocaleString()}`;
+                remainingBudgetDisplay.textContent = `PKR ${remainingBudget.toLocaleString()}`;
+
+                // Indicate if budget is crossed
+                if (remainingBudget < 0) {
+                    remainingBudgetDisplay.classList.remove('text-green-600');
+                    remainingBudgetDisplay.classList.add('text-red-600');
+                    showMessage(content.msgBudgetCrossed(Math.abs(remainingBudget)), 'error');
+                } else if (remainingBudget >= 0 && totalExpenses > 0) {
+                    remainingBudgetDisplay.classList.remove('text-red-600');
+                    remainingBudgetDisplay.classList.add('text-green-600');
+                    // Clear error message if budget was previously crossed but now is fine
+                    if (document.getElementById('message-box').classList.contains('bg-red-500')) {
+                         document.getElementById('message-box').classList.add('hidden');
+                    }
+                } else {
+                    remainingBudgetDisplay.classList.remove('text-red-600');
+                    remainingBudgetDisplay.classList.add('text-green-600');
+                }
+
+                // Render shopping list
+                shoppingListDisplay.innerHTML = ''; // Clear current list
+                if (shoppingList.length === 0) {
+                    noItemsMessage.classList.remove('hidden');
+                    shoppingListDisplay.appendChild(noItemsMessage);
+                } else {
+                    noItemsMessage.classList.add('hidden');
+                    shoppingList.forEach((item, index) => {
+                        const listItem = document.createElement('li');
+                        listItem.classList.add('flex', 'flex-wrap', 'justify-between', 'items-center', 'py-2', 'px-3', 'border-b', 'border-gray-200', 'last:border-b-0', 'text-gray-800');
+
+                        let priceDifferenceText = '';
+                        if (item.previousPrice !== undefined && item.previousPrice !== null && !isNaN(item.previousPrice)) {
+                            const difference = item.price - item.previousPrice;
+                            if (difference > 0) {
+                                priceDifferenceText = `<span class="text-red-500 text-xs sm:text-sm ${currentLanguage === 'ur' ? 'mr-2' : 'ml-2'}">${content.priceIncreased(difference)}</span>`;
+                            } else if (difference < 0) {
+                                priceDifferenceText = `<span class="text-green-500 text-xs sm:text-sm ${currentLanguage === 'ur' ? 'mr-2' : 'ml-2'}">${content.priceDecreased(Math.abs(difference))}</span>`;
+                            } else {
+                                priceDifferenceText = `<span class="text-gray-500 text-xs sm:text-sm ${currentLanguage === 'ur' ? 'mr-2' : 'ml-2'}">${content.priceNoChange}</span>`;
+                            }
+                        } else {
+                            priceDifferenceText = `<span class="text-gray-400 text-xs sm:text-sm ${currentLanguage === 'ur' ? 'mr-2' : 'ml-2'}">${content.priceNotProvided}</span>`;
+                        }
+
+                        listItem.innerHTML = `
+                            <span class="w-full sm:w-auto mb-1 sm:mb-0">${item.name}</span>
+                            <div class="flex items-center w-full sm:w-auto justify-between sm:justify-end">
+                                <span class="font-medium text-base sm:text-lg ${currentLanguage === 'ur' ? 'ml-3' : 'mr-3'}">PKR ${item.price.toLocaleString()}</span>
+                                ${priceDifferenceText}
+                                <button data-index="${index}" class="remove-item-btn text-red-500 hover:text-red-700 transition-colors duration-200 ${currentLanguage === 'ur' ? 'mr-2' : 'ml-2'}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                        shoppingListDisplay.appendChild(listItem);
+                    });
+                    // Add event listeners to new remove buttons
+                    document.querySelectorAll('.remove-item-btn').forEach(button => {
+                        button.addEventListener('click', removeItem);
+                    });
+                }
+                saveData(); // Save changes
+            }
+
+            // Event Listener for Language Selector
+            languageSelector.addEventListener('change', (e) => {
+                currentLanguage = e.target.value;
+                updateUIText();
+                saveData();
+            });
+
+            // Event Listener for Budget Input
+            totalBudgetInput.addEventListener('input', () => {
+                budget = parseFloat(totalBudgetInput.value) || 0;
+                updateDisplay();
+            });
+
+            // Event Listener for Add Item Button
+            addItemBtn.addEventListener('click', () => {
+                const content = uiContent[currentLanguage];
+                const name = itemNameInput.value.trim();
+                const price = parseFloat(itemPriceInput.value);
+                const previousPrice = parseFloat(previousItemPriceInput.value); // Get previous price
+
+                if (name && !isNaN(price) && price > 0) {
+                    const newItem = { name, price };
+                    if (!isNaN(previousPrice) && previousPrice > 0) {
+                        newItem.previousPrice = previousPrice;
+                    }
+                    shoppingList.push(newItem);
+                    itemNameInput.value = '';
+                    itemPriceInput.value = '';
+                    previousItemPriceInput.value = ''; // Clear previous price input
+                    updateDisplay();
+                    showMessage(content.msgItemAdded, 'success');
+                } else {
+                    showMessage(content.msgInvalidInput, 'error');
+                }
+            });
+
+            // Function to remove an item
+            function removeItem(event) {
+                const content = uiContent[currentLanguage];
+                const index = parseInt(event.currentTarget.dataset.index);
+                if (!isNaN(index) && index >= 0 && index < shoppingList.length) {
+                    shoppingList.splice(index, 1);
+                    updateDisplay();
+                    showMessage(content.msgItemRemoved, 'info');
+                }
+            }
+
+            // Event Listener for Clear List Button
+            clearListBtn.addEventListener('click', () => {
+                const content = uiContent[currentLanguage];
+                if (shoppingList.length === 0) {
+                    showMessage(content.msgListEmpty, 'info');
+                    return;
+                }
+                if (confirm(content.confirmClearList)) { // Using confirm for simplicity in this context
+                    shoppingList = [];
+                    updateDisplay();
+                    showMessage(content.msgListCleared, 'success');
+                }
+            });
+
+            // Event Listener for Reset All Button
+            resetAllBtn.addEventListener('click', () => {
+                const content = uiContent[currentLanguage];
+                if (confirm(content.confirmResetAll)) { // Using confirm for simplicity
+                    budget = 0;
+                    shoppingList = [];
+                    totalBudgetInput.value = '';
+                    updateDisplay();
+                    showMessage(content.msgAllReset, 'success');
+                }
+            });
+
+            // Initial load of data when the page loads
+            loadData();
+        };
+    </script>
+</body>
+</html>

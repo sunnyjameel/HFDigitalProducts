@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Corrector & Word Builder</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-200 to-purple-300 min-h-screen flex items-center justify-center p-4">
+    <div id="root"></div>
+
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel CDN - for JSX transformation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        // A small dictionary of common English words for demonstration.
+        // In a real application, this would be much larger and potentially loaded from an external file.
+        // This list is intentionally kept small for quick loading in a single HTML file.
+        const dictionary = new Set([
+            "apple", "apply", "able", "area", "also", "about", "above", "across", "act", "add", "after", "again", "against", "age", "ago", "air", "all", "allow", "almost", "alone", "along", "already", "alright", "always", "am", "among", "an", "and", "animal", "another", "answer", "any", "anyone", "anything", "appear", "approach", "are", "around", "as", "ask", "at", "away", "baby", "back", "bad", "ball", "bank", "base", "be", "bear", "beat", "beautiful", "became", "because", "become", "bed", "been", "before", "began", "begin", "behind", "believe", "best", "better", "between", "big", "bill", "bird", "black", "blood", "blow", "blue", "board", "boat", "body", "book", "born", "both", "box", "boy", "break", "bring", "brother", "brought", "build", "built", "burn", "bus", "business", "but", "buy", "by", "call", "came", "can", "car", "card", "care", "carry", "case", "cat", "catch", "cause", "cell", "center", "cent", "certain", "chair", "chance", "change", "charge", "check", "child", "children", "choose", "city", "class", "clean", "clear", "climb", "close", "cold", "come", "common", "community", "company", "compare", "complete", "concern", "condition", "consider", "continue", "control", "cook", "cool", "copy", "corner", "correct", "cost", "could", "country", "course", "cover", "create", "cross", "cut", "dad", "dark", "data", "daughter", "day", "dead", "deal", "death", "decide", "deep", "degree", "demand", "develop", "did", "die", "differ", "different", "difficult", "direction", "direct", "discover", "do", "doctor", "dog", "door", "doubt", "down", "draw", "dream", "drive", "drop", "during", "each", "early", "east", "easy", "eat", "edge", "education", "effect", "effort", "eight", "either", "element", "else", "end", "energy", "enjoy", "enough", "enter", "entire", "environment", "equal", "especially", "establish", "even", "evening", "event", "ever", "every", "everyone", "everything", "evidence", "exact", "example", "except", "exist", "expect", "experience", "explain", "express", "eye", "face", "fact", "fall", "family", "far", "farm", "fast", "father", "fear", "feel", "feeling", "few", "field", "fight", "figure", "fill", "film", "final", "find", "fine", "finger", "finish", "fire", "firm", "first", "fish", "five", "floor", "fly", "follow", "food", "foot", "for", "force", "foreign", "form", "forward", "found", "four", "free", "friend", "from", "front", "full", "future", "game", "garden", "gas", "general", "get", "girl", "give", "glass", "go", "goal", "god", "gold", "good", "got", "government", "great", "green", "ground", "group", "grow", "growth", "guess", "gun", "guy", "hair", "half", "hand", "hang", "happen", "happy", "hard", "has", "have", "he", "head", "hear", "heard", "heart", "heat", "heavy", "held", "hello", "help", "her", "here", "herself", "high", "him", "himself", "his", "history", "hit", "hold", "home", "hope", "horse", "hospital", "hot", "hotel", "hour", "house", "how", "however", "human", "hundred", "husband", "I", "idea", "identify", "if", "image", "imagine", "impact", "important", "improve", "in", "include", "increase", "indeed", "indicate", "individual", "industry", "information", "inside", "instead", "institution", "interest", "into", "introduce", "investment", "involve", "is", "island", "it", "item", "its", "itself", "job", "join", "joint", "judge", "just", "keep", "key", "kid", "kill", "kind", "king", "know", "knowledge", "land", "language", "large", "last", "late", "later", "laugh", "law", "lay", "lead", "leader", "learn", "least", "leave", "left", "leg", "legal", "less", "let", "letter", "level", "lie", "life", "light", "like", "likely", "limit", "line", "list", "listen", "little", "live", "local", "long", "look", "lose", "loss", "lot", "love", "low", "main", "maintain", "major", "make", "man", "manage", "management", "manager", "many", "market", "marriage", "material", "matter", "may", "maybe", "me", "mean", "meaning", "measure", "media", "medical", "meet", "meeting", "member", "memory", "mention", "message", "method", "middle", "might", "military", "million", "mind", "minute", "miss", "model", "modern", "moment", "money", "month", "more", "morning", "most", "mother", "move", "movement", "movie", "Mr", "Mrs", "much", "music", "must", "my", "myself", "name", "nation", "national", "natural", "nature", "near", "nearly", "necessary", "need", "network", "never", "new", "news", "next", "nice", "night", "no", "nobody", "none", "nor", "north", "not", "note", "nothing", "now", "number", "occur", "of", "off", "offer", "office", "officer", "official", "old", "on", "once", "one", "only", "open", "operation", "opportunity", "option", "or", "order", "organization", "other", "others", "our", "out", "outside", "over", "own", "owner", "page", "pain", "paint", "paper", "parent", "park", "part", "particular", "partner", "party", "pass", "past", "patient", "pay", "peace", "people", "per", "perform", "performance", "perhaps", "period", "person", "personal", "phone", "physical", "pick", "picture", "piece", "place", "plan", "plant", "play", "player", "point", "police", "policy", "political", "politics", "poor", "popular", "population", "position", "positive", "possible", "power", "practice", "prepare", "present", "president", "pressure", "pretty", "prevent", "price", "private", "probably", "problem", "process", "produce", "product", "production", "professional", "professor", "program", "project", "property", "protect", "prove", "provide", "public", "pull", "purpose", "push", "put", "quality", "question", "quick", "quickly", "quite", "race", "radio", "raise", "range", "rate", "rather", "reach", "read", "ready", "real", "reality", "realize", "really", "reason", "receive", "recent", "recently", "recognize", "record", "red", "reduce", "reflect", "region", "relate", "relationship", "religious", "remain", "remember", "remove", "report", "represent", "require", "research", "resource", "respond", "response", "responsibility", "rest", "result", "return", "reveal", "rich", "right", "rise", "risk", "road", "rock", "role", "room", "round", "rule", "run", "safe", "same", "save", "say", "scene", "school", "science", "scientist", "score", "sea", "season", "seat", "second", "section", "security", "see", "seek", "seem", "sell", "send", "senior", "sense", "series", "serious", "serve", "service", "set", "settle", "seven", "several", "sex", "shake", "share", "she", "shoot", "short", "should", "shoulder", "show", "side", "sign", "significant", "similar", "simple", "simply", "since", "sing", "single", "sister", "sit", "site", "situation", "six", "size", "skill", "skin", "small", "smile", "so", "social", "society", "soldier", "some", "someone", "something", "sometimes", "son", "song", "soon", "sort", "sound", "source", "south", "space", "speak", "special", "specific", "speech", "spend", "sport", "spring", "staff", "stage", "stand", "standard", "star", "start", "state", "statement", "station", "stay", "step", "still", "stock", "stop", "store", "story", "straight", "strategy", "street", "strong", "structure", "student", "study", "stuff", "style", "subject", "success", "successful", "such", "suddenly", "suffer", "suggest", "summer", "support", "sure", "surface", "system", "table", "take", "talk", "task", "tax", "teach", "teacher", "team", "technology", "tell", "ten", "tend", "term", "test", "than", "thank", "that", "the", "their", "them", "themselves", "then", "theory", "there", "therefore", "these", "they", "thing", "think", "third", "this", "those", "though", "thought", "thousand", "three", "through", "throw", "thus", "time", "to", "today", "together", "tonight", "too", "top", "total", "touch", "toward", "town", "trade", "traditional", "train", "training", "travel", "treat", "treatment", "tree", "trial", "trip", "trouble", "true", "truth", "try", "turn", "TV", "two", "type", "under", "understand", "unit", "until", "up", "upon", "us", "use", "usually", "value", "various", "very", "victim", "view", "visit", "voice", "vote", "wait", "walk", "wall", "want", "war", "watch", "water", "way", "we", "weapon", "wear", "weather", "week", "weight", "well", "west", "what", "whatever", "when", "where", "whether", "which", "while", "white", "who", "whole", "whom", "whose", "why", "wide", "wife", "will", "win", "wind", "window", "wish", "with", "within", "without", "woman", "wonder", "word", "work", "worker", "world", "worry", "would", "write", "writer", "wrong", "yard", "yeah", "year", "yes", "yet", "you", "young", "your", "yourself", "youth", "zone"
+        ]);
+
+        // Function to calculate letter frequency for a word
+        const getLetterFrequency = (word) => {
+            const freq = {};
+            for (const char of word.toLowerCase()) {
+                freq[char] = (freq[char] || 0) + 1;
+            }
+            return freq;
+        };
+
+        // Function to check if a word can be formed from available letters
+        const canFormWord = (word, availableLettersFreq) => {
+            const wordFreq = getLetterFrequency(word);
+            for (const char in wordFreq) {
+                if (!availableLettersFreq[char] || availableLettersFreq[char] < wordFreq[char]) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        // Main App component
+        const App = () => {
+            const [inputWord, setInputWord] = React.useState('');
+            const [suggestions, setSuggestions] = React.useState([]);
+            const [formedWords, setFormedWords] = React.useState([]);
+            const [message, setMessage] = React.useState('');
+            const [isLoading, setIsLoading] = React.useState(false);
+
+            // Function to find spelling suggestions (simple edit distance 1)
+            const findSuggestions = React.useCallback((word) => {
+                const lowerWord = word.toLowerCase();
+                const candidates = new Set();
+
+                // Add original word if it's in dictionary
+                if (dictionary.has(lowerWord)) {
+                    candidates.add(lowerWord);
+                }
+
+                const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+
+                // Deletions
+                for (let i = 0; i < lowerWord.length; i++) {
+                    const candidate = lowerWord.slice(0, i) + lowerWord.slice(i + 1);
+                    if (dictionary.has(candidate)) candidates.add(candidate);
+                }
+
+                // Transpositions (swapping adjacent characters)
+                for (let i = 0; i < lowerWord.length - 1; i++) {
+                    const candidate = lowerWord.slice(0, i) + lowerWord[i + 1] + lowerWord[i] + lowerWord.slice(i + 2);
+                    if (dictionary.has(candidate)) candidates.add(candidate);
+                }
+
+                // Replacements
+                for (let i = 0; i < lowerWord.length; i++) {
+                    for (const char of alphabet) {
+                        const candidate = lowerWord.slice(0, i) + char + lowerWord.slice(i + 1);
+                        if (dictionary.has(candidate)) candidates.add(candidate);
+                    }
+                }
+
+                // Insertions
+                for (let i = 0; i <= lowerWord.length; i++) {
+                    for (const char of alphabet) {
+                        const candidate = lowerWord.slice(0, i) + char + lowerWord.slice(i);
+                        if (dictionary.has(candidate)) candidates.add(candidate);
+                    }
+                }
+
+                return Array.from(candidates).sort();
+            }, []);
+
+            // Function to find words that can be formed from the input letters
+            const findFormedWords = React.useCallback((word) => {
+                if (!word) return [];
+                const availableLettersFreq = getLetterFrequency(word);
+                const results = new Set();
+
+                // Iterate through the dictionary and check if words can be formed
+                for (const dictWord of dictionary) {
+                    if (dictWord.length > 0 && dictWord.length <= word.length && canFormWord(dictWord, availableLettersFreq)) {
+                        results.add(dictWord);
+                    }
+                }
+                return Array.from(results).sort();
+            }, []);
+
+            // Handle the "Analyze" button click
+            const handleAnalyze = React.useCallback(() => {
+                if (!inputWord.trim()) {
+                    setMessage('Please enter a word to analyze.');
+                    setSuggestions([]);
+                    setFormedWords([]);
+                    return;
+                }
+
+                setIsLoading(true);
+                setMessage('');
+                setSuggestions([]);
+                setFormedWords([]);
+
+                // Using setTimeout to simulate a small delay and allow UI to update
+                setTimeout(() => {
+                    const corrected = findSuggestions(inputWord.trim());
+                    const formed = findFormedWords(inputWord.trim());
+
+                    setSuggestions(corrected);
+                    setFormedWords(formed);
+
+                    if (corrected.length === 0 && formed.length === 0) {
+                        setMessage('No suggestions or words found for this input.');
+                    } else {
+                        setMessage('Analysis complete!');
+                    }
+                    setIsLoading(false);
+                }, 100); // Small delay for better UX
+            }, [inputWord, findSuggestions, findFormedWords]);
+
+            // Handle clearing all results
+            const handleClear = () => {
+                setInputWord('');
+                setSuggestions([]);
+                setFormedWords([]);
+                setMessage('');
+                setIsLoading(false);
+            };
+
+            return (
+                <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-3xl w-full flex flex-col items-center transform transition-all duration-300 hover:scale-[1.01] border-4 border-purple-400">
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-purple-700 mb-4 text-center">
+                        🔠 Word Corrector & Builder 🧩
+                    </h1>
+                    <p className="text-lg text-gray-700 mb-6 text-center">
+                        Apne tootay huwe lafzon ko theek karen aur unse naye alfaaz banayen.
+                        <br />
+                        (Correct your broken words and build new ones from them.)
+                    </p>
+
+                    <div className="w-full flex flex-col md:flex-row gap-4 mb-6">
+                        <input
+                            type="text"
+                            className="flex-grow p-4 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                            placeholder="Toota hua lafz yahan likhen (e.g., 'ellap', 'nleist')"
+                            value={inputWord}
+                            onChange={(e) => setInputWord(e.target.value)}
+                            disabled={isLoading}
+                        />
+                        <button
+                            onClick={handleAnalyze}
+                            disabled={isLoading || !inputWord.trim()}
+                            className="bg-blue-600 text-white py-3 px-6 rounded-xl text-lg font-bold
+                                       hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105
+                                       disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
+                        >
+                            {isLoading ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-search"></i>}
+                            Analyze
+                        </button>
+                        <button
+                            onClick={handleClear}
+                            className="bg-gray-400 text-white py-3 px-6 rounded-xl text-lg font-bold
+                                       hover:bg-gray-500 transition duration-300 ease-in-out transform hover:scale-105
+                                       shadow-lg flex items-center justify-center gap-2"
+                        >
+                            <i className="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+
+                    {message && (
+                        <div className={`w-full p-3 rounded-xl border mb-6 ${message.includes('Error') ? 'bg-red-100 border-red-400 text-red-700' : 'bg-blue-100 border-blue-400 text-blue-700'} text-center font-semibold`}>
+                            {message}
+                        </div>
+                    )}
+
+                    {suggestions.length > 0 && (
+                        <div className="w-full bg-green-50 p-6 rounded-2xl shadow-md border border-green-200 mb-6">
+                            <h2 className="text-2xl font-bold text-green-700 mb-4 text-center flex items-center justify-center gap-2">
+                                <i className="fas fa-check-circle"></i> Corrected Suggestions
+                            </h2>
+                            <div className="flex flex-wrap gap-2 justify-center">
+                                {suggestions.map((s, index) => (
+                                    <span key={index} className="bg-green-200 text-green-800 px-4 py-2 rounded-full text-lg font-semibold shadow-sm">
+                                        {s}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {formedWords.length > 0 && (
+                        <div className="w-full bg-yellow-50 p-6 rounded-2xl shadow-md border border-yellow-200 mb-6">
+                            <h2 className="text-2xl font-bold text-yellow-700 mb-4 text-center flex items-center justify-center gap-2">
+                                <i className="fas fa-puzzle-piece"></i> Words Formed from Letters
+                            </h2>
+                            <div className="flex flex-wrap gap-2 justify-center max-h-60 overflow-y-auto">
+                                {formedWords.map((w, index) => (
+                                    <span key={index} className="bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full text-md font-medium shadow-sm">
+                                        {w}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <p className="text-gray-500 text-sm mt-4 text-center">
+                        Note: This app uses a small built-in dictionary. For comprehensive results, a larger dictionary is needed.
+                        <br />
+                        (Yeh app aik choti dictionary istemal karti hai. Behtar nataij ke liye, aik bari dictionary darkar hai.)
+                    </p>
+                </div>
+            );
+        };
+
+        // Render the App component into the root div
+        // Ensure ReactDOM is fully loaded before attempting to render
+        window.onload = function() {
+            ReactDOM.render(<App />, document.getElementById('root'));
+        };
+    </script>
+</body>
+</html>

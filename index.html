@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HF Digital Agency - Secure Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        #app-container { display: none; } /* Planner by default chupa hoga */
+        .section { display: none; }
+        .section.active { display: block; }
+        .nav-link.active { background-color: #d1d5db; color: #1f2937; font-weight: 600; }
+        .nav-link:hover { background-color: #e5e7eb; }
+    </style>
+</head>
+<body class="bg-slate-100">
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="flex items-center justify-center min-h-screen">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-slate-900">HF Digital Agency</h1>
+                <p class="mt-2 text-slate-600">Apne Planner mein Login Karein</p>
+            </div>
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="email" class="text-sm font-medium text-slate-700">Email</label>
+                    <input id="email" type="email" required class="w-full px-3 py-2 mt-1 border rounded-md bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500">
+                </div>
+                <div>
+                    <label for="password" class="text-sm font-medium text-slate-700">Password</label>
+                    <input id="password" type="password" required class="w-full px-3 py-2 mt-1 border rounded-md bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500">
+                </div>
+                <p id="login-error" class="text-sm text-red-600 hidden">Ghalat Email ya Password.</p>
+                <div>
+                    <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-slate-800 rounded-md hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
+                        Login
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- The main planner app (hidden by default) -->
+    <div id="app-container">
+        <div class="flex flex-col md:flex-row min-h-screen">
+            <!-- Sidebar -->
+            <aside class="w-full md:w-64 bg-white border-b md:border-r border-slate-200">
+                <div class="p-6">
+                    <h1 class="text-2xl font-bold text-slate-900">HF Digital Agency</h1>
+                    <p id="user-email" class="text-sm text-slate-500"></p>
+                </div>
+                <nav class="mt-4 px-3">
+                    <!-- Nav links same as before -->
+                </nav>
+                <div class="absolute bottom-0 w-full px-6 pb-6">
+                    <button id="logout-button" class="w-full px-4 py-2 font-semibold text-white bg-red-600 rounded-md hover:bg-red-700">Logout</button>
+                </div>
+            </aside>
+            <!-- Main Content -->
+            <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+                <!-- All sections (dashboard, daily, etc.) go here, same as before -->
+            </main>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+    <script>
+        // --- // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAmapviZujq13uXp5t8p7Zjnq8tOmHiYiA",
+  authDomain: "hf-planner-app.firebaseapp.com",
+  projectId: "hf-planner-app",
+  storageBucket: "hf-planner-app.firebasestorage.app",
+  messagingSenderId: "131877733017",
+  appId: "1:131877733017:web:ca6a5b17329c8af580ee08",
+  measurementId: "G-V05WX1E2G8"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app); ---
+        const firebaseConfig = {
+            apiKey: "AIza...",
+            authDomain: "your-project-id.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-project-id.appspot.com",
+            messagingSenderId: "...",
+            appId: "..."
+        };
+
+        // Firebase ko initialize karein
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // UI Elements
+        const loginScreen = document.getElementById('login-screen');
+        const appContainer = document.getElementById('app-container');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const userEmailEl = document.getElementById('user-email');
+        const logoutButton = document.getElementById('logout-button');
+
+        // Login Logic
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Login kamyab
+                    loginScreen.style.display = 'none';
+                    appContainer.style.display = 'block';
+                    userEmailEl.textContent = userCredential.user.email;
+                })
+                .catch((error) => {
+                    // Login nakam
+                    loginError.classList.remove('hidden');
+                });
+        });
+
+        // Logout Logic
+        logoutButton.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                // Logout kamyab, wapas login screen par le jayein
+                window.location.reload();
+            });
+        });
+
+        // Check karein ke user pehle se login hai ya nahi
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User login hai, planner dikhayein
+                loginScreen.style.display = 'none';
+                appContainer.style.display = 'block';
+                userEmailEl.textContent = user.email;
+            } else {
+                // User login nahi hai, login screen dikhayein
+                loginScreen.style.display = 'flex';
+                appContainer.style.display = 'none';
+            }
+        });
+
+        // --- BAKI PLANNER KA SARA JAVASCRIPT CODE YAHAN AYEGA ---
+        // (Daily, Weekly, Monthly, Budget logic, etc.)
+    </script>
+
+</body>
+</html>
+```
+
+---
+
+### Client ko Access Dene aur Wapas Lene ka Tareeka (Step-by-Step)
+
+**Step 1: Apna Free Firebase Account Banayein**
+
+1.  **[firebase.google.com](https://firebase.google.com)** par jayein aur apne Google account se sign in karein.
+2.  **"Go to console"** par click karein, phir **"Create a project"** par click karein.
+3.  Apne project ka koi bhi naam rakhein (e.g., "hf-digital-planner") aur steps follow karke project bana lein.
+
+**Step 2: Firebase ko Apne Planner se Jorein**
+
+1.  Project bananey ke baad, aap apne project ke dashboard par honge. Wahan web icon **</>** par click karein.
+2.  Apni app ka naam dein aur **"Register app"** par click karein.
+3.  Agle screen par aapko `firebaseConfig` ka code milega. Usko copy kar lein.
+4.  Upar diye gaye HTML code mein, jahan likha hai `// --- // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAmapviZujq13uXp5t8p7Zjnq8tOmHiYiA",
+  authDomain: "hf-planner-app.firebaseapp.com",
+  projectId: "hf-planner-app",
+  storageBucket: "hf-planner-app.firebasestorage.app",
+  messagingSenderId: "131877733017",
+  appId: "1:131877733017:web:ca6a5b17329c8af580ee08",
+  measurementId: "G-V05WX1E2G8"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app); ---`, wahan us code ko paste kar dein.
+
+**Step 3: Login Method ko Enable Karein**
+
+1.  Firebase console mein, left side par **Authentication** par click karein.
+2.  **"Sign-in method"** tab par jayein.
+3.  List mein se **"Email/Password"** par click karein aur usko **Enable** karke save kar dein.
+
+**Step 4: Client ko Access Kaise Dein (Jab woh pay kar de)**
+
+1.  Aap **Authentication** section mein hi rahenge.
+2.  **"Users"** tab par click karein aur phir **"Add user"** button par click karein.
+3.  Wahan client ka **email** aur ek **password** daalein jo aap usko denge.
+4.  **"Add user"** par click karein.
+
+Ab aap apne client ko uska email aur password bhej sakte hain. Woh in credentials se login karke planner istemal kar sakega.
+
+**Step 5: Client se Access Wapas Kaise Lein (Jab woh refund le le)**
+
+1.  Wapas Firebase console mein **Authentication -> Users** section mein jayein.
+2.  Us client ke user ko list mein dhondein.
+3.  Uske samne 3 dots (...) par click karein aur **"Delete account"** par click kar dein.
+
+Jaise hi aap account delete karenge, client foran logout ho jayega aur dobara kabhi bhi us email/password se login nahi kar payega. Aapka product 100% mehfooz ho jayega.
+
+Is tareeqay se aap mukammal control ke sath apne digital products bech sakte ha

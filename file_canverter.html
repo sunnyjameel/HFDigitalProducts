@@ -1,0 +1,325 @@
+import React, { useState, useRef } from 'react';
+
+// Load jsPDF and JSZip libraries from CDN
+// These scripts will be available globally as 'jspdf' and 'JSZip'
+const loadScript = (src, id) => {
+    if (!document.getElementById(id)) {
+        const script = document.createElement('script');
+        script.src = src;
+        script.id = id;
+        script.async = true;
+        document.head.appendChild(script);
+        return new Promise((resolve, reject) => {
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+        });
+    }
+    return Promise.resolve(); // Script already loaded
+};
+
+// Main App component for the File Converter & Compressor
+const App = () => {
+    // State to store selected files
+    const [selectedFiles, setSelectedFiles] = useState([]);
+    // State for loading status of PDF conversion
+    const [isConvertingPdf, setIsConvertingPdf] = useState(false);
+    // State for loading status of ZIP compression
+    const [isCompressingZip, setIsCompressingZip] = useState(false);
+    // State for general messages (success/error)
+    const [message, setMessage] = useState({ type: '', text: '' });
+
+    // Ref for the hidden file input
+    const fileInputRef = useRef(null);
+
+    // Function to handle file selection from input or drag-and-drop
+    const handleFileChange = (event) => {
+        const files = event.target.files ? Array.from(event.target.files) : Array.from(event.dataTransfer.files);
+        setSelectedFiles(prevFiles => [...prevFiles, ...files]);
+        setMessage({ type: '', text: '' }); // Clear previous messages
+    };
+
+    // Handle drag over event for drag-and-drop
+    const handleDragOver = (event) => {
+        event.preventDefault(); // Prevent default to allow drop
+    };
+
+    // Handle drop event for drag-and-drop
+    const handleDrop = (event) => {
+        event.preventDefault();
+        handleFileChange(event);
+    };
+
+    // Function to remove a selected file
+    const removeFile = (indexToRemove) => {
+        setSelectedFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove));
+    };
+
+    // Function to convert selected files to PDF
+    const convertToPdf = async () => {
+        if (selectedFiles.length === 0) {
+            setMessage({ type: 'error', text: 'براہ کرم PDF میں تبدیل کرنے کے لیے فائلیں منتخب کریں۔ (Please select files to convert to PDF.)' });
+            return;
+        }
+
+        setIsConvertingPdf(true);
+        setMessage({ type: '', text: '' });
+
+        try {
+            // Ensure jspdf is loaded
+            await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf-script");
+            const { jsPDF } = window.jspdf; // Access jsPDF from window object
+
+            const doc = new jsPDF();
+            let pageAdded = false; // To manage adding new pages
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+
+                // Add new page if it's not the first file and a page has already been added
+                if (pageAdded) {
+                    doc.addPage();
+                }
+
+                if (file.type.startsWith('image/')) {
+                    // Convert image to PDF
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    await new Promise(resolve => {
+                        reader.onload = () => {
+                            const img = new Image();
+                            img.src = reader.result;
+                            img.onload = () => {
+                                const imgWidth = img.width;
+                                const imgHeight = img.height;
+                                const pageWidth = doc.internal.pageSize.getWidth();
+                                const pageHeight = doc.internal.pageSize.getHeight();
+
+                                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                                const scaledWidth = imgWidth * ratio;
+                                const scaledHeight = imgHeight * ratio;
+
+                                const x = (pageWidth - scaledWidth) / 2;
+                                const y = (pageHeight - scaledHeight) / 2;
+
+                                doc.addImage(img.src, file.type.split('/')[1].toUpperCase(), x, y, scaledWidth, scaledHeight);
+                                pageAdded = true;
+                                resolve();
+                            };
+                            img.onerror = (e) => {
+                                console.error("Image load error:", e);
+                                setMessage({ type: 'error', text: `تصویر لوڈ کرنے میں مسئلہ: ${file.name} (Problem loading image: ${file.name})` });
+                                resolve(); // Resolve anyway to continue with next file
+                            };
+                        };
+                        reader.onerror = (e) => {
+                            console.error("FileReader error:", e);
+                            setMessage({ type: 'error', text: `فائل پڑھنے میں مسئلہ: ${file.name} (Problem reading file: ${file.name})` });
+                            resolve(); // Resolve anyway to continue with next file
+                        };
+                    });
+                } else if (file.type === 'text/plain') {
+                    // Convert text to PDF
+                    const reader = new FileReader();
+                    reader.readAsText(file);
+                    await new Promise(resolve => {
+                        reader.onload = () => {
+                            const text = reader.result;
+                            const lines = doc.splitTextToSize(text, doc.internal.pageSize.getWidth() - 20); // 10 units padding on each side
+                            doc.text(lines, 10, 10); // Start text at 10,10
+                            pageAdded = true;
+                            resolve();
+                        };
+                        reader.onerror = (e) => {
+                            console.error("FileReader error:", e);
+                            setMessage({ type: 'error', text: `فائل پڑھنے میں مسئلہ: ${file.name} (Problem reading file: ${file.name})` });
+                            resolve();
+                        };
+                    });
+                } else {
+                    setMessage({ type: 'warning', text: `"${file.name}" کو PDF میں تبدیل نہیں کیا جا سکتا۔ (Cannot convert "${file.name}" to PDF.)` });
+                }
+            }
+
+            if (pageAdded) { // Only save if at least one page was added
+                doc.save('converted_files.pdf');
+                setMessage({ type: 'success', text: 'فائلیں کامیابی سے PDF میں تبدیل ہو گئیں۔ (Files successfully converted to PDF.)' });
+            } else {
+                setMessage({ type: 'error', text: 'کوئی قابلِ تبدیل فائل نہیں ملی۔ (No convertible files found.)' });
+            }
+
+        } catch (err) {
+            console.error("PDF Conversion Error:", err);
+            setMessage({ type: 'error', text: `PDF میں تبدیل کرنے میں مسئلہ پیش آیا: ${err.message} (An issue occurred converting to PDF: ${err.message})` });
+        } finally {
+            setIsConvertingPdf(false);
+        }
+    };
+
+    // Function to compress selected files into a ZIP archive
+    const compressToZip = async () => {
+        if (selectedFiles.length === 0) {
+            setMessage({ type: 'error', text: 'براہ کرم ZIP میں کمپریس کرنے کے لیے فائلیں منتخب کریں۔ (Please select files to compress to ZIP.)' });
+            return;
+        }
+
+        setIsCompressingZip(true);
+        setMessage({ type: '', text: '' });
+
+        try {
+            // Ensure JSZip is loaded
+            await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js", "jszip-script");
+            const JSZip = window.JSZip; // Access JSZip from window object
+
+            const zip = new JSZip();
+
+            for (const file of selectedFiles) {
+                const reader = new FileReader();
+                reader.readAsArrayBuffer(file);
+                await new Promise(resolve => {
+                    reader.onload = () => {
+                        zip.file(file.name, reader.result);
+                        resolve();
+                    };
+                    reader.onerror = (e) => {
+                        console.error("FileReader error for ZIP:", e);
+                        setMessage({ type: 'error', text: `فائل پڑھنے میں مسئلہ: ${file.name} (Problem reading file: ${file.name})` });
+                        resolve(); // Resolve anyway to continue
+                    };
+                });
+            }
+
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+            const url = URL.createObjectURL(zipBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'compressed_files.zip';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url); // Clean up URL object
+
+            setMessage({ type: 'success', text: 'فائلیں کامیابی سے ZIP میں کمپریس ہو گئیں۔ (Files successfully compressed to ZIP.)' });
+
+        } catch (err) {
+            console.error("ZIP Compression Error:", err);
+            setMessage({ type: 'error', text: `ZIP میں کمپریس کرنے میں مسئلہ پیش آیا: ${err.message} (An issue occurred compressing to ZIP: ${err.message})` });
+        } finally {
+            setIsCompressingZip(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-200 to-purple-300 flex items-center justify-center p-4 font-inter text-gray-800">
+            <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-3xl w-full flex flex-col items-center transform transition-all duration-300 hover:scale-[1.01] border-4 border-purple-400">
+                <h1 className="text-4xl md:text-5xl font-extrabold text-purple-700 mb-4 text-center">
+                    🗄️ فائل کنورٹر اور کمپریسر 🗜️
+                </h1>
+                <p className="text-lg text-gray-700 mb-8 text-center">
+                    اپنی فائلیں منتخب کریں اور انہیں PDF میں تبدیل کریں یا ZIP میں کمپریس کریں۔
+                    <br />
+                    (Select your files and convert them to PDF or compress them to ZIP.)
+                </p>
+
+                {/* File Upload Area */}
+                <div
+                    className="w-full border-4 border-dashed border-purple-300 rounded-2xl p-8 text-center cursor-pointer hover:border-purple-500 transition duration-200 mb-6"
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current.click()}
+                >
+                    <input
+                        type="file"
+                        multiple
+                        onChange={handleFileChange}
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/jpeg,image/png,text/plain" // Only allow these types for now
+                    />
+                    <i className="fas fa-cloud-upload-alt text-purple-500 text-5xl mb-4"></i>
+                    <p className="text-xl font-semibold text-purple-700">
+                        فائلیں یہاں گھسیٹیں یا کلک کریں (Drag & drop files here or click to browse)
+                    </p>
+                    <p className="text-sm text-gray-500 mt-2">
+                        (JPG, PNG, TXT فائلیں PDF میں تبدیل ہو سکتی ہیں)
+                    </p>
+                </div>
+
+                {/* Selected Files List */}
+                {selectedFiles.length > 0 && (
+                    <div className="w-full bg-purple-50 rounded-xl p-4 mb-6 shadow-inner border border-purple-200">
+                        <h2 className="text-xl font-bold text-purple-800 mb-3 text-left">
+                            منتخب شدہ فائلیں ({selectedFiles.length})
+                        </h2>
+                        <ul className="max-h-48 overflow-y-auto custom-scrollbar text-left">
+                            {selectedFiles.map((file, index) => (
+                                <li key={index} className="flex justify-between items-center py-2 border-b border-purple-100 last:border-b-0">
+                                    <span className="text-gray-700 text-base break-all pr-2">{file.name}</span>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); removeFile(index); }}
+                                        className="text-red-500 hover:text-red-700 transition duration-200 p-1 rounded-full hover:bg-red-100"
+                                    >
+                                        <i className="fas fa-times-circle"></i>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="w-full flex flex-col sm:flex-row justify-center gap-4 mb-6">
+                    <button
+                        onClick={convertToPdf}
+                        disabled={isConvertingPdf || selectedFiles.length === 0}
+                        className="bg-red-500 text-white py-3 px-6 rounded-full text-lg font-bold
+                                   hover:bg-red-600 transition duration-300 ease-in-out transform hover:scale-105
+                                   disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
+                    >
+                        {isConvertingPdf ? (
+                            <>
+                                <i className="fas fa-spinner fa-spin"></i> PDF میں تبدیل ہو رہا ہے...
+                            </>
+                        ) : (
+                            <>
+                                <i className="fas fa-file-pdf"></i> PDF میں تبدیل کریں
+                            </>
+                        )}
+                    </button>
+                    <button
+                        onClick={compressToZip}
+                        disabled={isCompressingZip || selectedFiles.length === 0}
+                        className="bg-green-500 text-white py-3 px-6 rounded-full text-lg font-bold
+                                   hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105
+                                   disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
+                    >
+                        {isCompressingZip ? (
+                            <>
+                                <i className="fas fa-spinner fa-spin"></i> ZIP میں کمپریس ہو رہا ہے...
+                            </>
+                        ) : (
+                            <>
+                                <i className="fas fa-file-archive"></i> ZIP میں کمپریس کریں
+                            </>
+                        )}
+                    </button>
+                </div>
+
+                {/* Message Box */}
+                {message.text && (
+                    <div className={`w-full p-4 rounded-xl border ${message.type === 'error' ? 'bg-red-100 border-red-400 text-red-700' : message.type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-yellow-100 border-yellow-400 text-yellow-700'} text-center font-semibold`}>
+                        <i className={`mr-2 ${message.type === 'error' ? 'fas fa-exclamation-triangle' : message.type === 'success' ? 'fas fa-check-circle' : 'fas fa-info-circle'}`}></i>
+                        {message.text}
+                    </div>
+                )}
+
+                <p className="text-gray-500 text-xs mt-6">
+                    نوٹ: یہ ایپ آپ کے براؤزر میں آف لائن کام کرتی ہے۔
+                    <br />
+                    (Note: This app works offline in your browser.)
+                </p>
+            </div>
+        </div>
+    );
+};
+
+export default App;
