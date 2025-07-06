@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Mobile Digital Planner 2025 - Multi-Currency PKR</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .section h2 {
+            color: #4a5568;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tab-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            padding: 8px 16px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 80px;
+        }
+        
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        .btn-danger {
+            background: #f56565;
+        }
+        
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-top: 10px;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f7fafc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .calendar-day:hover {
+            background: #e2e8f0;
+        }
+        
+        .calendar-day.today {
+            background: #667eea;
+            color: white;
+        }
+        
+        .calendar-day.selected {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .task-item, .habit-item, .expense-item, .contact-item {
+            background: #f7fafc;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .task-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        
+        .priority-high {
+            border-left: 4px solid #f56565;
+        }
+        
+        .priority-medium {
+            border-left: 4px solid #ed8936;
+        }
+        
+        .priority-low {
+            border-left: 4px solid #48bb78;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+        
+        .currency-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .currency-btn {
+            padding: 8px 12px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .currency-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .expense-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .summary-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .summary-card .amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .habit-streak {
+            display: flex;
+            gap: 3px;
+            margin-top: 5px;
+        }
+        
+        .streak-day {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+        
+        .streak-day.completed {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+        
+        .floating-add {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #a0aec0;
+        }
+        
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .note-card {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 15px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .note-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .note-card h4 {
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+        
+        .note-card .date {
+            font-size: 0.8rem;
+            color: #a0aec0;
+            margin-top: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 5px;
+            }
+            
+            .section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .tab-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .calendar-grid {
+                gap: 1px;
+            }
+            
+            .calendar-day {
+                font-size: 0.8rem;
+            }
+            
+            .expense-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .currency-selector {
+                flex-wrap: wrap;
+            }
+            
+            .currency-btn {
+                flex: 1;
+                min-width: 80px;
+            }
+        }
+        
+        .header-title {
+            text-align: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .export-summary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .export-summary h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .export-summary p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="export-summary">
+            <h1><i class="fas fa-calendar-alt"></i> Digital Planner 2025</h1>
+            <p>Complete Professional Planning Solution with Multi-Currency Support</p>
+            <p><i class="fas fa-coins"></i> Default Currency: PKR (Pakistan Rupee)</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="section">
+            <div class="tab-container">
+                <button class="tab-btn active" onclick="showTab('dashboard')">
+                    <i class="fas fa-home"></i> Dashboard
+                </button>
+                <button class="tab-btn" onclick="showTab('calendar')">
+                    <i class="fas fa-calendar"></i> Calendar
+                </button>
+                <button class="tab-btn" onclick="showTab('tasks')">
+                    <i class="fas fa-tasks"></i> Tasks
+                </button>
+                <button class="tab-btn" onclick="showTab('goals')">
+                    <i class="fas fa-bullseye"></i> Goals
+                </button>
+                <button class="tab-btn" onclick="showTab('habits')">
+                    <i class="fas fa-heart"></i> Habits
+                </button>
+                <button class="tab-btn" onclick="showTab('expenses')">
+                    <i class="fas fa-wallet"></i> Expenses
+                </button>
+                <button class="tab-btn" onclick="showTab('notes')">
+                    <i class="fas fa-sticky-note"></i> Notes
+                </button>
+                <button class="tab-btn" onclick="showTab('contacts')">
+                    <i class="fas fa-address-book"></i> Contacts
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="section">
+                <h2><i class="fas fa-chart-line"></i> Dashboard Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3><i class="fas fa-tasks"></i> Tasks Today</h3>
+                        <div class="amount" id="dashboard-tasks">0</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="dashboard-tasks-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3><i class="fas fa-bullseye"></i> Goals Progress</h3>
+                        <div class="amount" id="dashboard-goals">0%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="dashboard-goals-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3><i class="fas fa-heart"></i> Habits Today</h3>
+                        <div class="amount" id="dashboard-habits">0</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="dashboard-habits-progress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3><i class="fas fa-wallet"></i> Today's Expenses</h3>
+                        <div class="amount" id="dashboard-expenses">PKR 0</div>
+                        <small>Monthly Budget: PKR 50,000</small>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dashboardChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Tab -->
+        <div id="calendar" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-calendar-alt"></i> Calendar</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <button class="btn btn-sm" onclick="changeMonth(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h3 id="calendar-month-year" class="text-xl font-semibold">January 2025</h3>
+                    <button class="btn btn-sm" onclick="changeMonth(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-day font-semibold text-gray-600">Sun</div>
+                    <div class="calendar-day font-semibold text-gray-600">Mon</div>
+                    <div class="calendar-day font-semibold text-gray-600">Tue</div>
+                    <div class="calendar-day font-semibold text-gray-600">Wed</div>
+                    <div class="calendar-day font-semibold text-gray-600">Thu</div>
+                    <div class="calendar-day font-semibold text-gray-600">Fri</div>
+                    <div class="calendar-day font-semibold text-gray-600">Sat</div>
+                </div>
+                <div id="calendar-days" class="calendar-grid"></div>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Add Event</h3>
+                    <div class="input-group">
+                        <label>Event Title</label>
+                        <input type="text" id="event-title" placeholder="Enter event title">
+                    </div>
+                    <div class="input-group">
+                        <label>Date</label>
+                        <input type="date" id="event-date">
+                    </div>
+                    <div class="input-group">
+                        <label>Time</label>
+                        <input type="time" id="event-time">
+                    </div>
+                    <button class="btn" onclick="addEvent()">
+                        <i class="fas fa-plus"></i> Add Event
+                    </button>
+                </div>
+                
+                <div class="mt-6" id="events-list">
+                    <h3 class="text-lg font-semibold mb-3">Upcoming Events</h3>
+                    <div id="events-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks Tab -->
+        <div id="tasks" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-tasks"></i> Task Management</h2>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="searchTasks()">
+                </div>
+                
+                <div class="input-group">
+                    <label>Task Title</label>
+                    <input type="text" id="task-title" placeholder="Enter task title">
+                </div>
+                <div class="input-group">
+                    <label>Priority</label>
+                    <select id="task-priority">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Due Date</label>
+                    <input type="date" id="task-date">
+                </div>
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="task-category">
+                        <option value="personal">Personal</option>
+                        <option value="work">Work</option>
+                        <option value="health">Health</option>
+                        <option value="education">Education</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="addTask()">
+                    <i class="fas fa-plus"></i> Add Task
+                </button>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Task List</h3>
+                    <div class="tab-container">
+                        <button class="tab-btn active" onclick="filterTasks('all')">All</button>
+                        <button class="tab-btn" onclick="filterTasks('pending')">Pending</button>
+                        <button class="tab-btn" onclick="filterTasks('completed')">Completed</button>
+                        <button class="tab-btn" onclick="filterTasks('overdue')">Overdue</button>
+                    </div>
+                    <div id="tasks-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goals Tab -->
+        <div id="goals" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-bullseye"></i> Goal Tracking</h2>
+                
+                <div class="input-group">
+                    <label>Goal Title</label>
+                    <input type="text" id="goal-title" placeholder="Enter goal title">
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="goal-description" placeholder="Describe your goal" rows="3"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Target Date</label>
+                    <input type="date" id="goal-target-date">
+                </div>
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="goal-category">
+                        <option value="personal">Personal</option>
+                        <option value="career">Career</option>
+                        <option value="health">Health</option>
+                        <option value="financial">Financial</option>
+                        <option value="education">Education</option>
+                        <option value="relationships">Relationships</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="addGoal()">
+                    <i class="fas fa-plus"></i> Add Goal
+                </button>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Your Goals</h3>
+                    <div id="goals-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Habits Tab -->
+        <div id="habits" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-heart"></i> Habit Tracker</h2>
+                
+                <div class="input-group">
+                    <label>Habit Name</label>
+                    <input type="text" id="habit-name" placeholder="Enter habit name">
+                </div>
+                <div class="input-group">
+                    <label>Frequency</label>
+                    <select id="habit-frequency">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="habit-category">
+                        <option value="health">Health</option>
+                        <option value="fitness">Fitness</option>
+                        <option value="learning">Learning</option>
+                        <option value="productivity">Productivity</option>
+                        <option value="mindfulness">Mindfulness</option>
+                        <option value="social">Social</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="addHabit()">
+                    <i class="fas fa-plus"></i> Add Habit
+                </button>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Today's Habits</h3>
+                    <div id="habits-container"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="habitsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expenses Tab -->
+        <div id="expenses" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-wallet"></i> Multi-Currency Expense Tracker</h2>
+                
+                <div class="currency-selector">
+                    <label class="font-semibold">Active Currency:</label>
+                    <button class="currency-btn active" onclick="setCurrency('PKR', '₨')" data-currency="PKR">
+                        <i class="fas fa-coins"></i> PKR
+                    </button>
+                    <button class="currency-btn" onclick="setCurrency('USD', '$')" data-currency="USD">
+                        <i class="fas fa-dollar-sign"></i> USD
+                    </button>
+                    <button class="currency-btn" onclick="setCurrency('EUR', '€')" data-currency="EUR">
+                        <i class="fas fa-euro-sign"></i> EUR
+                    </button>
+                    <button class="currency-btn" onclick="setCurrency('GBP', '£')" data-currency="GBP">
+                        <i class="fas fa-pound-sign"></i> GBP
+                    </button>
+                    <button class="currency-btn" onclick="setCurrency('AED', 'د.إ')" data-currency="AED">
+                        <i class="fas fa-coins"></i> AED
+                    </button>
+                    <button class="currency-btn" onclick="setCurrency('SAR', '﷼')" data-currency="SAR">
+                        <i class="fas fa-coins"></i> SAR
+                    </button>
+                    <button class="currency-btn" onclick="setCurrency('CAD', 'C$')" data-currency="CAD">
+                        <i class="fas fa-dollar-sign"></i> CAD
+                    </button>
+                    <button class="currency-btn" onclick="setCurrency('AUD', 'A$')" data-currency="AUD">
+                        <i class="fas fa-dollar-sign"></i> AUD
+                    </button>
+                </div>
+                
+                <div class="expense-summary">
+                    <div class="summary-card">
+                        <h3>Today's Expenses</h3>
+                        <div class="amount" id="today-expenses">PKR 0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>This Month</h3>
+                        <div class="amount" id="month-expenses">PKR 0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Budget Remaining</h3>
+                        <div class="amount" id="budget-remaining">PKR 50,000</div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label>Amount (<span id="currency-symbol">PKR</span>)</label>
+                    <input type="number" id="expense-amount" placeholder="Enter amount" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="expense-category">
+                        <option value="food">Food & Dining</option>
+                        <option value="transport">Transportation</option>
+                        <option value="shopping">Shopping</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="bills">Bills & Utilities</option>
+                        <option value="health">Health & Medical</option>
+                        <option value="education">Education</option>
+                        <option value="travel">Travel</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <input type="text" id="expense-description" placeholder="Enter description">
+                </div>
+                <div class="input-group">
+                    <label>Date</label>
+                    <input type="date" id="expense-date">
+                </div>
+                <button class="btn" onclick="addExpense()">
+                    <i class="fas fa-plus"></i> Add Expense
+                </button>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Currency Converter</h3>
+                    <div class="flex gap-4 items-end">
+                        <div class="input-group flex-1">
+                            <label>From</label>
+                            <select id="convert-from">
+                                <option value="PKR">PKR</option>
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="AED">AED</option>
+                                <option value="SAR">SAR</option>
+                                <option value="CAD">CAD</option>
+                                <option value="AUD">AUD</option>
+                            </select>
+                        </div>
+                        <div class="input-group flex-1">
+                            <label>Amount</label>
+                            <input type="number" id="convert-amount" placeholder="Enter amount">
+                        </div>
+                        <div class="input-group flex-1">
+                            <label>To</label>
+                            <select id="convert-to">
+                                <option value="USD">USD</option>
+                                <option value="PKR">PKR</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="AED">AED</option>
+                                <option value="SAR">SAR</option>
+                                <option value="CAD">CAD</option>
+                                <option value="AUD">AUD</option>
+                            </select>
+                        </div>
+                        <button class="btn" onclick="convertCurrency()">
+                            <i class="fas fa-exchange-alt"></i> Convert
+                        </button>
+                    </div>
+                    <div class="mt-4 p-4 bg-gray-100 rounded-lg">
+                        <div id="conversion-result" class="text-lg font-semibold">Enter amount to convert</div>
+                        <div id="exchange-rate" class="text-sm text-gray-600 mt-2"></div>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Expense History</h3>
+                    <div class="tab-container">
+                        <button class="tab-btn active" onclick="filterExpenses('all')">All</button>
+                        <button class="tab-btn" onclick="filterExpenses('today')">Today</button>
+                        <button class="tab-btn" onclick="filterExpenses('week')">This Week</button>
+                        <button class="tab-btn" onclick="filterExpenses('month')">This Month</button>
+                    </div>
+                    <div id="expenses-container"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes Tab -->
+        <div id="notes" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-sticky-note"></i> Notes & Journal</h2>
+                
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="note-search" placeholder="Search notes..." onkeyup="searchNotes()">
+                </div>
+                
+                <div class="input-group">
+                    <label>Note Title</label>
+                    <input type="text" id="note-title" placeholder="Enter note title">
+                </div>
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="note-category">
+                        <option value="personal">Personal</option>
+                        <option value="work">Work</option>
+                        <option value="ideas">Ideas</option>
+                        <option value="journal">Journal</option>
+                        <option value="meetings">Meetings</option>
+                        <option value="projects">Projects</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Content</label>
+                    <textarea id="note-content" placeholder="Write your note here..." rows="6"></textarea>
+                </div>
+                <button class="btn" onclick="addNote()">
+                    <i class="fas fa-plus"></i> Add Note
+                </button>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Your Notes</h3>
+                    <div class="tab-container">
+                        <button class="tab-btn active" onclick="filterNotes('all')">All</button>
+                        <button class="tab-btn" onclick="filterNotes('personal')">Personal</button>
+                        <button class="tab-btn" onclick="filterNotes('work')">Work</button>
+                        <button class="tab-btn" onclick="filterNotes('ideas')">Ideas</button>
+                        <button class="tab-btn" onclick="filterNotes('journal')">Journal</button>
+                    </div>
+                    <div class="notes-grid" id="notes-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contacts Tab -->
+        <div id="contacts" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-address-book"></i> Contacts</h2>
+                
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="contact-search" placeholder="Search contacts..." onkeyup="searchContacts()">
+                </div>
+                
+                <div class="input-group">
+                    <label>Name</label>
+                    <input type="text" id="contact-name" placeholder="Enter full name">
+                </div>
+                <div class="input-group">
+                    <label>Phone</label>
+                    <input type="tel" id="contact-phone" placeholder="Enter phone number">
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="contact-email" placeholder="Enter email address">
+                </div>
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="contact-category">
+                        <option value="personal">Personal</option>
+                        <option value="work">Work</option>
+                        <option value="family">Family</option>
+                        <option value="friends">Friends</option>
+                        <option value="business">Business</option>
+                        <option value="emergency">Emergency</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Notes</label>
+                    <textarea id="contact-notes" placeholder="Additional notes about this contact" rows="3"></textarea>
+                </div>
+                <button class="btn" onclick="addContact()">
+                    <i class="fas fa-plus"></i> Add Contact
+                </button>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Contact List</h3>
+                    <div class="tab-container">
+                        <button class="tab-btn active" onclick="filterContacts('all')">All</button>
+                        <button class="tab-btn" onclick="filterContacts('personal')">Personal</button>
+                        <button class="tab-btn" onclick="filterContacts('work')">Work</button>
+                        <button class="tab-btn" onclick="filterContacts('family')">Family</button>
+                        <button class="tab-btn" onclick="filterContacts('emergency')">Emergency</button>
+                    </div>
+                    <div id="contacts-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentTab = 'dashboard';
+        let currentCurrency = 'PKR';
+        let currentCurrencySymbol = '₨';
+        let currentDate = new Date();
+        let selectedDate = null;
+        
+        // Exchange rates (PKR as base)
+        const exchangeRates = {
+            PKR: 1,
+            USD: 0.0036,
+            EUR: 0.0033,
+            GBP: 0.0028,
+            AED: 0.013,
+            SAR: 0.013,
+            CAD: 0.0049,
+            AUD: 0.0054
+        };
+
+        // Data storage
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let goals = JSON.parse(localStorage.getItem('goals')) || [];
+        let habits = JSON.parse(localStorage.getItem('habits')) || [];
+        let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+        let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+        let events = JSON.parse(localStorage.getItem('events')) || [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCalendar();
+            loadAllData();
+            updateDashboard();
+            setCurrentDate();
+            initializeCharts();
+        });
+
+        // Tab Management
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            currentTab = tabName;
+            
+            if (tabName === 'dashboard') {
+                updateDashboard();
+            } else if (tabName === 'calendar') {
+                initializeCalendar();
+            } else if (tabName === 'expenses') {
+                loadExpenses();
+                updateExpenseSummary();
+            }
+        }
+
+        // Currency Management
+        function setCurrency(currency, symbol) {
+            currentCurrency = currency;
+            currentCurrencySymbol = symbol;
+            
+            document.querySelectorAll('.currency-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-currency="${currency}"]`).classList.add('active');
+            
+            document.getElementById('currency-symbol').textContent = symbol;
+            updateExpenseSummary();
+        }
+
+        function convertCurrency() {
+            const fromCurrency = document.getElementById('convert-from').value;
+            const toCurrency = document.getElementById('convert-to').value;
+            const amount = parseFloat(document.getElementById('convert-amount').value);
+            
+            if (!amount || amount <= 0) {
+                document.getElementById('conversion-result').textContent = 'Please enter a valid amount';
+                return;
+            }
+            
+            // Convert to PKR first, then to target currency
+            const pkrAmount = fromCurrency === 'PKR' ? amount : amount / exchangeRates[fromCurrency];
+            const convertedAmount = toCurrency === 'PKR' ? pkrAmount : pkrAmount * exchangeRates[toCurrency];
+            
+            const rate = exchangeRates[toCurrency] / exchangeRates[fromCurrency];
+            
+            document.getElementById('conversion-result').textContent = 
+                `${amount} ${fromCurrency} = ${convertedAmount.toFixed(2)} ${toCurrency}`;
+            document.getElementById('exchange-rate').textContent = 
+                `Exchange Rate: 1 ${fromCurrency} = ${rate.toFixed(4)} ${toCurrency}`;
+        }
+
+        // Calendar Functions
+        function initializeCalendar() {
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            document.getElementById('calendar-month-year').textContent = 
+                `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+            
+            generateCalendarDays();
+            loadEvents();
+        }
+
+        function generateCalendarDays() {
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            const calendarDays = document.getElementById('calendar-days');
+            calendarDays.innerHTML = '';
+            
+            for (let i = 0; i < 42; i++) {
+                const day = new Date(startDate);
+                day.setDate(startDate.getDate() + i);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day.getDate();
+                
+                if (day.getMonth() !== currentDate.getMonth()) {
+                    dayElement.style.opacity = '0.3';
+                }
+                
+                if (day.toDateString() === new Date().toDateString()) {
+                    dayElement.classList.add('today');
+                }
+                
+                if (selectedDate && day.toDateString() === selectedDate.toDateString()) {
+                    dayElement.classList.add('selected');
+                }
+                
+                dayElement.addEventListener('click', () => {
+                    document.querySelectorAll('.calendar-day.selected').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    dayElement.classList.add('selected');
+                    selectedDate = day;
+                    document.getElementById('event-date').value = day.toISOString().split('T')[0];
+                });
+                
+                calendarDays.appendChild(dayElement);
+            }
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            initializeCalendar();
+        }
+
+        function setCurrentDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('event-date').value = today;
+            document.getElementById('task-date').value = today;
+            document.getElementById('expense-date').value = today;
+        }
+
+        // Event Functions
+        function addEvent() {
+            const title = document.getElementById('event-title').value;
+            const date = document.getElementById('event-date').value;
+            const time = document.getElementById('event-time').value;
+            
+            if (!title || !date) {
+                alert('Please enter event title and date');
+                return;
+            }
+            
+            const event = {
+                id: Date.now(),
+                title,
+                date,
+                time,
+                created: new Date().toISOString()
+            };
+            
+            events.push(event);
+            localStorage.setItem('events', JSON.stringify(events));
+            
+            document.getElementById('event-title').value = '';
+            document.getElementById('event-time').value = '';
+            
+            loadEvents();
+            updateDashboard();
+        }
+
+        function loadEvents() {
+            const container = document.getElementById('events-container');
+            container.innerHTML = '';
+            
+            const sortedEvents = events.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            sortedEvents.forEach(event => {
+                const eventElement = document.createElement('div');
+                eventElement.className = 'task-item';
+                eventElement.innerHTML = `
+                    <div class="flex-1">
+                        <h4 class="font-semibold">${event.title}</h4>
+                        <p class="text-sm text-gray-600">${event.date} ${event.time || ''}</p>
+                    </div>
+                    <button class="btn btn-sm btn-danger" onclick="deleteEvent(${event.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(eventElement);
+            });
+        }
+
+        function deleteEvent(id) {
+            events = events.filter(event => event.id !== id);
+            localStorage.setItem('events', JSON.stringify(events));
+            loadEvents();
+            updateDashboard();
+        }
+
+        // Task Functions
+        function addTask() {
+            const title = document.getElementById('task-title').value;
+            const priority = document.getElementById('task-priority').value;
+            const date = document.getElementById('task-date').value;
+            const category = document.getElementById('task-category').value;
+            
+            if (!title) {
+                alert('Please enter task title');
+                return;
+            }
+            
+            const task = {
+                id: Date.now(),
+                title,
+                priority,
+                date,
+                category,
+                completed: false,
+                created: new Date().toISOString()
+            };
+            
+            tasks.push(task);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            
+            document.getElementById('task-title').value = '';
+            document.getElementById('task-priority').value = 'low';
+            document.getElementById('task-category').value = 'personal';
+            
+            loadTasks();
+            updateDashboard();
+        }
+
+        function loadTasks() {
+            const container = document.getElementById('tasks-container');
+            container.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = `task-item priority-${task.priority} ${task.completed ? 'completed' : ''}`;
+                taskElement.innerHTML = `
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} 
+                           onchange="toggleTask(${task.id})">
+                    <div class="flex-1">
+                        <h4 class="font-semibold">${task.title}</h4>
+                        <p class="text-sm text-gray-600">${task.category} • ${task.date}</p>
+                    </div>
+                    <span class="bg-${task.priority === 'high' ? 'red' : task.priority === 'medium' ? 'yellow' : 'green'}-200 text-${task.priority === 'high' ? 'red' : task.priority === 'medium' ? 'yellow' : 'green'}-800 px-2 py-1 rounded text-xs">
+                        ${task.priority.toUpperCase()}
+                    </span>
+                    <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(taskElement);
+            });
+        }
+
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+                loadTasks();
+                updateDashboard();
+            }
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            loadTasks();
+            updateDashboard();
+        }
+
+        function searchTasks() {
+            const query = document.getElementById('task-search').value.toLowerCase();
+            const taskItems = document.querySelectorAll('#tasks-container .task-item');
+            
+            taskItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? 'flex' : 'none';
+            });
+        }
+
+        function filterTasks(filter) {
+            const container = document.getElementById('tasks-container');
+            const taskItems = container.querySelectorAll('.task-item');
+            
+            taskItems.forEach(item => {
+                const isCompleted = item.classList.contains('completed');
+                const taskDate = new Date(item.querySelector('p').textContent.split(' • ')[1]);
+                const today = new Date();
+                const isOverdue = taskDate < today && !isCompleted;
+                
+                let show = true;
+                if (filter === 'pending') show = !isCompleted;
+                else if (filter === 'completed') show = isCompleted;
+                else if (filter === 'overdue') show = isOverdue;
+                
+                item.style.display = show ? 'flex' : 'none';
+            });
+        }
+
+        // Goal Functions
+        function addGoal() {
+            const title = document.getElementById('goal-title').value;
+            const description = document.getElementById('goal-description').value;
+            const targetDate = document.getElementById('goal-target-date').value;
+            const category = document.getElementById('goal-category').value;
+            
+            if (!title) {
+                alert('Please enter goal title');
+                return;
+            }
+            
+            const goal = {
+                id: Date.now(),
+                title,
+                description,
+                targetDate,
+                category,
+                progress: 0,
+                created: new Date().toISOString()
+            };
+            
+            goals.push(goal);
+            localStorage.setItem('goals', JSON.stringify(goals));
+            
+            document.getElementById('goal-title').value = '';
+            document.getElementById('goal-description').value = '';
+            document.getElementById('goal-target-date').value = '';
+            document.getElementById('goal-category').value = 'personal';
+            
+            loadGoals();
+            updateDashboard();
+        }
+
+        function loadGoals() {
+            const container = document.getElementById('goals-container');
+            container.innerHTML = '';
+            
+            goals.forEach(goal => {
+                const goalElement = document.createElement('div');
+                goalElement.className = 'task-item';
+                goalElement.innerHTML = `
+                    <div class="flex-1">
+                        <h4 class="font-semibold">${goal.title}</h4>
+                        <p class="text-sm text-gray-600">${goal.description}</p>
+                        <p class="text-xs text-gray-500">${goal.category} • Target: ${goal.targetDate}</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${goal.progress}%"></div>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1">${goal.progress}% Complete</p>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <button class="btn btn-sm" onclick="updateGoalProgress(${goal.id})">
+                            <i class="fas fa-plus"></i> Update
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteGoal(${goal.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(goalElement);
+            });
+        }
+
+        function updateGoalProgress(id) {
+            const goal = goals.find(g => g.id === id);
+            if (goal) {
+                const newProgress = prompt(`Update progress for "${goal.title}" (0-100):`, goal.progress);
+                if (newProgress !== null) {
+                    const progress = Math.max(0, Math.min(100, parseInt(newProgress) || 0));
+                    goal.progress = progress;
+                    localStorage.setItem('goals', JSON.stringify(goals));
+                    loadGoals();
+                    updateDashboard();
+                }
+            }
+        }
+
+        function deleteGoal(id) {
+            goals = goals.filter(goal => goal.id !== id);
+            localStorage.setItem('goals', JSON.stringify(goals));
+            loadGoals();
+            updateDashboard();
+        }
+
+        // Habit Functions
+        function addHabit() {
+            const name = document.getElementById('habit-name').value;
+            const frequency = document.getElementById('habit-frequency').value;
+            const category = document.getElementById('habit-category').value;
+            
+            if (!name) {
+                alert('Please enter habit name');
+                return;
+            }
+            
+            const habit = {
+                id: Date.now(),
+                name,
+                frequency,
+                category,
+                streak: 0,
+                lastCompleted: null,
+                completedDates: [],
+                created: new Date().toISOString()
+            };
+            
+            habits.push(habit);
+            localStorage.setItem('habits', JSON.stringify(habits));
+            
+            document.getElementById('habit-name').value = '';
+            document.getElementById('habit-frequency').value = 'daily';
+            document.getElementById('habit-category').value = 'health';
+            
+            loadHabits();
+            updateDashboard();
+        }
+
+        function loadHabits() {
+            const container = document.getElementById('habits-container');
+            container.innerHTML = '';
+            
+            habits.forEach(habit => {
+                const today = new Date().toISOString().split('T')[0];
+                const completedToday = habit.completedDates.includes(today);
+                
+                const habitElement = document.createElement('div');
+                habitElement.className = 'habit-item';
+                habitElement.innerHTML = `
+                    <div class="flex-1">
+                        <h4 class="font-semibold">${habit.name}</h4>
+                        <p class="text-sm text-gray-600">${habit.category} • ${habit.frequency}</p>
+                        <div class="habit-streak">
+                            ${generateStreakDays(habit.completedDates)}
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1">Current Streak: ${habit.streak} days</p>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <button class="btn btn-sm ${completedToday ? 'bg-green-500' : ''}" 
+                                onclick="toggleHabit(${habit.id})">
+                            <i class="fas fa-check"></i> ${completedToday ? 'Done' : 'Mark'}
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteHabit(${habit.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(habitElement);
+            });
+        }
+
+        function generateStreakDays(completedDates) {
+            const last7Days = [];
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                last7Days.push(dateStr);
+            }
+            
+            return last7Days.map(date => {
+                const completed = completedDates.includes(date);
+                return `<div class="streak-day ${completed ? 'completed' : ''}">
+                    ${completed ? '✓' : '○'}
+                </div>`;
+            }).join('');
+        }
+
+        function toggleHabit(id) {
+            const habit = habits.find(h => h.id === id);
+            if (habit) {
+                const today = new Date().toISOString().split('T')[0];
+                const completedToday = habit.completedDates.includes(today);
+                
+                if (completedToday) {
+                    habit.completedDates = habit.completedDates.filter(date => date !== today);
+                    habit.streak = Math.max(0, habit.streak - 1);
+                } else {
+                    habit.completedDates.push(today);
+                    habit.streak += 1;
+                    habit.lastCompleted = today;
+                }
+                
+                localStorage.setItem('habits', JSON.stringify(habits));
+                loadHabits();
+                updateDashboard();
+            }
+        }
+
+        function deleteHabit(id) {
+            habits = habits.filter(habit => habit.id !== id);
+            localStorage.setItem('habits', JSON.stringify(habits));
+            loadHabits();
+            updateDashboard();
+        }
+
+        // Expense Functions
+        function addExpense() {
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const category = document.getElementById('expense-category').value;
+            const description = document.getElementById('expense-description').value;
+            const date = document.getElementById('expense-date').value;
+            
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            const expense = {
+                id: Date.now(),
+                amount,
+                currency: currentCurrency,
+                category,
+                description,
+                date,
+                created: new Date().toISOString()
+            };
+            
+            expenses.push(expense);
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            
+            document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-description').value = '';
+            document.getElementById('expense-category').value = 'food';
+            
+            loadExpenses();
+            updateExpenseSummary();
+            updateDashboard();
+        }
+
+        function loadExpenses() {
+            const container = document.getElementById('expenses-container');
+            container.innerHTML = '';
+            
+            const sortedExpenses = expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedExpenses.forEach(expense => {
+                const expenseElement = document.createElement('div');
+                expenseElement.className = 'expense-item';
+                expenseElement.innerHTML = `
+                    <div class="flex-1">
+                        <h4 class="font-semibold">${expense.description}</h4>
+                        <p class="text-sm text-gray-600">${expense.category} • ${expense.date}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold">${expense.currency} ${expense.amount}</p>
+                        <button class="btn btn-sm btn-danger mt-1" onclick="deleteExpense(${expense.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(expenseElement);
+            });
+        }
+
+        function updateExpenseSummary() {
+            const today = new Date().toISOString().split('T')[0];
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            
+            const todayExpenses = expenses.filter(e => e.date === today);
+            const monthExpenses = expenses.filter(e => e.date.startsWith(currentMonth));
+            
+            const todayTotal = todayExpenses.reduce((sum, e) => {
+                const pkrAmount = e.currency === 'PKR' ? e.amount : e.amount / exchangeRates[e.currency];
+                return sum + pkrAmount;
+            }, 0);
+            
+            const monthTotal = monthExpenses.reduce((sum, e) => {
+                const pkrAmount = e.currency === 'PKR' ? e.amount : e.amount / exchangeRates[e.currency];
+                return sum + pkrAmount;
+            }, 0);
+            
+            const budgetLimit = 50000;
+            const remaining = budgetLimit - monthTotal;
+            
+            document.getElementById('today-expenses').textContent = `PKR ${todayTotal.toFixed(2)}`;
+            document.getElementById('month-expenses').textContent = `PKR ${monthTotal.toFixed(2)}`;
+            document.getElementById('budget-remaining').textContent = `PKR ${remaining.toFixed(2)}`;
+        }
+
+        function deleteExpense(id) {
+            expenses = expenses.filter(expense => expense.id !== id);
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            loadExpenses();
+            updateExpenseSummary();
+            updateDashboard();
+        }
+
+        function filterExpenses(filter) {
+            const container = document.getElementById('expenses-container');
+            const expenseItems = container.querySelectorAll('.expense-item');
+            
+            const today = new Date().toISOString().split('T')[0];
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const monthAgo = new Date();
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            
+            expenseItems.forEach(item => {
+                const dateText = item.querySelector('p').textContent.split(' • ')[1];
+                const expenseDate = new Date(dateText);
+                
+                let show = true;
+                if (filter === 'today') show = dateText === today;
+                else if (filter === 'week') show = expenseDate >= weekAgo;
+                else if (filter === 'month') show = expenseDate >= monthAgo;
+                
+                item.style.display = show ? 'flex' : 'none';
+            });
+        }
+
+        // Note Functions
+        function addNote() {
+            const title = document.getElementById('note-title').value;
+            const category = document.getElementById('note-category').value;
+            const content = document.getElementById('note-content').value;
+            
+            if (!title || !content) {
+                alert('Please enter note title and content');
+                return;
+            }
+            
+            const note = {
+                id: Date.now(),
+                title,
+                category,
+                content,
+                created: new Date().toISOString()
+            };
+            
+            notes.push(note);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            
+            document.getElementById('note-title').value = '';
+            document.getElementById('note-content').value = '';
+            document.getElementById('note-category').value = 'personal';
+            
+            loadNotes();
+        }
+
+        function loadNotes() {
+            const container = document.getElementById('notes-container');
+            container.innerHTML = '';
+            
+            const sortedNotes = notes.sort((a, b) => new Date(b.created) - new Date(a.created));
+            
+            sortedNotes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'note-card';
+                noteElement.innerHTML = `
+                    <h4>${note.title}</h4>
+                    <p class="text-sm text-gray-600">${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}</p>
+                    <p class="date">${note.category} • ${new Date(note.created).toLocaleDateString()}</p>
+                    <button class="btn btn-sm btn-danger mt-2" onclick="deleteNote(${note.id})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                `;
+                container.appendChild(noteElement);
+            });
+        }
+
+        function deleteNote(id) {
+            notes = notes.filter(note => note.id !== id);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            loadNotes();
+        }
+
+        function searchNotes() {
+            const query = document.getElementById('note-search').value.toLowerCase();
+            const noteCards = document.querySelectorAll('.note-card');
+            
+            noteCards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(query) ? 'block' : 'none';
+            });
+        }
+
+        function filterNotes(filter) {
+            const noteCards = document.querySelectorAll('.note-card');
+            
+            noteCards.forEach(card => {
+                const category = card.querySelector('.date').textContent.split(' • ')[0];
+                const show = filter === 'all' || category === filter;
+                card.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        // Contact Functions
+        function addContact() {
+            const name = document.getElementById('contact-name').value;
+            const phone = document.getElementById('contact-phone').value;
+            const email = document.getElementById('contact-email').value;
+            const category = document.getElementById('contact-category').value;
+            const contactNotes = document.getElementById('contact-notes').value;
+            
+            if (!name || !phone) {
+                alert('Please enter name and phone number');
+                return;
+            }
+            
+            const contact = {
+                id: Date.now(),
+                name,
+                phone,
+                email,
+                category,
+                notes: contactNotes,
+                created: new Date().toISOString()
+            };
+            
+            contacts.push(contact);
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            
+            document.getElementById('contact-name').value = '';
+            document.getElementById('contact-phone').value = '';
+            document.getElementById('contact-email').value = '';
+            document.getElementById('contact-notes').value = '';
+            document.getElementById('contact-category').value = 'personal';
+            
+            loadContacts();
+        }
+
+        function loadContacts() {
+            const container = document.getElementById('contacts-container');
+            container.innerHTML = '';
+            
+            const sortedContacts = contacts.sort((a, b) => a.name.localeCompare(b.name));
+            
+            sortedContacts.forEach(contact => {
+                const contactElement = document.createElement('div');
+                contactElement.className = 'contact-item';
+                contactElement.innerHTML = `
+                    <div class="flex-1">
+                        <h4 class="font-semibold">${contact.name}</h4>
+                        <p class="text-sm text-gray-600">
+                            <i class="fas fa-phone"></i> ${contact.phone}
+                        </p>
+                        ${contact.email ? `<p class="text-sm text-gray-600">
+                            <i class="fas fa-envelope"></i> ${contact.email}
+                        </p>` : ''}
+                        <p class="text-xs text-gray-500">${contact.category}</p>
+                        ${contact.notes ? `<p class="text-xs text-gray-500">${contact.notes}</p>` : ''}
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <a href="tel:${contact.phone}" class="btn btn-sm">
+                            <i class="fas fa-phone"></i> Call
+                        </a>
+                        ${contact.email ? `<a href="mailto:${contact.email}" class="btn btn-sm">
+                            <i class="fas fa-envelope"></i> Email
+                        </a>` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="deleteContact(${contact.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(contactElement);
+            });
+        }
+
+        function deleteContact(id) {
+            contacts = contacts.filter(contact => contact.id !== id);
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            loadContacts();
+        }
+
+        function searchContacts() {
+            const query = document.getElementById('contact-search').value.toLowerCase();
+            const contactItems = document.querySelectorAll('.contact-item');
+            
+            contactItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? 'flex' : 'none';
+            });
+        }
+
+        function filterContacts(filter) {
+            const contactItems = document.querySelectorAll('.contact-item');
+            
+            contactItems.forEach(item => {
+                const category = item.querySelector('.text-xs').textContent;
+                const show = filter === 'all' || category === filter;
+                item.style.display = show ? 'flex' : 'none';
+            });
+        }
+
+        // Dashboard Functions
+        function updateDashboard() {
+            // Update task stats
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(t => t.completed).length;
+            const taskProgress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+            
+            document.getElementById('dashboard-tasks').textContent = `${completedTasks}/${totalTasks}`;
+            document.getElementById('dashboard-tasks-progress').style.width = `${taskProgress}%`;
+            
+            // Update goal stats
+            const totalGoals = goals.length;
+            const avgGoalProgress = totalGoals > 0 ? 
+                goals.reduce((sum, g) => sum + g.progress, 0) / totalGoals : 0;
+            
+            document.getElementById('dashboard-goals').textContent = `${avgGoalProgress.toFixed(0)}%`;
+            document.getElementById('dashboard-goals-progress').style.width = `${avgGoalProgress}%`;
+            
+            // Update habit stats
+            const today = new Date().toISOString().split('T')[0];
+            const totalHabits = habits.length;
+            const completedHabits = habits.filter(h => h.completedDates.includes(today)).length;
+            const habitProgress = totalHabits > 0 ? (completedHabits / totalHabits) * 100 : 0;
+            
+            document.getElementById('dashboard-habits').textContent = `${completedHabits}/${totalHabits}`;
+            document.getElementById('dashboard-habits-progress').style.width = `${habitProgress}%`;
+            
+            // Update expense stats
+            const todayExpenses = expenses.filter(e => e.date === today);
+            const todayTotal = todayExpenses.reduce((sum, e) => {
+                const pkrAmount = e.currency === 'PKR' ? e.amount : e.amount / exchangeRates[e.currency];
+                return sum + pkrAmount;
+            }, 0);
+            
+            document.getElementById('dashboard-expenses').textContent = `PKR ${todayTotal.toFixed(2)}`;
+        }
+
+        // Chart Functions
+        function initializeCharts() {
+            // Dashboard Chart
+            const dashboardCtx = document.getElementById('dashboardChart').getContext('2d');
+            new Chart(dashboardCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Tasks', 'Goals', 'Habits', 'Notes'],
+                    datasets: [{
+                        data: [tasks.length, goals.length, habits.length, notes.length],
+                        backgroundColor: ['#667eea', '#764ba2', '#48bb78', '#ed8936']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Habits Chart
+            const habitsCtx = document.getElementById('habitsChart').getContext('2d');
+            new Chart(habitsCtx, {
+                type: 'bar',
+                data: {
+                    labels: habits.map(h => h.name),
+                    datasets: [{
+                        label: 'Streak Days',
+                        data: habits.map(h => h.streak),
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Expense Chart
+            const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+            const expenseCategories = {};
+            expenses.forEach(expense => {
+                if (expenseCategories[expense.category]) {
+                    expenseCategories[expense.category] += expense.amount;
+                } else {
+                    expenseCategories[expense.category] = expense.amount;
+                }
+            });
+            
+            new Chart(expenseCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(expenseCategories),
+                    datasets: [{
+                        data: Object.values(expenseCategories),
+                        backgroundColor: [
+                            '#667eea', '#764ba2', '#48bb78', '#ed8936', 
+                            '#f56565', '#9f7aea', '#4fd1c7', '#fc8181'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Data Loading
+        function loadAllData() {
+            loadTasks();
+            loadGoals();
+            loadHabits();
+            loadExpenses();
+            loadNotes();
+            loadContacts();
+            loadEvents();
+            updateExpenseSummary();
+        }
+
+        // Touch and Mobile Optimizations
+        document.addEventListener('touchstart', function(e) {
+            // Handle touch events for mobile
+        });
+
+        // Auto-save functionality
+        setInterval(function() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            localStorage.setItem('goals', JSON.stringify(goals));
+            localStorage.setItem('habits', JSON.stringify(habits));
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            localStorage.setItem('notes', JSON.stringify(notes));
+            localStorage.setItem('contacts', JSON.stringify(contacts));
+            localStorage.setItem('events', JSON.stringify(events));
+        }, 30000); // Auto-save every 30 seconds
+    </script>
+</body>
+</html>
