@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mera Budget - Digital Personal Finance Manager</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #a78bfa; /* purple-400 */
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #8b5cf6; /* purple-500 */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-200 to-purple-300 min-h-screen flex items-center justify-center p-4">
+    <div id="root"></div>
+
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel CDN - for JSX transformation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        const translations = {
+            ur: {
+                appTitle: "میرا بجٹ - ڈیجیٹل فنانس مینیجر",
+                dashboard: "ڈیش بورڈ",
+                transactions: "ٹرانزیکشنز",
+                savingsGoals: "بچت کے مقاصد",
+                reports: "رپورٹس",
+                currentBalance: "موجودہ بیلنس",
+                totalIncome: "کل آمدنی",
+                totalExpenses: "کل اخراجات",
+                addTransaction: "ٹرانزیکشن شامل کریں",
+                type: "قسم",
+                income: "آمدنی",
+                expense: "اخراجات",
+                amount: "رقم",
+                category: "کیٹیگری",
+                description: "تفصیل",
+                date: "تاریخ",
+                add: "شامل کریں",
+                recentTransactions: "حالیہ ٹرانزیکشنز",
+                noTransactions: "کوئی ٹرانزیکشن نہیں ملی۔",
+                delete: "حذف کریں",
+                savingsGoalsList: "بچت کے مقاصد کی فہرست",
+                addGoal: "نیا مقصد شامل کریں",
+                goalName: "مقصد کا نام",
+                targetAmount: "ہدف کی رقم",
+                savedAmount: "محفوظ شدہ رقم",
+                noGoals: "کوئی بچت کا مقصد نہیں ملا۔",
+                progress: "پیشرفت",
+                monthlySummary: "ماہانہ خلاصہ",
+                selectMonthYear: "مہینہ اور سال منتخب کریں:",
+                expenseBreakdown: "اخراجات کی تفصیل (کیٹیگری کے لحاظ سے)",
+                noReportsData: "اس مہینے کے لیے کوئی رپورٹ ڈیٹا نہیں۔",
+                selectLanguage: "زبان منتخب کریں:",
+                food: "کھانا",
+                transport: "ٹرانسپورٹ",
+                utilities: "یوٹیلیٹیز",
+                education: "تعلیم",
+                shopping: "خریداری",
+                health: "صحت",
+                entertainment: "تفریح",
+                salary: "تنخواہ",
+                freelance: "فری لانس",
+                gift: "تحفہ",
+                investment: "سرمایہ کاری",
+                other: "دیگر",
+                loading: "لوڈ ہو رہا ہے...",
+                downloadFailed: "ڈاؤن لوڈ ناکام ہو گیا۔ براہ کرم اسکرین شاٹ لینے کی کوشش کریں۔"
+            },
+            en: {
+                appTitle: "Mera Budget - Digital Finance Manager",
+                dashboard: "Dashboard",
+                transactions: "Transactions",
+                savingsGoals: "Savings Goals",
+                reports: "Reports",
+                currentBalance: "Current Balance",
+                totalIncome: "Total Income",
+                totalExpenses: "Total Expenses",
+                addTransaction: "Add Transaction",
+                type: "Type",
+                income: "Income",
+                expense: "Expense",
+                amount: "Amount",
+                category: "Category",
+                description: "Description",
+                date: "Date",
+                add: "Add",
+                recentTransactions: "Recent Transactions",
+                noTransactions: "No transactions found.",
+                delete: "Delete",
+                savingsGoalsList: "Savings Goals List",
+                addGoal: "Add New Goal",
+                goalName: "Goal Name",
+                targetAmount: "Target Amount",
+                savedAmount: "Saved Amount",
+                noGoals: "No savings goals found.",
+                progress: "Progress",
+                monthlySummary: "Monthly Summary",
+                selectMonthYear: "Select Month & Year:",
+                expenseBreakdown: "Expense Breakdown (by Category)",
+                noReportsData: "No report data for this month.",
+                selectLanguage: "Select Language:",
+                food: "Food",
+                transport: "Transport",
+                utilities: "Utilities",
+                education: "Education",
+                shopping: "Shopping",
+                health: "Health",
+                entertainment: "Entertainment",
+                salary: "Salary",
+                freelance: "Freelance",
+                gift: "Gift",
+                investment: "Investment",
+                other: "Other",
+                loading: "Loading...",
+                downloadFailed: "Download failed. Please try taking a screenshot instead."
+            }
+        };
+
+        const App = () => {
+            const [language, setLanguage] = React.useState('ur'); // Default to Urdu
+            const t = translations[language]; // Get current language translations
+
+            const [currentView, setCurrentView] = React.useState('dashboard'); // 'dashboard', 'addTransaction', 'savingsGoals', 'reports'
+            const [transactions, setTransactions] = React.useState([]);
+            const [savingsGoals, setSavingsGoals] = React.useState([]);
+
+            // Form states for adding new transaction
+            const [newTransaction, setNewTransaction] = React.useState({
+                type: 'expense',
+                amount: '',
+                category: 'Food',
+                description: '',
+                date: new Date().toISOString().split('T')[0] //YYYY-MM-DD format
+            });
+
+            // Form states for adding new goal
+            const [newGoal, setNewGoal] = React.useState({
+                name: '',
+                targetAmount: '',
+                savedAmount: '0'
+            });
+
+            // Report filter state
+            const [reportMonth, setReportMonth] = React.useState(new Date().getMonth() + 1);
+            const [reportYear, setReportYear] = React.useState(new Date().getFullYear());
+
+            // --- Local Storage Management ---
+            React.useEffect(() => {
+                try {
+                    const storedTransactions = JSON.parse(localStorage.getItem('meraBudgetTransactions')) || [];
+                    const storedGoals = JSON.parse(localStorage.getItem('meraBudgetGoals')) || [];
+                    setTransactions(storedTransactions);
+                    setSavingsGoals(storedGoals);
+                } catch (e) {
+                    console.error("Failed to load data from local storage:", e);
+                }
+            }, []);
+
+            React.useEffect(() => {
+                localStorage.setItem('meraBudgetTransactions', JSON.stringify(transactions));
+            }, [transactions]);
+
+            React.useEffect(() => {
+                localStorage.setItem('meraBudgetGoals', JSON.stringify(savingsGoals));
+            }, [savingsGoals]);
+
+            // --- Calculations ---
+            const calculateBalance = React.useCallback(() => {
+                let income = 0;
+                let expenses = 0;
+                transactions.forEach(t => {
+                    if (t.type === 'income') {
+                        income += parseFloat(t.amount);
+                    } else {
+                        expenses += parseFloat(t.amount);
+                    }
+                });
+                return income - expenses;
+            }, [transactions]);
+
+            const totalIncome = React.useMemo(() => {
+                return transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            }, [transactions]);
+
+            const totalExpenses = React.useMemo(() => {
+                return transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+            }, [transactions]);
+
+            const currentBalance = calculateBalance();
+
+            // --- Transaction Handlers ---
+            const handleTransactionChange = (e) => {
+                const { name, value } = e.target;
+                setNewTransaction(prev => ({ ...prev, [name]: value }));
+            };
+
+            const handleAddTransaction = (e) => {
+                e.preventDefault();
+                if (newTransaction.amount && newTransaction.category) {
+                    setTransactions(prev => [...prev, {
+                        id: Date.now(),
+                        ...newTransaction,
+                        amount: parseFloat(newTransaction.amount) // Ensure amount is number
+                    }]);
+                    setNewTransaction({
+                        type: 'expense',
+                        amount: '',
+                        category: 'Food',
+                        description: '',
+                        date: new Date().toISOString().split('T')[0]
+                    });
+                    setCurrentView('dashboard'); // Go back to dashboard after adding
+                }
+            };
+
+            const handleDeleteTransaction = (id) => {
+                setTransactions(prev => prev.filter(t => t.id !== id));
+            };
+
+            // --- Savings Goal Handlers ---
+            const handleGoalChange = (e) => {
+                const { name, value } = e.target;
+                setNewGoal(prev => ({ ...prev, [name]: value }));
+            };
+
+            const handleAddGoal = (e) => {
+                e.preventDefault();
+                if (newGoal.name && newGoal.targetAmount) {
+                    setSavingsGoals(prev => [...prev, {
+                        id: Date.now(),
+                        name: newGoal.name,
+                        targetAmount: parseFloat(newGoal.targetAmount),
+                        savedAmount: parseFloat(newGoal.savedAmount || 0)
+                    }]);
+                    setNewGoal({ name: '', targetAmount: '', savedAmount: '0' });
+                    setCurrentView('savingsGoals'); // Stay on savings goals after adding
+                }
+            };
+
+            const handleDeleteGoal = (id) => {
+                setSavingsGoals(prev => prev.filter(goal => goal.id !== id));
+            };
+
+            // --- Report Functions ---
+            const getMonthlyTransactions = React.useCallback((month, year) => {
+                return transactions.filter(t => {
+                    const tDate = new Date(t.date);
+                    return tDate.getMonth() + 1 === parseInt(month) && tDate.getFullYear() === parseInt(year);
+                });
+            }, [transactions]);
+
+            const getExpenseBreakdown = React.useCallback((month, year) => {
+                const monthlyExpenses = getMonthlyTransactions(month, year).filter(t => t.type === 'expense');
+                const breakdown = {};
+                monthlyExpenses.forEach(t => {
+                    breakdown[t.category] = (breakdown[t.category] || 0) + t.amount;
+                });
+                return Object.entries(breakdown).sort((a, b) => b[1] - a[1]); // Sort by amount descending
+            }, [getMonthlyTransactions]);
+
+            const getMonthNameForReports = (monthNum, lang) => {
+                const date = new Date(2000, monthNum - 1, 1); // Use a dummy date
+                const locale = lang === 'ur' ? 'ur-PK' : 'en-US';
+                return date.toLocaleString(locale, { month: 'long' });
+            };
+
+            const allCategories = {
+                income: ['Salary', 'Freelance', 'Gift', 'Investment', 'Other'],
+                expense: ['Food', 'Transport', 'Utilities', 'Education', 'Shopping', 'Health', 'Entertainment', 'Other']
+            };
+
+            const getTranslatedCategory = (categoryKey) => {
+                // This assumes category keys match translation keys for simplicity
+                return t[categoryKey.toLowerCase()] || categoryKey;
+            };
+
+            // --- Main Render ---
+            return (
+                <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-4xl w-full flex flex-col items-center transform transition-all duration-300 hover:scale-[1.005] border-4 border-purple-400">
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-purple-700 mb-4 text-center">
+                        {t.appTitle}
+                    </h1>
+                    <p className="text-lg text-gray-700 mb-6 text-center">
+                        {t.tagline}
+                    </p>
+
+                    {/* Language Selector */}
+                    <div className="mb-6 flex justify-end items-center gap-2 w-full">
+                        <label htmlFor="language-select" className="block text-gray-700 text-sm font-bold">{t.selectLanguage}</label>
+                        <select
+                            id="language-select"
+                            value={language}
+                            onChange={(e) => setLanguage(e.target.value)}
+                            className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="ur">اردو (Urdu)</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+
+                    {/* Navigation Tabs */}
+                    <div className="flex justify-center flex-wrap gap-4 mb-8 w-full">
+                        <button
+                            onClick={() => setCurrentView('dashboard')}
+                            className={`py-3 px-6 rounded-full text-lg font-bold transition duration-200 ease-in-out shadow-md
+                                ${currentView === 'dashboard' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-home mr-2"></i> {t.dashboard}
+                        </button>
+                        <button
+                            onClick={() => setCurrentView('addTransaction')}
+                            className={`py-3 px-6 rounded-full text-lg font-bold transition duration-200 ease-in-out shadow-md
+                                ${currentView === 'addTransaction' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-plus-circle mr-2"></i> {t.addTransaction}
+                        </button>
+                        <button
+                            onClick={() => setCurrentView('savingsGoals')}
+                            className={`py-3 px-6 rounded-full text-lg font-bold transition duration-200 ease-in-out shadow-md
+                                ${currentView === 'savingsGoals' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-piggy-bank mr-2"></i> {t.savingsGoals}
+                        </button>
+                        <button
+                            onClick={() => setCurrentView('reports')}
+                            className={`py-3 px-6 rounded-full text-lg font-bold transition duration-200 ease-in-out shadow-md
+                                ${currentView === 'reports' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-chart-bar mr-2"></i> {t.reports}
+                        </button>
+                    </div>
+
+                    {/* --- Dashboard View --- */}
+                    {currentView === 'dashboard' && (
+                        <div className="w-full space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                                <div className="bg-purple-100 p-6 rounded-xl shadow-md border border-purple-300">
+                                    <p className="text-xl font-semibold text-purple-800">{t.currentBalance}</p>
+                                    <p className="text-3xl font-extrabold text-purple-900 mt-2">Rs. {currentBalance.toLocaleString()}</p>
+                                </div>
+                                <div className="bg-green-100 p-6 rounded-xl shadow-md border border-green-300">
+                                    <p className="text-xl font-semibold text-green-800">{t.totalIncome}</p>
+                                    <p className="text-3xl font-extrabold text-green-900 mt-2">Rs. {totalIncome.toLocaleString()}</p>
+                                </div>
+                                <div className="bg-red-100 p-6 rounded-xl shadow-md border border-red-300">
+                                    <p className="text-xl font-semibold text-red-800">{t.totalExpenses}</p>
+                                    <p className="text-3xl font-extrabold text-red-900 mt-2">Rs. {totalExpenses.toLocaleString()}</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">{t.recentTransactions}</h3>
+                                {transactions.length > 0 ? (
+                                    <div className="space-y-3 custom-scrollbar max-h-60 overflow-y-auto">
+                                        {transactions.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).map(t => (
+                                            <div key={t.id} className={`flex items-center justify-between p-3 rounded-lg shadow-sm
+                                                ${t.type === 'income' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} border`}>
+                                                <div>
+                                                    <p className="font-semibold text-lg">{getTranslatedCategory(t.category)}</p>
+                                                    <p className="text-sm text-gray-600">{t.description} ({t.date})</p>
+                                                </div>
+                                                <div className={`font-bold text-lg ${t.type === 'income' ? 'text-green-700' : 'text-red-700'}`}>
+                                                    {t.type === 'income' ? '+' : '-'} Rs. {t.amount.toLocaleString()}
+                                                </div>
+                                                <button onClick={() => handleDeleteTransaction(t.id)} className="ml-4 text-gray-400 hover:text-gray-600 transition">
+                                                    <i className="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 text-center">{t.noTransactions}</p>
+                                )}
+                            </div>
+
+                            <div className="bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">{t.savingsGoalsList}</h3>
+                                {savingsGoals.length > 0 ? (
+                                    <div className="space-y-4 custom-scrollbar max-h-60 overflow-y-auto">
+                                        {savingsGoals.map(goal => {
+                                            const progress = (goal.savedAmount / goal.targetAmount) * 100;
+                                            return (
+                                                <div key={goal.id} className="bg-white p-4 rounded-lg shadow-sm border border-purple-200">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <p className="font-semibold text-lg text-purple-800">{goal.name}</p>
+                                                        <button onClick={() => handleDeleteGoal(goal.id)} className="text-gray-400 hover:text-gray-600 transition">
+                                                            <i className="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600">
+                                                        Rs. {goal.savedAmount.toLocaleString()} / Rs. {goal.targetAmount.toLocaleString()} {t.savedAmount}
+                                                    </p>
+                                                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                                        <div
+                                                            className="bg-purple-600 h-2.5 rounded-full"
+                                                            style={{ width: `${Math.min(100, progress)}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <p className="text-right text-xs text-gray-500 mt-1">{progress.toFixed(1)}% {t.progress}</p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 text-center">{t.noGoals}</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- Add Transaction View --- */}
+                    {currentView === 'addTransaction' && (
+                        <div className="w-full bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                            <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">{t.addTransaction}</h3>
+                            <form onSubmit={handleAddTransaction} className="space-y-4">
+                                <div>
+                                    <label htmlFor="type" className="block text-gray-700 text-sm font-bold mb-2">{t.type}</label>
+                                    <select
+                                        name="type"
+                                        id="type"
+                                        value={newTransaction.type}
+                                        onChange={handleTransactionChange}
+                                        className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="income">{t.income}</option>
+                                        <option value="expense">{t.expense}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="amount" className="block text-gray-700 text-sm font-bold mb-2">{t.amount}</label>
+                                    <input
+                                        type="number"
+                                        name="amount"
+                                        id="amount"
+                                        placeholder="Rs. 0"
+                                        value={newTransaction.amount}
+                                        onChange={handleTransactionChange}
+                                        className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                        min="0"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="category" className="block text-gray-700 text-sm font-bold mb-2">{t.category}</label>
+                                    <select
+                                        name="category"
+                                        id="category"
+                                        value={newTransaction.category}
+                                        onChange={handleTransactionChange}
+                                        className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        {allCategories[newTransaction.type].map(cat => (
+                                            <option key={cat} value={cat}>{getTranslatedCategory(cat)}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">{t.description}</label>
+                                    <input
+                                        type="text"
+                                        name="description"
+                                        id="description"
+                                        placeholder="Optional description"
+                                        value={newTransaction.description}
+                                        onChange={handleTransactionChange}
+                                        className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">{t.date}</label>
+                                    <input
+                                        type="date"
+                                        name="date"
+                                        id="date"
+                                        value={newTransaction.date}
+                                        onChange={handleTransactionChange}
+                                        className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold w-full
+                                               hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+                                >
+                                    <i className="fas fa-plus mr-2"></i> {t.addTransaction}
+                                </button>
+                            </form>
+                        </div>
+                    )}
+
+                    {/* --- Savings Goals View --- */}
+                    {currentView === 'savingsGoals' && (
+                        <div className="w-full space-y-6">
+                            <div className="bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">{t.addGoal}</h3>
+                                <form onSubmit={handleAddGoal} className="space-y-4">
+                                    <div>
+                                        <label htmlFor="goalName" className="block text-gray-700 text-sm font-bold mb-2">{t.goalName}</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            id="goalName"
+                                            placeholder="e.g., Eid Shopping"
+                                            value={newGoal.name}
+                                            onChange={handleGoalChange}
+                                            className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="targetAmount" className="block text-gray-700 text-sm font-bold mb-2">{t.targetAmount}</label>
+                                        <input
+                                            type="number"
+                                            name="targetAmount"
+                                            id="targetAmount"
+                                            placeholder="Rs. 0"
+                                            value={newGoal.targetAmount}
+                                            onChange={handleGoalChange}
+                                            className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            required
+                                            min="0"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="savedAmount" className="block text-gray-700 text-sm font-bold mb-2">{t.savedAmount} (Optional)</label>
+                                        <input
+                                            type="number"
+                                            name="savedAmount"
+                                            id="savedAmount"
+                                            placeholder="Rs. 0"
+                                            value={newGoal.savedAmount}
+                                            onChange={handleGoalChange}
+                                            className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            min="0"
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold w-full
+                                                   hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+                                    >
+                                        <i className="fas fa-plus mr-2"></i> {t.addGoal}
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div className="bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4">{t.savingsGoalsList}</h3>
+                                {savingsGoals.length > 0 ? (
+                                    <div className="space-y-4 custom-scrollbar max-h-60 overflow-y-auto">
+                                        {savingsGoals.map(goal => {
+                                            const progress = (goal.savedAmount / goal.targetAmount) * 100;
+                                            return (
+                                                <div key={goal.id} className="bg-white p-4 rounded-lg shadow-sm border border-purple-200">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <p className="font-semibold text-lg text-purple-800">{goal.name}</p>
+                                                        <button onClick={() => handleDeleteGoal(goal.id)} className="text-gray-400 hover:text-gray-600 transition">
+                                                            <i className="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600">
+                                                        Rs. {goal.savedAmount.toLocaleString()} / Rs. {goal.targetAmount.toLocaleString()}
+                                                    </p>
+                                                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                                        <div
+                                                            className="bg-purple-600 h-2.5 rounded-full"
+                                                            style={{ width: `${Math.min(100, progress)}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <p className="text-right text-xs text-gray-500 mt-1">{progress.toFixed(1)}% {t.progress}</p>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 text-center">{t.noGoals}</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* --- Reports View --- */}
+                    {currentView === 'reports' && (
+                        <div className="w-full space-y-6">
+                            <div className="bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">{t.monthlySummary}</h3>
+                                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                                    <div className="w-full md:w-1/2">
+                                        <label htmlFor="reportMonth" className="block text-gray-700 text-sm font-bold mb-2">{t.selectMonthYear}</label>
+                                        <select
+                                            id="reportMonth"
+                                            value={reportMonth}
+                                            onChange={(e) => setReportMonth(e.target.value)}
+                                            className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            {[...Array(12).keys()].map(i => (
+                                                <option key={i + 1} value={i + 1}>{getMonthNameForReports(i + 1, language)}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="w-full md:w-1/2">
+                                        <label htmlFor="reportYear" className="block text-gray-700 text-sm font-bold mb-2">&nbsp;</label> {/* Placeholder for alignment */}
+                                        <input
+                                            type="number"
+                                            id="reportYear"
+                                            value={reportYear}
+                                            onChange={(e) => setReportYear(e.target.value)}
+                                            className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            min="2000" // Adjust as needed
+                                            max="2100" // Adjust as needed
+                                        />
+                                    </div>
+                                </div>
+
+                                {getMonthlyTransactions(reportMonth, reportYear).length > 0 ? (
+                                    <>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center mb-6">
+                                            <div className="bg-green-50 p-4 rounded-lg shadow-sm border border-green-200">
+                                                <p className="text-lg font-semibold text-green-800">{t.totalIncome}</p>
+                                                <p className="text-2xl font-bold text-green-900 mt-1">
+                                                    Rs. {getMonthlyTransactions(reportMonth, reportYear).filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
+                                                </p>
+                                            </div>
+                                            <div className="bg-red-50 p-4 rounded-lg shadow-sm border border-red-200">
+                                                <p className="text-lg font-semibold text-red-800">{t.totalExpenses}</p>
+                                                <p className="text-2xl font-bold text-red-900 mt-1">
+                                                    Rs. {getMonthlyTransactions(reportMonth, reportYear).filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <h4 className="text-xl font-bold text-gray-800 mb-4">{t.expenseBreakdown}</h4>
+                                        <div className="space-y-2 custom-scrollbar max-h-60 overflow-y-auto">
+                                            {getExpenseBreakdown(reportMonth, reportYear).map(([category, amount]) => (
+                                                <div key={category} className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                                                    <span className="font-semibold">{getTranslatedCategory(category)}</span>
+                                                    <span>Rs. {amount.toLocaleString()}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p className="text-gray-500 text-center">{t.noReportsData}</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // Render the App component into the root div
+        window.onload = function() {
+            const rootElement = document.getElementById('root');
+            if (rootElement) {
+                const root = ReactDOM.createRoot(rootElement);
+                root.render(<App />);
+            }
+        };
+    </script>
+</body>
+</html>
