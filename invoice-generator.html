@@ -14,41 +14,38 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Base styles for invoice preview - flexible for screen display */
         .invoice-preview {
             background-color: white;
-            padding: 2rem;
-            /* For print, maintain A4 aspect ratio */
-            min-height: 297mm; /* A4 height */
-            width: 210mm; /* A4 width */
-            margin: 20px auto;
+            padding: 1.5rem; /* Default padding for all screens */
+            width: 100%; /* Take full width of its parent */
+            max-width: 210mm; /* Max width for larger screens to simulate A4 aspect */
+            aspect-ratio: 210 / 297; /* Maintain A4 aspect ratio for screen display */
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-        /* Adjust for smaller screens without breaking A4 print dimensions */
-        @media screen and (max-width: 768px) {
-            .invoice-preview {
-                width: 100%; /* Take full width on small screens */
-                min-height: auto; /* Allow height to adjust */
-                padding: 1rem; /* Smaller padding on mobile */
-                box-shadow: none; /* No shadow on small screens for better fit */
-            }
+            overflow-y: auto; /* Allow vertical scrolling if content overflows */
         }
 
-        /* Hide form controls when printing */
+        /* Print-specific styles - override for actual printing */
         @media print {
-            .no-print {
-                display: none !important;
+            body * {
+                visibility: hidden;
+            }
+            .invoice-preview, .invoice-preview * {
+                visibility: visible;
             }
             .invoice-preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 210mm !important; /* Force A4 width for print */
+                height: 297mm !important; /* Force A4 height for print */
+                min-height: 297mm !important; /* Ensure min-height for A4 */
+                padding: 20mm !important; /* Standard A4 margins, adjust as needed */
                 box-shadow: none !important;
                 border: none !important;
                 margin: 0 !important;
-                padding: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-            }
-            body {
-                margin: 0;
-                padding: 0;
+                overflow: hidden !important; /* No scrollbars on print */
+                aspect-ratio: unset !important; /* Remove aspect ratio for print */
             }
         }
         /* Custom scrollbar for tables on small screens */
