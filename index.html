@@ -1,131 +1,63 @@
 <!DOCTYPE html>
-<html lang="ur">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HF Digital Agency - Secure Planner</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        #app-container { display: none; }
-        .section { display: none; }
-        .section.active { display: block; }
-        .nav-link.active { background-color: #d1d5db; color: #1f2937; font-weight: 600; }
-        .nav-link:hover { background-color: #e5e7eb; }
-    </style>
+  <title>HF Digital Agency</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      display: flex;
+      background-color: #f5f5f5;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #1e1e2f;
+      color: white;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .sidebar h2 {
+      font-size: 20px;
+    }
+    .sidebar a {
+      display: block;
+      margin: 10px 0;
+      color: white;
+      text-decoration: none;
+    }
+    .content {
+      padding: 30px;
+      flex-grow: 1;
+    }
+    .logout {
+      margin-top: 30px;
+      background-color: red;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+  </style>
 </head>
-<body class="bg-slate-100">
-
-    <!-- Login Screen -->
-    <div id="login-screen" class="flex items-center justify-center min-h-screen">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-            <div class="text-center">
-                <h1 class="text-3xl font-bold text-slate-900">HF Digital Agency</h1>
-                <p class="mt-2 text-slate-600">Apne Planner mein Login Karein</p>
-            </div>
-            <form id="login-form" class="space-y-6">
-                <div>
-                    <label for="email" class="text-sm font-medium text-slate-700">Email</label>
-                    <input id="email" type="email" required class="w-full px-3 py-2 mt-1 border rounded-md bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500">
-                </div>
-                <div>
-                    <label for="password" class="text-sm font-medium text-slate-700">Password</label>
-                    <input id="password" type="password" required class="w-full px-3 py-2 mt-1 border rounded-md bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500">
-                </div>
-                <p id="login-error" class="text-sm text-red-600 hidden">Ghalat Email ya Password.</p>
-                <div>
-                    <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-slate-800 rounded-md hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500">
-                        Login
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Planner App -->
-    <div id="app-container">
-        <div class="flex flex-col md:flex-row min-h-screen">
-            <!-- Sidebar -->
-            <aside class="w-full md:w-64 bg-white border-b md:border-r border-slate-200">
-                <div class="p-6">
-                    <h1 class="text-2xl font-bold text-slate-900">HF Digital Agency</h1>
-                    <p id="user-email" class="text-sm text-slate-500"></p>
-                </div>
-                <div class="absolute bottom-0 w-full px-6 pb-6">
-                    <button id="logout-button" class="w-full px-4 py-2 font-semibold text-white bg-red-600 rounded-md hover:bg-red-700">Logout</button>
-                </div>
-            </aside>
-            <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-                <h2 class="text-2xl font-semibold">Welcome to Your Planner!</h2>
-            </main>
-        </div>
-    </div>
-
-    <!-- Firebase SDK (v8 for non-module browser use) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
-    <script>
-        // ✅ Firebase Configuration
-        var firebaseConfig = {
-            apiKey: "AIzaSyAmapviZujq13uXp5t8p7Zjnq8tOmHiYiA",
-            authDomain: "hf-planner-app.firebaseapp.com",
-            projectId: "hf-planner-app",
-            storageBucket: "hf-planner-app.appspot.com",
-            messagingSenderId: "131877733017",
-            appId: "1:131877733017:web:ca6a5b17329c8af580ee08"
-        };
-
-        // ✅ Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
-        // ✅ UI Elements
-        const loginScreen = document.getElementById('login-screen');
-        const appContainer = document.getElementById('app-container');
-        const loginForm = document.getElementById('login-form');
-        const loginError = document.getElementById('login-error');
-        const userEmailEl = document.getElementById('user-email');
-        const logoutButton = document.getElementById('logout-button');
-
-        // ✅ Login Handler
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    loginScreen.style.display = 'none';
-                    appContainer.style.display = 'block';
-                    userEmailEl.textContent = userCredential.user.email;
-                })
-                .catch((error) => {
-                    console.error(error);
-                    loginError.classList.remove('hidden');
-                });
-        });
-
-        // ✅ Logout Handler
-        logoutButton.addEventListener('click', () => {
-            auth.signOut().then(() => {
-                window.location.reload();
-            });
-        });
-
-        // ✅ Auth State Listener
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                loginScreen.style.display = 'none';
-                appContainer.style.display = 'block';
-                userEmailEl.textContent = user.email;
-            } else {
-                loginScreen.style.display = 'flex';
-                appContainer.style.display = 'none';
-            }
-        });
-    </script>
+<body>
+  <div class="sidebar">
+    <h2>HF Digital Agency</h2>
+    <p>test@hf.com</p>
+    <hr>
+    <a href="AgeCalculator.html">🧓 Age Calculator</a>
+    <a href="BMI-Calculator.html">⚖️ BMI Calculator</a>
+    <a href="file_canverter.html">📁 File Converter</a>
+    <a href="groccery-trackre.html">🛒 Grocery Tracker</a>
+    <a href="cv-builder.html">📄 CV Builder</a>
+    <a href="resume_generator.html">📑 Resume Generator</a>
+    <a href="invoice-generator.html">🧾 Invoice Generator</a>
+    <a href="quize_game.html">🧠 Quiz Game</a>
+    <a href="tik-tak-game.html">❌⭕ Tik Tak Game</a>
+    <div class="logout">Logout</div>
+  </div>
+  <div class="content">
+    <h1>Welcome to Your Planner!</h1>
+    <p>Select any tool from the left sidebar to get started.</p>
+  </div>
 </body>
 </html>
