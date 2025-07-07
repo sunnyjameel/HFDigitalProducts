@@ -1,325 +1,676 @@
-import React, { useState, useRef } from 'react';
-
-// Load jsPDF and JSZip libraries from CDN
-// These scripts will be available globally as 'jspdf' and 'JSZip'
-const loadScript = (src, id) => {
-    if (!document.getElementById(id)) {
-        const script = document.createElement('script');
-        script.src = src;
-        script.id = id;
-        script.async = true;
-        document.head.appendChild(script);
-        return new Promise((resolve, reject) => {
-            script.onload = () => resolve();
-            script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-        });
-    }
-    return Promise.resolve(); // Script already loaded
-};
-
-// Main App component for the File Converter & Compressor
-const App = () => {
-    // State to store selected files
-    const [selectedFiles, setSelectedFiles] = useState([]);
-    // State for loading status of PDF conversion
-    const [isConvertingPdf, setIsConvertingPdf] = useState(false);
-    // State for loading status of ZIP compression
-    const [isCompressingZip, setIsCompressingZip] = useState(false);
-    // State for general messages (success/error)
-    const [message, setMessage] = useState({ type: '', text: '' });
-
-    // Ref for the hidden file input
-    const fileInputRef = useRef(null);
-
-    // Function to handle file selection from input or drag-and-drop
-    const handleFileChange = (event) => {
-        const files = event.target.files ? Array.from(event.target.files) : Array.from(event.dataTransfer.files);
-        setSelectedFiles(prevFiles => [...prevFiles, ...files]);
-        setMessage({ type: '', text: '' }); // Clear previous messages
-    };
-
-    // Handle drag over event for drag-and-drop
-    const handleDragOver = (event) => {
-        event.preventDefault(); // Prevent default to allow drop
-    };
-
-    // Handle drop event for drag-and-drop
-    const handleDrop = (event) => {
-        event.preventDefault();
-        handleFileChange(event);
-    };
-
-    // Function to remove a selected file
-    const removeFile = (indexToRemove) => {
-        setSelectedFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove));
-    };
-
-    // Function to convert selected files to PDF
-    const convertToPdf = async () => {
-        if (selectedFiles.length === 0) {
-            setMessage({ type: 'error', text: 'براہ کرم PDF میں تبدیل کرنے کے لیے فائلیں منتخب کریں۔ (Please select files to convert to PDF.)' });
-            return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital File Converter</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
         }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #a78bfa; /* purple-400 */
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #8b5cf6; /* purple-500 */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-200 to-purple-300 min-h-screen flex items-center justify-center p-4">
+    <div id="root"></div>
 
-        setIsConvertingPdf(true);
-        setMessage({ type: '', text: '' });
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel CDN - for JSX transformation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-        try {
-            // Ensure jspdf is loaded
-            await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js", "jspdf-script");
-            const { jsPDF } = window.jspdf; // Access jsPDF from window object
+    <!-- JSZip CDN for ZIP operations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- FileSaver.js CDN for saving files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- jsPDF CDN for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-            const doc = new jsPDF();
-            let pageAdded = false; // To manage adding new pages
+    <script type="text/babel">
+        const translations = {
+            ur: {
+                appTitle: "ڈیجیٹل فائل کنورٹر",
+                tagline: "مختلف فائل فارمیٹس کو آسانی سے تبدیل کریں اور آرکائیو کریں۔",
+                selectLanguage: "زبان منتخب کریں:",
+                imageToPdf: "تصویر/متن سے PDF",
+                imageToImage: "تصویر سے تصویر",
+                filesToZip: "فائلز سے ZIP",
+                zipToFiles: "ZIP سے فائلز",
+                selectFiles: "فائلیں منتخب کریں",
+                convert: "تبدیل کریں",
+                downloadPdf: "PDF ڈاؤن لوڈ کریں",
+                downloadImage: "تصویر ڈاؤن لوڈ کریں",
+                downloadZip: "ZIP ڈاؤن لوڈ کریں",
+                extractFiles: "فائلیں نکالیں",
+                downloadExtracted: "نکالی گئی فائل ڈاؤن لوڈ کریں",
+                noFilesSelected: "کوئی فائل منتخب نہیں کی گئی۔",
+                converting: "تبدیل ہو رہا ہے...",
+                extracting: "نکالا جا رہا ہے...",
+                processing: "پروسیسنگ...",
+                conversionComplete: "تبدیلی مکمل!",
+                extractionComplete: "فائلیں نکال لی گئیں!",
+                error: "ایک خرابی پیش آئی:",
+                outputFormat: "آؤٹ پٹ فارمیٹ",
+                selectImagesTextFiles: "تصاویر (.jpg, .png) یا متن فائلیں (.txt) منتخب کریں",
+                selectImage: "تصویر منتخب کریں",
+                selectFilesToZip: "ZIP کرنے کے لیے فائلیں منتخب کریں",
+                selectZipFile: "ZIP فائل منتخب کریں",
+                extractedFiles: "نکالی گئی فائلیں:",
+                noExtractedFiles: "کوئی فائل نہیں نکالی گئی۔",
+                unsupportedFileType: "نامعلوم فائل کی قسم۔",
+                imageToImageDesc: "تصویر کو مختلف فارمیٹ میں تبدیل کریں۔",
+                imageToPdfDesc: "تصاویر یا متن فائلوں کو ایک PDF میں تبدیل کریں۔",
+                filesToZipDesc: "متعدد فائلوں کو ایک ZIP آرکائیو میں کمپریس کریں۔",
+                zipToFilesDesc: "ZIP آرکائیو سے فائلوں کو نکالیں۔",
+                clearAll: "تمام صاف کریں",
+                addMoreFiles: "مزید فائلیں شامل کریں",
+                fileName: "فائل کا نام",
+                fileSize: "فائل کا سائز",
+                unsupportedConversion: "اس تبدیلی کے لیے نامعلوم فائل کی قسم۔",
+                pdfGenerationError: "PDF بنانے میں خرابی۔",
+                zipCreationError: "ZIP بنانے میں خرابی۔",
+                zipExtractionError: "ZIP نکالنے میں خرابی۔",
+                fileTooLarge: "فائل بہت بڑی ہے، براہ کرم چھوٹی فائل منتخب کریں۔",
+                maxFileSize: "زیادہ سے زیادہ فائل سائز 10MB ہے۔",
+                imageConversionError: "تصویر کی تبدیلی میں خرابی۔"
+            },
+            en: {
+                appTitle: "Digital File Converter",
+                tagline: "Easily convert and archive various file formats.",
+                selectLanguage: "Select Language:",
+                imageToPdf: "Image/Text to PDF",
+                imageToImage: "Image to Image",
+                filesToZip: "Files to ZIP",
+                zipToFiles: "ZIP to Files",
+                selectFiles: "Select Files",
+                convert: "Convert",
+                downloadPdf: "Download PDF",
+                downloadImage: "Download Image",
+                downloadZip: "Download ZIP",
+                extractFiles: "Extract Files",
+                downloadExtracted: "Download Extracted File",
+                noFilesSelected: "No files selected.",
+                converting: "Converting...",
+                extracting: "Extracting...",
+                processing: "Processing...",
+                conversionComplete: "Conversion Complete!",
+                extractionComplete: "Files extracted!",
+                error: "An error occurred:",
+                outputFormat: "Output Format",
+                selectImagesTextFiles: "Select images (.jpg, .png) or text files (.txt)",
+                selectImage: "Select Image",
+                selectFilesToZip: "Select files to ZIP",
+                selectZipFile: "Select ZIP file",
+                extractedFiles: "Extracted Files:",
+                noExtractedFiles: "No files extracted.",
+                unsupportedFileType: "Unsupported file type.",
+                imageToImageDesc: "Convert an image to a different format.",
+                imageToPdfDesc: "Convert images or text files into a single PDF.",
+                filesToZipDesc: "Compress multiple files into a single ZIP archive.",
+                zipToFilesDesc: "Extract files from a ZIP archive.",
+                clearAll: "Clear All",
+                addMoreFiles: "Add More Files",
+                fileName: "File Name",
+                fileSize: "File Size",
+                unsupportedConversion: "Unsupported file type for this conversion.",
+                pdfGenerationError: "Error generating PDF.",
+                zipCreationError: "Error creating ZIP.",
+                zipExtractionError: "Error extracting ZIP.",
+                fileTooLarge: "File is too large, please select a smaller file.",
+                maxFileSize: "Max file size is 10MB.",
+                imageConversionError: "Error converting image."
+            }
+        };
 
-            for (let i = 0; i < selectedFiles.length; i++) {
-                const file = selectedFiles[i];
+        const MAX_FILE_SIZE_MB = 10; // Maximum allowed file size in MB
 
-                // Add new page if it's not the first file and a page has already been added
-                if (pageAdded) {
-                    doc.addPage();
+        const App = () => {
+            const [language, setLanguage] = React.useState('ur'); // Default to Urdu
+            const t = translations[language];
+
+            const [activeTab, setActiveTab] = React.useState('imageToPdf'); // 'imageToPdf', 'imageToImage', 'filesToZip', 'zipToFiles'
+            const [selectedFiles, setSelectedFiles] = React.useState([]);
+            const [outputFile, setOutputFile] = React.useState(null);
+            const [extractedFiles, setExtractedFiles] = React.useState([]);
+            const [loading, setLoading] = React.useState(false);
+            const [message, setMessage] = React.useState('');
+            const [outputImageFormat, setOutputImageFormat] = React.useState('image/jpeg'); // For Image to Image
+            const [downloadFileName, setDownloadFileName] = React.useState('');
+
+            // Ref for the PDF content to ensure jsPDF is available
+            const pdfRef = React.useRef(null);
+
+            // Function to reset all states
+            const resetState = () => {
+                setSelectedFiles([]);
+                setOutputFile(null);
+                setExtractedFiles([]);
+                setLoading(false);
+                setMessage('');
+                setDownloadFileName('');
+            };
+
+            // Handle file input change
+            const handleFileChange = (event, allowMultiple = true) => {
+                resetState(); // Clear previous results
+                const files = Array.from(event.target.files);
+
+                // Filter out files larger than MAX_FILE_SIZE_MB
+                const validFiles = files.filter(file => {
+                    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                        setMessage(`${t.error}: ${file.name} - ${t.fileTooLarge} (${t.maxFileSize})`);
+                        return false;
+                    }
+                    return true;
+                });
+
+                if (!allowMultiple) {
+                    setSelectedFiles(validFiles.slice(0, 1)); // Only take the first valid file
+                } else {
+                    setSelectedFiles(validFiles);
+                }
+            };
+
+            // --- Converters Logic ---
+
+            // Image/Text to PDF
+            const convertToPdf = async () => {
+                if (selectedFiles.length === 0) {
+                    setMessage(t.noFilesSelected);
+                    return;
+                }
+                setLoading(true);
+                setMessage(t.converting);
+                setOutputFile(null);
+
+                try {
+                    // Ensure jsPDF is loaded
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    for (let i = 0; i < selectedFiles.length; i++) {
+                        const file = selectedFiles[i];
+                        if (i > 0) {
+                            doc.addPage();
+                        }
+
+                        const fileType = file.type.split('/')[0];
+                        const reader = new FileReader();
+
+                        await new Promise((resolve, reject) => {
+                            reader.onload = async (e) => {
+                                if (fileType === 'image') {
+                                    const img = new Image();
+                                    img.src = e.target.result;
+                                    img.onload = () => {
+                                        const imgWidth = img.width;
+                                        const imgHeight = img.height;
+                                        const pageWidth = doc.internal.pageSize.getWidth();
+                                        const pageHeight = doc.internal.pageSize.getHeight();
+
+                                        const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                                        const scaledWidth = imgWidth * ratio;
+                                        const scaledHeight = imgHeight * ratio;
+
+                                        const x = (pageWidth - scaledWidth) / 2;
+                                        const y = (pageHeight - scaledHeight) / 2;
+
+                                        doc.addImage(img, 'JPEG', x, y, scaledWidth, scaledHeight);
+                                        resolve();
+                                    };
+                                    img.onerror = reject;
+                                } else if (fileType === 'text') {
+                                    const text = e.target.result;
+                                    const lines = doc.splitTextToSize(text, doc.internal.pageSize.getWidth() - 20); // 10px margin on each side
+                                    doc.text(lines, 10, 10);
+                                    resolve();
+                                } else {
+                                    setMessage(`${t.error}: ${file.name} - ${t.unsupportedFileType}`);
+                                    reject(new Error(t.unsupportedFileType));
+                                }
+                            };
+                            reader.onerror = reject;
+                            if (fileType === 'image') {
+                                reader.readAsDataURL(file);
+                            } else if (fileType === 'text') {
+                                reader.readAsText(file);
+                            } else {
+                                setMessage(`${t.error}: ${file.name} - ${t.unsupportedFileType}`);
+                                reject(new Error(t.unsupportedFileType));
+                            }
+                        });
+                    }
+
+                    const pdfBlob = doc.output('blob');
+                    setOutputFile(pdfBlob);
+                    setDownloadFileName(`converted_${Date.now()}.pdf`);
+                    setMessage(t.conversionComplete);
+                } catch (err) {
+                    console.error(err);
+                    setMessage(`${t.error}: ${t.pdfGenerationError} ${err.message}`);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            // Image to Image
+            const convertImage = async () => {
+                if (selectedFiles.length === 0) {
+                    setMessage(t.noFilesSelected);
+                    return;
+                }
+                setLoading(true);
+                setMessage(t.converting);
+                setOutputFile(null);
+
+                const file = selectedFiles[0];
+                if (!file.type.startsWith('image/')) {
+                    setMessage(`${t.error}: ${t.unsupportedConversion}`);
+                    setLoading(false);
+                    return;
                 }
 
-                if (file.type.startsWith('image/')) {
-                    // Convert image to PDF
+                try {
                     const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+
+                            canvas.toBlob((blob) => {
+                                setOutputFile(blob);
+                                const newFileName = file.name.split('.').slice(0, -1).join('.') + '.' + outputImageFormat.split('/')[1];
+                                setDownloadFileName(newFileName);
+                                setMessage(t.conversionComplete);
+                                setLoading(false);
+                            }, outputImageFormat);
+                        };
+                        img.onerror = () => {
+                            setMessage(`${t.error}: ${t.imageConversionError}`);
+                            setLoading(false);
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.onerror = (err) => {
+                        setMessage(`${t.error}: ${t.imageConversionError} ${err.message}`);
+                        setLoading(false);
+                    };
                     reader.readAsDataURL(file);
-                    await new Promise(resolve => {
-                        reader.onload = () => {
-                            const img = new Image();
-                            img.src = reader.result;
-                            img.onload = () => {
-                                const imgWidth = img.width;
-                                const imgHeight = img.height;
-                                const pageWidth = doc.internal.pageSize.getWidth();
-                                const pageHeight = doc.internal.pageSize.getHeight();
+                } catch (err) {
+                    console.error(err);
+                    setMessage(`${t.error}: ${t.imageConversionError} ${err.message}`);
+                    setLoading(false);
+                }
+            };
 
-                                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-                                const scaledWidth = imgWidth * ratio;
-                                const scaledHeight = imgHeight * ratio;
+            // Files to ZIP
+            const createZip = async () => {
+                if (selectedFiles.length === 0) {
+                    setMessage(t.noFilesSelected);
+                    return;
+                }
+                setLoading(true);
+                setMessage(t.processing);
+                setOutputFile(null);
 
-                                const x = (pageWidth - scaledWidth) / 2;
-                                const y = (pageHeight - scaledHeight) / 2;
-
-                                doc.addImage(img.src, file.type.split('/')[1].toUpperCase(), x, y, scaledWidth, scaledHeight);
-                                pageAdded = true;
+                try {
+                    const zip = new JSZip();
+                    for (const file of selectedFiles) {
+                        const reader = new FileReader();
+                        await new Promise((resolve, reject) => {
+                            reader.onload = (e) => {
+                                zip.file(file.name, e.target.result.split(',')[1], { base64: true });
                                 resolve();
                             };
-                            img.onerror = (e) => {
-                                console.error("Image load error:", e);
-                                setMessage({ type: 'error', text: `تصویر لوڈ کرنے میں مسئلہ: ${file.name} (Problem loading image: ${file.name})` });
-                                resolve(); // Resolve anyway to continue with next file
-                            };
-                        };
-                        reader.onerror = (e) => {
-                            console.error("FileReader error:", e);
-                            setMessage({ type: 'error', text: `فائل پڑھنے میں مسئلہ: ${file.name} (Problem reading file: ${file.name})` });
-                            resolve(); // Resolve anyway to continue with next file
-                        };
-                    });
-                } else if (file.type === 'text/plain') {
-                    // Convert text to PDF
-                    const reader = new FileReader();
-                    reader.readAsText(file);
-                    await new Promise(resolve => {
-                        reader.onload = () => {
-                            const text = reader.result;
-                            const lines = doc.splitTextToSize(text, doc.internal.pageSize.getWidth() - 20); // 10 units padding on each side
-                            doc.text(lines, 10, 10); // Start text at 10,10
-                            pageAdded = true;
-                            resolve();
-                        };
-                        reader.onerror = (e) => {
-                            console.error("FileReader error:", e);
-                            setMessage({ type: 'error', text: `فائل پڑھنے میں مسئلہ: ${file.name} (Problem reading file: ${file.name})` });
-                            resolve();
-                        };
-                    });
-                } else {
-                    setMessage({ type: 'warning', text: `"${file.name}" کو PDF میں تبدیل نہیں کیا جا سکتا۔ (Cannot convert "${file.name}" to PDF.)` });
+                            reader.onerror = reject;
+                            reader.readAsDataURL(file);
+                        });
+                    }
+
+                    const zipBlob = await zip.generateAsync({ type: "blob" });
+                    setOutputFile(zipBlob);
+                    setDownloadFileName(`archive_${Date.now()}.zip`);
+                    setMessage(t.conversionComplete);
+                } catch (err) {
+                    console.error(err);
+                    setMessage(`${t.error}: ${t.zipCreationError} ${err.message}`);
+                } finally {
+                    setLoading(false);
                 }
-            }
+            };
 
-            if (pageAdded) { // Only save if at least one page was added
-                doc.save('converted_files.pdf');
-                setMessage({ type: 'success', text: 'فائلیں کامیابی سے PDF میں تبدیل ہو گئیں۔ (Files successfully converted to PDF.)' });
-            } else {
-                setMessage({ type: 'error', text: 'کوئی قابلِ تبدیل فائل نہیں ملی۔ (No convertible files found.)' });
-            }
+            // ZIP to Files
+            const extractZip = async () => {
+                if (selectedFiles.length === 0) {
+                    setMessage(t.noFilesSelected);
+                    return;
+                }
+                setLoading(true);
+                setMessage(t.extracting);
+                setExtractedFiles([]);
 
-        } catch (err) {
-            console.error("PDF Conversion Error:", err);
-            setMessage({ type: 'error', text: `PDF میں تبدیل کرنے میں مسئلہ پیش آیا: ${err.message} (An issue occurred converting to PDF: ${err.message})` });
-        } finally {
-            setIsConvertingPdf(false);
-        }
-    };
+                const file = selectedFiles[0];
+                if (!file.type.includes('zip')) {
+                    setMessage(`${t.error}: ${t.unsupportedFileType}`);
+                    setLoading(false);
+                    return;
+                }
 
-    // Function to compress selected files into a ZIP archive
-    const compressToZip = async () => {
-        if (selectedFiles.length === 0) {
-            setMessage({ type: 'error', text: 'براہ کرم ZIP میں کمپریس کرنے کے لیے فائلیں منتخب کریں۔ (Please select files to compress to ZIP.)' });
-            return;
-        }
+                try {
+                    const zip = new JSZip();
+                    const content = await file.arrayBuffer();
+                    const loadedZip = await zip.loadAsync(content);
 
-        setIsCompressingZip(true);
-        setMessage({ type: '', text: '' });
+                    const extracted = [];
+                    for (const filename in loadedZip.files) {
+                        if (!loadedZip.files[filename].dir) { // Skip directories
+                            const blob = await loadedZip.files[filename].async("blob");
+                            extracted.push({ name: filename, blob: blob });
+                        }
+                    }
+                    setExtractedFiles(extracted);
+                    setMessage(t.extractionComplete);
+                } catch (err) {
+                    console.error(err);
+                    setMessage(`${t.error}: ${t.zipExtractionError} ${err.message}`);
+                } finally {
+                    setLoading(false);
+                }
+            };
 
-        try {
-            // Ensure JSZip is loaded
-            await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js", "jszip-script");
-            const JSZip = window.JSZip; // Access JSZip from window object
+            // Handle download of output file
+            const handleDownload = () => {
+                if (outputFile && downloadFileName) {
+                    window.saveAs(outputFile, downloadFileName);
+                } else {
+                    setMessage(`${t.error}: ${t.downloadFailMessage}`);
+                }
+            };
 
-            const zip = new JSZip();
-
-            for (const file of selectedFiles) {
-                const reader = new FileReader();
-                reader.readAsArrayBuffer(file);
-                await new Promise(resolve => {
-                    reader.onload = () => {
-                        zip.file(file.name, reader.result);
-                        resolve();
-                    };
-                    reader.onerror = (e) => {
-                        console.error("FileReader error for ZIP:", e);
-                        setMessage({ type: 'error', text: `فائل پڑھنے میں مسئلہ: ${file.name} (Problem reading file: ${file.name})` });
-                        resolve(); // Resolve anyway to continue
-                    };
-                });
-            }
-
-            const zipBlob = await zip.generateAsync({ type: "blob" });
-            const url = URL.createObjectURL(zipBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'compressed_files.zip';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url); // Clean up URL object
-
-            setMessage({ type: 'success', text: 'فائلیں کامیابی سے ZIP میں کمپریس ہو گئیں۔ (Files successfully compressed to ZIP.)' });
-
-        } catch (err) {
-            console.error("ZIP Compression Error:", err);
-            setMessage({ type: 'error', text: `ZIP میں کمپریس کرنے میں مسئلہ پیش آیا: ${err.message} (An issue occurred compressing to ZIP: ${err.message})` });
-        } finally {
-            setIsCompressingZip(false);
-        }
-    };
-
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-200 to-purple-300 flex items-center justify-center p-4 font-inter text-gray-800">
-            <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-3xl w-full flex flex-col items-center transform transition-all duration-300 hover:scale-[1.01] border-4 border-purple-400">
-                <h1 className="text-4xl md:text-5xl font-extrabold text-purple-700 mb-4 text-center">
-                    🗄️ فائل کنورٹر اور کمپریسر 🗜️
-                </h1>
-                <p className="text-lg text-gray-700 mb-8 text-center">
-                    اپنی فائلیں منتخب کریں اور انہیں PDF میں تبدیل کریں یا ZIP میں کمپریس کریں۔
-                    <br />
-                    (Select your files and convert them to PDF or compress them to ZIP.)
-                </p>
-
-                {/* File Upload Area */}
-                <div
-                    className="w-full border-4 border-dashed border-purple-300 rounded-2xl p-8 text-center cursor-pointer hover:border-purple-500 transition duration-200 mb-6"
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current.click()}
-                >
-                    <input
-                        type="file"
-                        multiple
-                        onChange={handleFileChange}
-                        ref={fileInputRef}
-                        className="hidden"
-                        accept="image/jpeg,image/png,text/plain" // Only allow these types for now
-                    />
-                    <i className="fas fa-cloud-upload-alt text-purple-500 text-5xl mb-4"></i>
-                    <p className="text-xl font-semibold text-purple-700">
-                        فائلیں یہاں گھسیٹیں یا کلک کریں (Drag & drop files here or click to browse)
+            return (
+                <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-4xl w-full flex flex-col items-center transform transition-all duration-300 hover:scale-[1.005] border-4 border-purple-400">
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-purple-700 mb-4 text-center">
+                        {t.appTitle}
+                    </h1>
+                    <p className="text-lg text-gray-700 mb-6 text-center">
+                        {t.tagline}
                     </p>
-                    <p className="text-sm text-gray-500 mt-2">
-                        (JPG, PNG, TXT فائلیں PDF میں تبدیل ہو سکتی ہیں)
-                    </p>
-                </div>
 
-                {/* Selected Files List */}
-                {selectedFiles.length > 0 && (
-                    <div className="w-full bg-purple-50 rounded-xl p-4 mb-6 shadow-inner border border-purple-200">
-                        <h2 className="text-xl font-bold text-purple-800 mb-3 text-left">
-                            منتخب شدہ فائلیں ({selectedFiles.length})
-                        </h2>
-                        <ul className="max-h-48 overflow-y-auto custom-scrollbar text-left">
-                            {selectedFiles.map((file, index) => (
-                                <li key={index} className="flex justify-between items-center py-2 border-b border-purple-100 last:border-b-0">
-                                    <span className="text-gray-700 text-base break-all pr-2">{file.name}</span>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); removeFile(index); }}
-                                        className="text-red-500 hover:text-red-700 transition duration-200 p-1 rounded-full hover:bg-red-100"
-                                    >
-                                        <i className="fas fa-times-circle"></i>
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
+                    {/* Language Selector */}
+                    <div className="mb-6 flex justify-end items-center gap-2 w-full">
+                        <label htmlFor="language-select" className="block text-gray-700 text-sm font-bold">{t.selectLanguage}</label>
+                        <select
+                            id="language-select"
+                            value={language}
+                            onChange={(e) => setLanguage(e.target.value)}
+                            className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="ur">اردو (Urdu)</option>
+                            <option value="en">English</option>
+                        </select>
                     </div>
-                )}
 
-                {/* Action Buttons */}
-                <div className="w-full flex flex-col sm:flex-row justify-center gap-4 mb-6">
-                    <button
-                        onClick={convertToPdf}
-                        disabled={isConvertingPdf || selectedFiles.length === 0}
-                        className="bg-red-500 text-white py-3 px-6 rounded-full text-lg font-bold
-                                   hover:bg-red-600 transition duration-300 ease-in-out transform hover:scale-105
-                                   disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
-                    >
-                        {isConvertingPdf ? (
-                            <>
-                                <i className="fas fa-spinner fa-spin"></i> PDF میں تبدیل ہو رہا ہے...
-                            </>
-                        ) : (
-                            <>
-                                <i className="fas fa-file-pdf"></i> PDF میں تبدیل کریں
-                            </>
-                        )}
-                    </button>
-                    <button
-                        onClick={compressToZip}
-                        disabled={isCompressingZip || selectedFiles.length === 0}
-                        className="bg-green-500 text-white py-3 px-6 rounded-full text-lg font-bold
-                                   hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105
-                                   disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
-                    >
-                        {isCompressingZip ? (
-                            <>
-                                <i className="fas fa-spinner fa-spin"></i> ZIP میں کمپریس ہو رہا ہے...
-                            </>
-                        ) : (
-                            <>
-                                <i className="fas fa-file-archive"></i> ZIP میں کمپریس کریں
-                            </>
-                        )}
-                    </button>
-                </div>
-
-                {/* Message Box */}
-                {message.text && (
-                    <div className={`w-full p-4 rounded-xl border ${message.type === 'error' ? 'bg-red-100 border-red-400 text-red-700' : message.type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-yellow-100 border-yellow-400 text-yellow-700'} text-center font-semibold`}>
-                        <i className={`mr-2 ${message.type === 'error' ? 'fas fa-exclamation-triangle' : message.type === 'success' ? 'fas fa-check-circle' : 'fas fa-info-circle'}`}></i>
-                        {message.text}
+                    {/* Tabs for Converters */}
+                    <div className="flex justify-center flex-wrap gap-2 mb-8 w-full border-b border-gray-200 pb-4">
+                        <button
+                            onClick={() => { setActiveTab('imageToPdf'); resetState(); }}
+                            className={`py-2 px-4 rounded-full text-md font-bold transition duration-200 ease-in-out
+                                ${activeTab === 'imageToPdf' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-file-pdf mr-2"></i> {t.imageToPdf}
+                        </button>
+                        <button
+                            onClick={() => { setActiveTab('imageToImage'); resetState(); }}
+                            className={`py-2 px-4 rounded-full text-md font-bold transition duration-200 ease-in-out
+                                ${activeTab === 'imageToImage' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-image mr-2"></i> {t.imageToImage}
+                        </button>
+                        <button
+                            onClick={() => { setActiveTab('filesToZip'); resetState(); }}
+                            className={`py-2 px-4 rounded-full text-md font-bold transition duration-200 ease-in-out
+                                ${activeTab === 'filesToZip' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-file-archive mr-2"></i> {t.filesToZip}
+                        </button>
+                        <button
+                            onClick={() => { setActiveTab('zipToFiles'); resetState(); }}
+                            className={`py-2 px-4 rounded-full text-md font-bold transition duration-200 ease-in-out
+                                ${activeTab === 'zipToFiles' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-folder-open mr-2"></i> {t.zipToFiles}
+                        </button>
                     </div>
-                )}
 
-                <p className="text-gray-500 text-xs mt-6">
-                    نوٹ: یہ ایپ آپ کے براؤزر میں آف لائن کام کرتی ہے۔
-                    <br />
-                    (Note: This app works offline in your browser.)
-                </p>
-            </div>
-        </div>
-    );
-};
+                    {/* --- Converter Content --- */}
+                    <div className="w-full bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                        {/* Image/Text to PDF Tab */}
+                        {activeTab === 'imageToPdf' && (
+                            <div className="space-y-6">
+                                <p className="text-gray-700 text-center mb-4">{t.imageToPdfDesc}</p>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,text/plain"
+                                    multiple
+                                    onChange={handleFileChange}
+                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer"
+                                />
+                                {selectedFiles.length > 0 && (
+                                    <div className="mt-4">
+                                        <h4 className="font-semibold text-gray-700 mb-2">{t.selectFiles}:</h4>
+                                        <ul className="list-disc list-inside text-gray-600 custom-scrollbar max-h-32 overflow-y-auto">
+                                            {selectedFiles.map((file, index) => (
+                                                <li key={index}>{file.name} ({Math.round(file.size / 1024)} KB)</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                <button
+                                    onClick={convertToPdf}
+                                    disabled={loading || selectedFiles.length === 0}
+                                    className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold w-full
+                                               hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105
+                                               disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2 mt-6"
+                                >
+                                    {loading ? <i className="fas fa-spinner fa-spin mr-2"></i> : <i className="fas fa-sync-alt mr-2"></i>}
+                                    {loading ? t.converting : t.convert}
+                                </button>
+                            </div>
+                        )}
 
-export default App;
+                        {/* Image to Image Tab */}
+                        {activeTab === 'imageToImage' && (
+                            <div className="space-y-6">
+                                <p className="text-gray-700 text-center mb-4">{t.imageToImageDesc}</p>
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    onChange={(e) => handleFileChange(e, false)}
+                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer"
+                                />
+                                {selectedFiles.length > 0 && (
+                                    <div className="mt-4">
+                                        <h4 className="font-semibold text-gray-700 mb-2">{t.selectImage}: {selectedFiles[0].name}</h4>
+                                        <label htmlFor="outputImageFormat" className="block text-gray-700 text-sm font-bold mb-2">{t.outputFormat}</label>
+                                        <select
+                                            id="outputImageFormat"
+                                            value={outputImageFormat}
+                                            onChange={(e) => setOutputImageFormat(e.target.value)}
+                                            className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            <option value="image/jpeg">JPEG</option>
+                                            <option value="image/png">PNG</option>
+                                            <option value="image/webp">WebP</option>
+                                        </select>
+                                    </div>
+                                )}
+                                <button
+                                    onClick={convertImage}
+                                    disabled={loading || selectedFiles.length === 0}
+                                    className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold w-full
+                                               hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105
+                                               disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2 mt-6"
+                                >
+                                    {loading ? <i className="fas fa-spinner fa-spin mr-2"></i> : <i className="fas fa-sync-alt mr-2"></i>}
+                                    {loading ? t.converting : t.convert}
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Files to ZIP Tab */}
+                        {activeTab === 'filesToZip' && (
+                            <div className="space-y-6">
+                                <p className="text-gray-700 text-center mb-4">{t.filesToZipDesc}</p>
+                                <input
+                                    type="file"
+                                    multiple
+                                    onChange={handleFileChange}
+                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer"
+                                />
+                                {selectedFiles.length > 0 && (
+                                    <div className="mt-4">
+                                        <h4 className="font-semibold text-gray-700 mb-2">{t.selectFilesToZip}:</h4>
+                                        <ul className="list-disc list-inside text-gray-600 custom-scrollbar max-h-32 overflow-y-auto">
+                                            {selectedFiles.map((file, index) => (
+                                                <li key={index}>{file.name} ({Math.round(file.size / 1024)} KB)</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                <button
+                                    onClick={createZip}
+                                    disabled={loading || selectedFiles.length === 0}
+                                    className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold w-full
+                                               hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105
+                                               disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2 mt-6"
+                                >
+                                    {loading ? <i className="fas fa-spinner fa-spin mr-2"></i> : <i className="fas fa-file-archive mr-2"></i>}
+                                    {loading ? t.processing : t.convert}
+                                </button>
+                            </div>
+                        )}
+
+                        {/* ZIP to Files Tab */}
+                        {activeTab === 'zipToFiles' && (
+                            <div className="space-y-6">
+                                <p className="text-gray-700 text-center mb-4">{t.zipToFilesDesc}</p>
+                                <input
+                                    type="file"
+                                    accept=".zip"
+                                    onChange={(e) => handleFileChange(e, false)}
+                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer"
+                                />
+                                {selectedFiles.length > 0 && (
+                                    <div className="mt-4">
+                                        <h4 className="font-semibold text-gray-700 mb-2">{t.selectZipFile}: {selectedFiles[0].name}</h4>
+                                    </div>
+                                )}
+                                <button
+                                    onClick={extractZip}
+                                    disabled={loading || selectedFiles.length === 0}
+                                    className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold w-full
+                                               hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105
+                                               disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2 mt-6"
+                                >
+                                    {loading ? <i className="fas fa-spinner fa-spin mr-2"></i> : <i className="fas fa-folder-open mr-2"></i>}
+                                    {loading ? t.extracting : t.extractFiles}
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Output & Messages */}
+                        {message && (
+                            <div className={`mt-6 p-4 rounded-lg text-center font-semibold
+                                ${message.includes(t.error) ? 'bg-red-100 text-red-700 border border-red-400' : 'bg-blue-100 text-blue-700 border border-blue-400'}`}>
+                                {message}
+                            </div>
+                        )}
+
+                        {outputFile && (
+                            <div className="mt-6 text-center">
+                                <button
+                                    onClick={handleDownload}
+                                    className="bg-green-600 text-white py-3 px-8 rounded-full text-lg font-bold
+                                               hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105
+                                               shadow-lg flex items-center justify-center gap-2 mx-auto"
+                                >
+                                    <i className="fas fa-download mr-2"></i> {t.downloadPdf} / {t.downloadImage} / {t.downloadZip}
+                                </button>
+                            </div>
+                        )}
+
+                        {extractedFiles.length > 0 && (
+                            <div className="mt-6 bg-purple-50 p-6 rounded-xl shadow-lg border border-purple-200">
+                                <h3 className="text-2xl font-bold text-purple-800 mb-4">{t.extractedFiles}</h3>
+                                <div className="space-y-2 custom-scrollbar max-h-60 overflow-y-auto">
+                                    {extractedFiles.map((file, index) => (
+                                        <div key={index} className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border border-gray-200">
+                                            <span className="font-semibold text-gray-800">{file.name}</span>
+                                            <button
+                                                onClick={() => window.saveAs(file.blob, file.name)}
+                                                className="bg-blue-500 text-white py-1 px-3 rounded-full text-sm hover:bg-blue-600 transition"
+                                            >
+                                                <i className="fas fa-download mr-1"></i> {t.downloadExtracted}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Clear All Button */}
+                        {(selectedFiles.length > 0 || outputFile || extractedFiles.length > 0 || message) && (
+                            <div className="mt-6 text-center">
+                                <button
+                                    onClick={resetState}
+                                    className="bg-gray-400 text-white py-2 px-6 rounded-full text-md font-bold
+                                               hover:bg-gray-500 transition duration-300 ease-in-out shadow-lg"
+                                >
+                                    <i className="fas fa-times mr-2"></i> {t.clearAll}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the App component into the root div
+        window.onload = function() {
+            const rootElement = document.getElementById('root');
+            if (rootElement) {
+                const root = ReactDOM.createRoot(rootElement);
+                root.render(<App />);
+            }
+        };
+    </script>
+</body>
+</html>

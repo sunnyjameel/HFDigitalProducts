@@ -3,237 +3,525 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Generator</title>
+    <title>Digital Invoice Generator</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Inter', sans-serif;
         }
-        #invoice-preview {
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid #e5e7eb;
+        .invoice-preview {
+            background-color: white;
+            padding: 2rem;
+            min-height: 297mm; /* A4 height */
+            width: 210mm; /* A4 width */
+            margin: 20px auto;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
         }
+        /* Hide form controls when printing */
         @media print {
-            body { margin: 0; padding: 0; }
-            #controls-section, #printBtn, #header-text { display: none !important; }
-            #invoice-container { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
-            #invoice-preview { box-shadow: none !important; border: none !important; width: 100% !important; height: 100% !important; }
-        }
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
-          -webkit-appearance: none; 
-          margin: 0; 
-        }
-        input[type=number] {
-          -moz-appearance: textfield;
+            .no-print {
+                display: none !important;
+            }
+            .invoice-preview {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+            }
         }
     </style>
 </head>
-<body class="bg-slate-100">
+<body class="bg-gradient-to-br from-blue-200 to-purple-300 min-h-screen flex items-center justify-center p-4">
+    <div id="root"></div>
 
-    <div class="max-w-7xl mx-auto p-4 md:p-8">
-        <div id="header-text" class="text-center mb-8">
-             <h1 class="text-4xl font-bold text-slate-800">Invoice Generator</h1>
-             <p class="text-slate-500 mt-1">Create and download professional invoices instantly.</p>
-        </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Controls Section -->
-            <div id="controls-section" class="lg:col-span-1 space-y-6">
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                     <button id="printBtn" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
-                        <i class="fas fa-download"></i> Download / Print Invoice
-                    </button>
-                </div>
-                
-                <div class="bg-white p-6 rounded-lg shadow-md space-y-3">
-                    <h3 class="font-semibold text-lg">Your Details</h3>
-                    <input type="text" id="yourName" placeholder="Your Name / Company" class="w-full border p-2 rounded">
-                    <input type="text" id="yourAddress" placeholder="Your Address" class="w-full border p-2 rounded">
-                </div>
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel CDN - for JSX transformation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- html2canvas for screenshot functionality (optional, but good for download) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-                <div class="bg-white p-6 rounded-lg shadow-md space-y-3">
-                    <h3 class="font-semibold text-lg">Client's Details</h3>
-                    <input type="text" id="clientName" placeholder="Client's Name / Company" class="w-full border p-2 rounded">
-                    <input type="text" id="clientAddress" placeholder="Client's Address" class="w-full border p-2 rounded">
-                </div>
+    <script type="text/babel">
+        const translations = {
+            ur: {
+                appTitle: "انوائس جنریٹر",
+                tagline: "پیشہ ورانہ انوائس آسانی سے بنائیں۔",
+                selectLanguage: "زبان منتخب کریں:",
+                invoiceDetails: "انوائس کی تفصیلات",
+                invoiceNumber: "انوائس نمبر",
+                invoiceDate: "انوائس کی تاریخ",
+                dueDate: "آخری تاریخ",
+                companyInfo: "کمپنی کی معلومات",
+                companyName: "کمپنی کا نام",
+                companyAddress: "کمپنی کا پتہ",
+                companyPhone: "کمپنی کا فون",
+                companyEmail: "کمپنی کا ای میل",
+                companyLogo: "کمپنی کا لوگو (اختیاری)",
+                clientInfo: "کلائنٹ کی معلومات",
+                clientName: "کلائنٹ کا نام",
+                clientAddress: "کلائنٹ کا پتہ",
+                items: "آئٹمز",
+                description: "تفصیل",
+                quantity: "مقدار",
+                unitPrice: "فی یونٹ قیمت",
+                total: "کل",
+                addItem: "آئٹم شامل کریں",
+                subtotal: "سب ٹوٹل",
+                taxRate: "ٹیکس کی شرح (%)",
+                discount: "ڈسکاؤنٹ (Rs.)",
+                grandTotal: "گرانڈ ٹوٹل",
+                notesTerms: "نوٹس / شرائط و ضوابط",
+                printInvoice: "انوائس پرنٹ کریں",
+                downloadInvoice: "انوائس ڈاؤن لوڈ کریں (PNG)",
+                downloadFailMessage: "ڈاؤن لوڈ ناکام ہو گیا۔ براہ کرم اسکرین شاٹ لینے کی کوشش کریں۔",
+                delete: "حذف کریں",
+                logoPreview: "لوگو کا پیش نظارہ",
+                maxSize: "زیادہ سے زیادہ سائز 2MB",
+                noPreview: "کوئی پیش نظارہ نہیں",
+                itemTotal: "آئٹم کا کل",
+                currency: "Rs.",
+                loading: "لوڈ ہو رہا ہے...",
+                errorImageSize: "تصویر کا سائز 2MB سے زیادہ نہیں ہونا چاہیے۔"
+            },
+            en: {
+                appTitle: "Invoice Generator",
+                tagline: "Generate professional invoices with ease.",
+                selectLanguage: "Select Language:",
+                invoiceDetails: "Invoice Details",
+                invoiceNumber: "Invoice Number",
+                invoiceDate: "Invoice Date",
+                dueDate: "Due Date",
+                companyInfo: "Company Information",
+                companyName: "Company Name",
+                companyAddress: "Company Address",
+                companyPhone: "Company Phone",
+                companyEmail: "Company Email",
+                companyLogo: "Company Logo (Optional)",
+                clientInfo: "Client Information",
+                clientName: "Client Name",
+                clientAddress: "Client Address",
+                items: "Items",
+                description: "Description",
+                quantity: "Quantity",
+                unitPrice: "Unit Price",
+                total: "Total",
+                addItem: "Add Item",
+                subtotal: "Subtotal",
+                taxRate: "Tax Rate (%)",
+                discount: "Discount (Rs.)",
+                grandTotal: "Grand Total",
+                notesTerms: "Notes / Terms & Conditions",
+                printInvoice: "Print Invoice",
+                downloadInvoice: "Download Invoice (PNG)",
+                downloadFailMessage: "Download failed. Please try taking a screenshot instead.",
+                delete: "Delete",
+                logoPreview: "Logo Preview",
+                maxSize: "Max size 2MB",
+                noPreview: "No Preview",
+                itemTotal: "Item Total",
+                currency: "Rs.",
+                loading: "Loading...",
+                errorImageSize: "Image size should not exceed 2MB."
+            }
+        };
 
-                <div class="bg-white p-6 rounded-lg shadow-md space-y-3">
-                    <h3 class="font-semibold text-lg">Invoice Details</h3>
-                    <input type="text" id="invoiceNumber" placeholder="Invoice #" class="w-full border p-2 rounded">
-                    <input type="date" id="invoiceDate" class="w-full border p-2 rounded text-gray-500">
-                </div>
-                
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="font-semibold text-lg mb-3">Items</h3>
-                    <div id="itemsContainer" class="space-y-4">
-                        <!-- Items will be added here by JS -->
-                    </div>
-                    <button id="addItemBtn" class="mt-4 w-full bg-slate-200 text-slate-800 font-semibold py-2 rounded-lg hover:bg-slate-300">
-                        + Add Item
-                    </button>
-                </div>
+        const App = () => {
+            const [language, setLanguage] = React.useState('ur'); // Default to Urdu
+            const t = translations[language]; // Get current language translations
 
-                <div class="bg-white p-6 rounded-lg shadow-md space-y-3">
-                     <h3 class="font-semibold text-lg">Notes</h3>
-                     <textarea id="notes" class="w-full border p-2 rounded h-20" placeholder="Terms and conditions, payment details, etc."></textarea>
-                </div>
-            </div>
+            const initialInvoiceState = {
+                invoiceNumber: 'INV-001',
+                invoiceDate: new Date().toISOString().split('T')[0],
+                dueDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split('T')[0],
+                companyName: 'Your Company Name',
+                companyAddress: '123 Main Street, City, Country',
+                companyPhone: '+92 3XX XXXXXXX',
+                companyEmail: 'info@yourcompany.com',
+                logoImage: '',
+                clientName: 'Client Name',
+                clientAddress: 'Client Address, City, Country',
+                taxRate: 0,
+                discount: 0,
+                notes: 'Thank you for your business!',
+            };
 
-            <!-- Invoice Preview Section -->
-            <div id="invoice-container" class="lg:col-span-2">
-                <div id="invoice-preview" class="bg-white p-12 w-full mx-auto" style="min-height: 1122px; max-width: 820px;">
-                    <div class="flex justify-between items-start border-b-2 pb-8 border-slate-800">
-                        <div>
-                            <h1 id="preview_yourName" class="text-3xl font-bold">Your Company</h1>
-                            <p id="preview_yourAddress" class="text-slate-600">Your Address</p>
-                        </div>
-                        <h2 class="text-5xl font-bold text-slate-400 uppercase">Invoice</h2>
-                    </div>
-
-                    <div class="flex justify-between mt-8">
-                        <div>
-                            <p class="font-bold text-slate-600">Bill To:</p>
-                            <p id="preview_clientName" class="font-semibold">Client Name</p>
-                            <p id="preview_clientAddress" class="text-slate-600">Client Address</p>
-                        </div>
-                        <div class="text-right">
-                             <p><span class="font-bold text-slate-600">Invoice #: </span><span id="preview_invoiceNumber">123</span></p>
-                             <p><span class="font-bold text-slate-600">Date: </span><span id="preview_invoiceDate">01-01-2025</span></p>
-                        </div>
-                    </div>
-
-                    <table class="w-full mt-10">
-                        <thead>
-                            <tr class="bg-slate-800 text-white">
-                                <th class="p-3 text-left font-semibold">Item Description</th>
-                                <th class="p-3 text-center font-semibold">Qty</th>
-                                <th class="p-3 text-right font-semibold">Unit Price</th>
-                                <th class="p-3 text-right font-semibold">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody id="preview_itemsContainer">
-                            <!-- Items rows will be populated here by JS -->
-                        </tbody>
-                    </table>
-
-                    <div class="flex justify-end mt-8">
-                        <div class="w-full max-w-xs space-y-2">
-                             <div class="flex justify-between">
-                                <span class="font-semibold text-slate-600">Subtotal</span>
-                                <span id="subtotal">Rs 0.00</span>
-                             </div>
-                              <div class="flex justify-between">
-                                <span class="font-semibold text-slate-600">Tax (%)</span>
-                                <input type="number" id="taxInput" class="w-20 border text-right p-1 rounded" value="0">
-                             </div>
-                              <div class="flex justify-between font-bold text-lg border-t pt-2 mt-2 border-slate-400">
-                                <span class="text-slate-800">Total</span>
-                                <span id="grandTotal" class="text-slate-800">Rs 0.00</span>
-                             </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-16">
-                        <p class="font-bold text-slate-600">Notes:</p>
-                        <p id="preview_notes" class="text-slate-600 text-sm">Thank you for your business!</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const itemsContainer = document.getElementById('itemsContainer');
-        const addItemBtn = document.getElementById('addItemBtn');
-        const previewItemsContainer = document.getElementById('preview_itemsContainer');
-        let itemId = 0;
-
-        function createNewItem() {
-            itemId++;
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'p-3 border rounded-lg space-y-2 relative';
-            itemDiv.id = `item-controls-${itemId}`;
-            itemDiv.innerHTML = `
-                <input type="text" class="w-full border p-2 rounded item-desc" placeholder="Item Description">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="number" class="w-full border p-2 rounded item-qty" placeholder="Qty" value="1">
-                    <input type="number" class="w-full border p-2 rounded item-price" placeholder="Price">
-                </div>
-                <button class="absolute top-1 right-1 h-6 w-6 bg-red-500 text-white rounded-full text-xs removeItemBtn" data-id="${itemId}">X</button>
-            `;
-            itemsContainer.appendChild(itemDiv);
-            updatePreview();
-        }
-
-        function updatePreview() {
-            // Update simple text fields
-            document.getElementById('preview_yourName').textContent = document.getElementById('yourName').value || 'Your Company';
-            document.getElementById('preview_yourAddress').textContent = document.getElementById('yourAddress').value || 'Your Address';
-            document.getElementById('preview_clientName').textContent = document.getElementById('clientName').value || 'Client Name';
-            document.getElementById('preview_clientAddress').textContent = document.getElementById('clientAddress').value || 'Client Address';
-            document.getElementById('preview_invoiceNumber').textContent = document.getElementById('invoiceNumber').value || '001';
-            document.getElementById('preview_invoiceDate').textContent = document.getElementById('invoiceDate').value || new Date().toISOString().slice(0, 10);
-            document.getElementById('preview_notes').textContent = document.getElementById('notes').value || 'Thank you for your business!';
-
-            // Update items table and calculate totals
-            previewItemsContainer.innerHTML = '';
-            let subtotal = 0;
-            const itemControlDivs = itemsContainer.querySelectorAll('[id^="item-controls-"]');
-
-            itemControlDivs.forEach(div => {
-                const desc = div.querySelector('.item-desc').value;
-                const qty = parseFloat(div.querySelector('.item-qty').value) || 0;
-                const price = parseFloat(div.querySelector('.item-price').value) || 0;
-                const total = qty * price;
-                subtotal += total;
-
-                const row = document.createElement('tr');
-                row.className = 'border-b';
-                row.innerHTML = `
-                    <td class="p-3">${desc || 'Item Description'}</td>
-                    <td class="p-3 text-center">${qty}</td>
-                    <td class="p-3 text-right">Rs ${price.toFixed(2)}</td>
-                    <td class="p-3 text-right font-semibold">Rs ${total.toFixed(2)}</td>
-                `;
-                previewItemsContainer.appendChild(row);
+            const [invoiceDetails, setInvoiceDetails] = React.useState(() => {
+                try {
+                    const storedDetails = JSON.parse(localStorage.getItem('invoiceDetails'));
+                    return storedDetails ? { ...initialInvoiceState, ...storedDetails } : initialInvoiceState;
+                } catch (e) {
+                    console.error("Failed to load invoice details from local storage:", e);
+                    return initialInvoiceState;
+                }
             });
 
-            // Update final totals
-            const taxPercent = parseFloat(document.getElementById('taxInput').value) || 0;
-            const taxAmount = subtotal * (taxPercent / 100);
-            const grandTotal = subtotal + taxAmount;
-            
-            document.getElementById('subtotal').textContent = `Rs ${subtotal.toFixed(2)}`;
-            document.getElementById('grandTotal').textContent = `Rs ${grandTotal.toFixed(2)}`;
-        }
-        
-        // Event Listeners
-        addItemBtn.addEventListener('click', createNewItem);
+            const initialItems = [{ id: 1, description: 'Product/Service 1', quantity: 1, unitPrice: 100 }];
+            const [items, setItems] = React.useState(() => {
+                try {
+                    const storedItems = JSON.parse(localStorage.getItem('invoiceItems'));
+                    return storedItems && storedItems.length > 0 ? storedItems : initialItems;
+                } catch (e) {
+                    console.error("Failed to load invoice items from local storage:", e);
+                    return initialItems;
+                }
+            });
 
-        document.getElementById('controls-section').addEventListener('input', updatePreview);
+            // Save to local storage whenever state changes
+            React.useEffect(() => {
+                localStorage.setItem('invoiceDetails', JSON.stringify(invoiceDetails));
+            }, [invoiceDetails]);
 
-        document.getElementById('taxInput').addEventListener('input', updatePreview);
-        
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('removeItemBtn')) {
-                const id = e.target.dataset.id;
-                document.getElementById(`item-controls-${id}`).remove();
-                updatePreview();
+            React.useEffect(() => {
+                localStorage.setItem('invoiceItems', JSON.stringify(items));
+            }, [items]);
+
+            // Ref for the printable area
+            const invoiceRef = React.useRef(null);
+
+            // Handle changes for invoice details
+            const handleInvoiceDetailChange = (e) => {
+                const { name, value } = e.target;
+                setInvoiceDetails(prev => ({ ...prev, [name]: value }));
+            };
+
+            // Handle logo upload
+            const handleLogoUpload = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    if (file.size > 2 * 1024 * 1024) { // Max 2MB
+                        alert(t.errorImageSize);
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setInvoiceDetails(prev => ({ ...prev, logoImage: reader.result }));
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            // Handle changes for item fields
+            const handleItemChange = (id, e) => {
+                const { name, value } = e.target;
+                setItems(prev => prev.map(item =>
+                    item.id === id ? { ...item, [name]: name === 'quantity' || name === 'unitPrice' ? parseFloat(value) || 0 : value } : item
+                ));
+            };
+
+            // Add new item row
+            const addItem = () => {
+                setItems(prev => [...prev, { id: Date.now(), description: '', quantity: 1, unitPrice: 0 }]);
+            };
+
+            // Delete item row
+            const deleteItem = (id) => {
+                setItems(prev => prev.filter(item => item.id !== id));
+            };
+
+            // Calculations
+            const calculateItemTotal = (quantity, unitPrice) => {
+                return (quantity * unitPrice).toFixed(2);
+            };
+
+            const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+            const taxAmount = subtotal * (invoiceDetails.taxRate / 100);
+            const grandTotal = (subtotal + taxAmount - invoiceDetails.discount).toFixed(2);
+
+            // Print functionality
+            const handlePrint = () => {
+                window.print();
+            };
+
+            // Download as PNG functionality
+            const downloadInvoice = () => {
+                if (invoiceRef.current) {
+                    html2canvas(invoiceRef.current, {
+                        useCORS: true,
+                        allowTaint: true,
+                        scale: 2 // Increase scale for better resolution
+                    }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.download = `Invoice_${invoiceDetails.invoiceNumber}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    }).catch(err => {
+                        console.error("Error generating image:", err);
+                        alert(t.downloadFailMessage);
+                    });
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center py-10 w-full">
+                    <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-6xl w-full flex flex-col lg:flex-row gap-8 transform transition-all duration-300 hover:scale-[1.005] border-4 border-purple-400">
+                        {/* Input Form Section */}
+                        <div className="w-full lg:w-1/2 p-4 border-r-0 lg:border-r-2 border-purple-200 pr-8 no-print">
+                            <h2 className="text-3xl font-extrabold text-purple-700 mb-6 text-center">
+                                {t.invoiceDetails}
+                            </h2>
+
+                            {/* Language Selector */}
+                            <div className="mb-6 flex justify-end items-center gap-2 w-full">
+                                <label htmlFor="language-select" className="block text-gray-700 text-sm font-bold">{t.selectLanguage}</label>
+                                <select
+                                    id="language-select"
+                                    value={language}
+                                    onChange={(e) => setLanguage(e.target.value)}
+                                    className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="ur">اردو (Urdu)</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+
+                            {/* Invoice Meta Info */}
+                            <div className="mb-6 border-b pb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="invoiceNumber" className="block text-gray-700 text-sm font-bold mb-2">{t.invoiceNumber}</label>
+                                        <input type="text" name="invoiceNumber" id="invoiceNumber" value={invoiceDetails.invoiceNumber} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="invoiceDate" className="block text-gray-700 text-sm font-bold mb-2">{t.invoiceDate}</label>
+                                        <input type="date" name="invoiceDate" id="invoiceDate" value={invoiceDetails.invoiceDate} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label htmlFor="dueDate" className="block text-gray-700 text-sm font-bold mb-2">{t.dueDate}</label>
+                                        <input type="date" name="dueDate" id="dueDate" value={invoiceDetails.dueDate} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Company Info */}
+                            <div className="mb-6 border-b pb-4">
+                                <h3 className="text-xl font-bold text-gray-800 mb-4">{t.companyInfo}</h3>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <input type="text" name="companyName" placeholder={t.companyName} value={invoiceDetails.companyName} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                    <textarea name="companyAddress" placeholder={t.companyAddress} value={invoiceDetails.companyAddress} onChange={handleInvoiceDetailChange} rows="2" className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                    <input type="text" name="companyPhone" placeholder={t.companyPhone} value={invoiceDetails.companyPhone} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                    <input type="email" name="companyEmail" placeholder={t.companyEmail} value={invoiceDetails.companyEmail} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                    <div className="mt-4">
+                                        <label htmlFor="companyLogo" className="block text-gray-700 text-sm font-bold mb-2">{t.companyLogo}</label>
+                                        <input
+                                            type="file"
+                                            id="companyLogo"
+                                            accept="image/*"
+                                            onChange={handleLogoUpload}
+                                            className="block w-full text-sm text-gray-500
+                                                       file:mr-4 file:py-2 file:px-4
+                                                       file:rounded-full file:border-0
+                                                       file:text-sm file:font-semibold
+                                                       file:bg-purple-50 file:text-purple-700
+                                                       hover:file:bg-purple-100 cursor-pointer"
+                                        />
+                                        {invoiceDetails.logoImage && (
+                                            <div className="mt-4 text-center">
+                                                <p className="text-sm text-gray-600 mb-2">{t.logoPreview}</p>
+                                                <img src={invoiceDetails.logoImage} alt="Company Logo" className="max-w-[100px] max-h-[100px] mx-auto border rounded-lg shadow-sm" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Client Info */}
+                            <div className="mb-6 border-b pb-4">
+                                <h3 className="text-xl font-bold text-gray-800 mb-4">{t.clientInfo}</h3>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <input type="text" name="clientName" placeholder={t.clientName} value={invoiceDetails.clientName} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                                    <textarea name="clientAddress" placeholder={t.clientAddress} value={invoiceDetails.clientAddress} onChange={handleInvoiceDetailChange} rows="2" className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                </div>
+                            </div>
+
+                            {/* Items */}
+                            <div className="mb-6 border-b pb-4">
+                                <h3 className="text-xl font-bold text-gray-800 mb-4">{t.items}</h3>
+                                {items.map(item => (
+                                    <div key={item.id} className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-3 p-3 border border-gray-200 rounded-lg relative">
+                                        <input type="text" name="description" placeholder={t.description} value={item.description} onChange={(e) => handleItemChange(item.id, e)} className="p-2 border border-gray-300 rounded-lg col-span-full md:col-span-2" />
+                                        <input type="number" name="quantity" placeholder={t.quantity} value={item.quantity} onChange={(e) => handleItemChange(item.id, e)} className="p-2 border border-gray-300 rounded-lg" min="0" />
+                                        <input type="number" name="unitPrice" placeholder={t.unitPrice} value={item.unitPrice} onChange={(e) => handleItemChange(item.id, e)} className="p-2 border border-gray-300 rounded-lg" min="0" step="0.01" />
+                                        <div className="p-2 flex items-center justify-end font-semibold text-gray-800 col-span-full md:col-span-1">
+                                            {t.currency} {calculateItemTotal(item.quantity, item.unitPrice)}
+                                        </div>
+                                        {items.length > 1 && (
+                                            <button onClick={() => deleteItem(item.id)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md hover:bg-red-600 transition">
+                                                <i className="fas fa-minus"></i>
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                                <button onClick={addItem} className="bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition duration-200 ease-in-out flex items-center gap-2 mx-auto mt-4">
+                                    <i className="fas fa-plus"></i> {t.addItem}
+                                </button>
+                            </div>
+
+                            {/* Summary */}
+                            <div className="mb-6 border-b pb-4">
+                                <div className="grid grid-cols-2 gap-4 mb-2">
+                                    <label className="text-gray-700 text-sm font-bold text-right">{t.subtotal}:</label>
+                                    <span className="text-gray-800 font-semibold text-right">{t.currency} {subtotal.toFixed(2)}</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 mb-2">
+                                    <label htmlFor="taxRate" className="text-gray-700 text-sm font-bold text-right">{t.taxRate}:</label>
+                                    <input type="number" name="taxRate" id="taxRate" value={invoiceDetails.taxRate} onChange={handleInvoiceDetailChange} className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-right" min="0" step="0.01" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 mb-2">
+                                    <label htmlFor="discount" className="text-gray-700 text-sm font-bold text-right">{t.discount}:</label>
+                                    <input type="number" name="discount" id="discount" value={invoiceDetails.discount} onChange={handleInvoiceDetailChange} className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-right" min="0" step="0.01" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 pt-4 border-t-2 border-gray-300">
+                                    <label className="text-gray-800 text-xl font-bold text-right">{t.grandTotal}:</label>
+                                    <span className="text-purple-700 text-2xl font-extrabold text-right">{t.currency} {grandTotal}</span>
+                                </div>
+                            </div>
+
+                            {/* Notes / Terms */}
+                            <div className="mb-6">
+                                <h3 className="text-xl font-bold text-gray-800 mb-4">{t.notesTerms}</h3>
+                                <textarea name="notes" placeholder={t.notesTerms} value={invoiceDetails.notes} onChange={handleInvoiceDetailChange} rows="4" className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="text-center mt-8 flex flex-col md:flex-row gap-4 justify-center">
+                                <button
+                                    onClick={handlePrint}
+                                    className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold
+                                               hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105
+                                               shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    <i className="fas fa-print mr-2"></i> {t.printInvoice}
+                                </button>
+                                <button
+                                    onClick={downloadInvoice}
+                                    className="bg-green-600 text-white py-3 px-8 rounded-full text-lg font-bold
+                                               hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105
+                                               shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    <i className="fas fa-download mr-2"></i> {t.downloadInvoice}
+                                </button>
+                            </div>
+                            <p className="text-gray-500 text-xs mt-2 text-center">
+                                {t.downloadFailMessage}
+                            </p>
+                        </div>
+
+                        {/* Live Preview Section */}
+                        <div className="w-full lg:w-1/2 p-4 flex items-center justify-center">
+                            <div ref={invoiceRef} className="invoice-preview rounded-xl border-4 border-gray-300">
+                                {/* Header */}
+                                <div className="flex justify-between items-start mb-8">
+                                    <div>
+                                        <h1 className="text-4xl font-extrabold text-purple-700 mb-2">{t.appTitle}</h1>
+                                        <p className="text-lg text-gray-700">#{invoiceDetails.invoiceNumber}</p>
+                                        <p className="text-sm text-gray-600">Date: {invoiceDetails.invoiceDate}</p>
+                                        <p className="text-sm text-gray-600">Due Date: {invoiceDetails.dueDate}</p>
+                                    </div>
+                                    {invoiceDetails.logoImage && (
+                                        <img src={invoiceDetails.logoImage} alt="Company Logo" className="max-w-[120px] max-h-[120px] object-contain" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/120x120/cccccc/333333?text=Logo"; }} />
+                                    )}
+                                </div>
+
+                                {/* Company & Client Info */}
+                                <div className="grid grid-cols-2 gap-8 mb-8">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-800 mb-2">{t.companyInfo}</h3>
+                                        <p className="font-semibold text-gray-700">{invoiceDetails.companyName}</p>
+                                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{invoiceDetails.companyAddress}</p>
+                                        <p className="text-sm text-gray-600">{invoiceDetails.companyPhone}</p>
+                                        <p className="text-sm text-gray-600">{invoiceDetails.companyEmail}</p>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-800 mb-2">{t.clientInfo}</h3>
+                                        <p className="font-semibold text-gray-700">{invoiceDetails.clientName}</p>
+                                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{invoiceDetails.clientAddress}</p>
+                                    </div>
+                                </div>
+
+                                {/* Items Table */}
+                                <div className="mb-8">
+                                    <table className="min-w-full bg-white border border-gray-200">
+                                        <thead>
+                                            <tr className="bg-gray-100 text-gray-700 uppercase text-sm leading-normal">
+                                                <th className="py-3 px-6 text-left">{t.description}</th>
+                                                <th className="py-3 px-6 text-center">{t.quantity}</th>
+                                                <th className="py-3 px-6 text-right">{t.unitPrice}</th>
+                                                <th className="py-3 px-6 text-right">{t.total}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-gray-700 text-sm font-light">
+                                            {items.map(item => (
+                                                <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
+                                                    <td className="py-3 px-6 text-left whitespace-nowrap">{item.description}</td>
+                                                    <td className="py-3 px-6 text-center">{item.quantity}</td>
+                                                    <td className="py-3 px-6 text-right">{t.currency} {item.unitPrice.toFixed(2)}</td>
+                                                    <td className="py-3 px-6 text-right font-semibold">{t.currency} {calculateItemTotal(item.quantity, item.unitPrice)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Summary Totals */}
+                                <div className="flex justify-end mb-8">
+                                    <div className="w-full md:w-1/2">
+                                        <div className="flex justify-between mb-2">
+                                            <span className="text-gray-700 font-semibold">{t.subtotal}:</span>
+                                            <span className="text-gray-800">{t.currency} {subtotal.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between mb-2">
+                                            <span className="text-gray-700 font-semibold">{t.taxRate} ({invoiceDetails.taxRate}%):</span>
+                                            <span className="text-gray-800">{t.currency} {taxAmount.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between mb-2">
+                                            <span className="text-gray-700 font-semibold">{t.discount}:</span>
+                                            <span className="text-gray-800">- {t.currency} {invoiceDetails.discount.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between pt-4 border-t-2 border-gray-300">
+                                            <span className="text-purple-700 text-xl font-bold">{t.grandTotal}:</span>
+                                            <span className="text-purple-700 text-2xl font-extrabold">{t.currency} {grandTotal}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Notes / Terms */}
+                                {invoiceDetails.notes && (
+                                    <div className="mb-4">
+                                        <h3 className="text-lg font-bold text-gray-800 mb-2">{t.notesTerms}</h3>
+                                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{invoiceDetails.notes}</p>
+                                    </div>
+                                )}
+
+                                <div className="text-center text-gray-500 text-xs mt-8">
+                                    <p>{t.appTitle} - {t.tagline}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the App component into the root div
+        window.onload = function() {
+            const rootElement = document.getElementById('root');
+            if (rootElement) {
+                const root = ReactDOM.createRoot(rootElement);
+                root.render(<App />);
             }
-        });
-
-        document.getElementById('printBtn').addEventListener('click', () => {
-            window.print();
-        });
-
-        // Initial state
-        createNewItem();
-        document.getElementById('invoiceDate').valueAsDate = new Date();
-        updatePreview();
-    });
+        };
     </script>
 </body>
 </html>
