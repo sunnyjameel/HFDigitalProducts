@@ -3,538 +3,1130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Invoice Generator</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Fonts - Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>Professional Invoice Generator Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
+        * {
             font-family: 'Inter', sans-serif;
         }
-        /* Base styles for invoice preview - flexible for screen display */
-        .invoice-preview {
-            background-color: white;
-            padding: 1.5rem; /* Default padding for all screens */
-            width: 100%; /* Take full width of its parent */
-            max-width: 210mm; /* Max width for larger screens to simulate A4 aspect */
-            aspect-ratio: 210 / 297; /* Maintain A4 aspect ratio for screen display */
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            overflow-y: auto; /* Allow vertical scrolling if content overflows */
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-
-        /* Print-specific styles - override for actual printing */
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .invoice-shadow {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .template-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .template-card.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .status-paid {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .status-pending {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .status-overdue {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
         @media print {
-            body * {
-                visibility: hidden;
+            .no-print {
+                display: none !important;
             }
-            .invoice-preview, .invoice-preview * {
-                visibility: visible;
-            }
-            .invoice-preview {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 210mm !important; /* Force A4 width for print */
-                height: 297mm !important; /* Force A4 height for print */
-                min-height: 297mm !important; /* Ensure min-height for A4 */
-                padding: 20mm !important; /* Standard A4 margins, adjust as needed */
-                box-shadow: none !important;
-                border: none !important;
-                margin: 0 !important;
-                overflow: hidden !important; /* No scrollbars on print */
-                aspect-ratio: unset !important; /* Remove aspect ratio for print */
-            }
-        }
-        /* Custom scrollbar for tables on small screens */
-        .table-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-200 to-purple-300 min-h-screen flex items-center justify-center p-4">
-    <div id="root"></div>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-6 mb-8">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-file-invoice-dollar text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Invoice Generator Pro</h1>
+                        <p class="text-white text-opacity-80">Professional Invoice Management System</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm text-white text-opacity-80">Total Generated</p>
+                        <p class="text-xl font-bold" id="totalInvoices">0</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-white text-opacity-80">Total Amount</p>
+                        <p class="text-xl font-bold" id="totalAmount">$0.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
 
-    <!-- React CDN -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <!-- Babel CDN - for JSX transformation in browser -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- html2canvas for screenshot functionality (optional, but good for download) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <div class="container mx-auto px-4 pb-8">
+        <!-- Dashboard Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 invoice-shadow hover-scale">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Total Invoices</p>
+                        <p class="text-2xl font-bold text-gray-800" id="dashTotalInvoices">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-file-invoice text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-6 invoice-shadow hover-scale">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Paid Invoices</p>
+                        <p class="text-2xl font-bold text-green-600" id="dashPaidInvoices">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-6 invoice-shadow hover-scale">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Pending Amount</p>
+                        <p class="text-2xl font-bold text-orange-600" id="dashPendingAmount">$0.00</p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-clock text-orange-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-6 invoice-shadow hover-scale">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Overdue</p>
+                        <p class="text-2xl font-bold text-red-600" id="dashOverdueInvoices">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <script type="text/babel">
-        const translations = {
-            ur: {
-                appTitle: "انوائس جنریٹر",
-                tagline: "پیشہ ورانہ انوائس آسانی سے بنائیں۔",
-                selectLanguage: "زبان منتخب کریں:",
-                invoiceDetails: "انوائس کی تفصیلات",
-                invoiceNumber: "انوائس نمبر",
-                invoiceDate: "انوائس کی تاریخ",
-                dueDate: "آخری تاریخ",
-                companyInfo: "کمپنی کی معلومات",
-                companyName: "کمپنی کا نام",
-                companyAddress: "کمپنی کا پتہ",
-                companyPhone: "کمپنی کا فون",
-                companyEmail: "کمپنی کا ای میل",
-                companyLogo: "کمپنی کا لوگو (اختیاری)",
-                clientInfo: "کلائنٹ کی معلومات",
-                clientName: "کلائنٹ کا نام",
-                clientAddress: "کلائنٹ کا پتہ",
-                items: "آئٹمز",
-                description: "تفصیل",
-                quantity: "مقدار",
-                unitPrice: "فی یونٹ قیمت",
-                total: "کل",
-                addItem: "آئٹم شامل کریں",
-                subtotal: "سب ٹوٹل",
-                taxRate: "ٹیکس کی شرح (%)",
-                discount: "ڈسکاؤنٹ (Rs.)",
-                grandTotal: "گرانڈ ٹوٹل",
-                notesTerms: "نوٹس / شرائط و ضوابط",
-                printInvoice: "انوائس پرنٹ کریں",
-                downloadInvoice: "انوائس ڈاؤن لوڈ کریں (PNG)",
-                downloadFailMessage: "ڈاؤن لوڈ ناکام ہو گیا۔ براہ کرم اسکرین شاٹ لینے کی کوشش کریں۔",
-                delete: "حذف کریں",
-                logoPreview: "لوگو کا پیش نظارہ",
-                maxSize: "زیادہ سے زیادہ سائز 2MB",
-                noPreview: "کوئی پیش نظارہ نہیں",
-                itemTotal: "آئٹم کا کل",
-                currency: "Rs.",
-                loading: "لوڈ ہو رہا ہے...",
-                errorImageSize: "تصویر کا سائز 2MB سے زیادہ نہیں ہونا چاہیے۔"
-            },
-            en: {
-                appTitle: "Invoice Generator",
-                tagline: "Generate professional invoices with ease.",
-                selectLanguage: "Select Language:",
-                invoiceDetails: "Invoice Details",
-                invoiceNumber: "Invoice Number",
-                invoiceDate: "Invoice Date",
-                dueDate: "Due Date",
-                companyInfo: "Company Information",
-                companyName: "Company Name",
-                companyAddress: "Company Address",
-                companyPhone: "Company Phone",
-                companyEmail: "Company Email",
-                companyLogo: "Company Logo (Optional)",
-                clientInfo: "Client Information",
-                clientName: "Client Name",
-                clientAddress: "Client Address",
-                items: "Items",
-                description: "Description",
-                quantity: "Quantity",
-                unitPrice: "Unit Price",
-                total: "Total",
-                addItem: "Add Item",
-                subtotal: "Subtotal",
-                taxRate: "Tax Rate (%)",
-                discount: "Discount (Rs.)",
-                grandTotal: "Grand Total",
-                notesTerms: "Notes / Terms & Conditions",
-                printInvoice: "Print Invoice",
-                downloadInvoice: "Download Invoice (PNG)",
-                downloadFailMessage: "Download failed. Please try taking a screenshot instead.",
-                delete: "Delete",
-                logoPreview: "Logo Preview",
-                maxSize: "Max size 2MB",
-                noPreview: "No Preview",
-                itemTotal: "Item Total",
-                currency: "Rs.",
-                loading: "Loading...",
-                errorImageSize: "Image size should not exceed 2MB."
-            }
-        };
-
-        const App = () => {
-            const [language, setLanguage] = React.useState('ur'); // Default to Urdu
-            const t = translations[language]; // Get current language translations
-
-            const initialInvoiceState = {
-                invoiceNumber: 'INV-001',
-                invoiceDate: new Date().toISOString().split('T')[0],
-                dueDate: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString().split('T')[0],
-                companyName: 'Your Company Name',
-                companyAddress: '123 Main Street, City, Country',
-                companyPhone: '+92 3XX XXXXXXX',
-                companyEmail: 'info@yourcompany.com',
-                logoImage: '',
-                clientName: 'Client Name',
-                clientAddress: 'Client Address, City, Country',
-                taxRate: 0,
-                discount: 0,
-                notes: 'Thank you for your business!',
-            };
-
-            const [invoiceDetails, setInvoiceDetails] = React.useState(() => {
-                try {
-                    const storedDetails = JSON.parse(localStorage.getItem('invoiceDetails'));
-                    return storedDetails ? { ...initialInvoiceState, ...storedDetails } : initialInvoiceState;
-                } catch (e) {
-                    console.error("Failed to load invoice details from local storage:", e);
-                    return initialInvoiceState;
-                }
-            });
-
-            const initialItems = [{ id: 1, description: 'Product/Service 1', quantity: 1, unitPrice: 100 }];
-            const [items, setItems] = React.useState(() => {
-                try {
-                    const storedItems = JSON.parse(localStorage.getItem('invoiceItems'));
-                    return storedItems && storedItems.length > 0 ? storedItems : initialItems;
-                } catch (e) {
-                    console.error("Failed to load invoice items from local storage:", e);
-                    return initialItems;
-                }
-            });
-
-            // Save to local storage whenever state changes
-            React.useEffect(() => {
-                localStorage.setItem('invoiceDetails', JSON.stringify(invoiceDetails));
-            }, [invoiceDetails]);
-
-            React.useEffect(() => {
-                localStorage.setItem('invoiceItems', JSON.stringify(items));
-            }, [items]);
-
-            // Ref for the printable area
-            const invoiceRef = React.useRef(null);
-
-            // Handle changes for invoice details
-            const handleInvoiceDetailChange = (e) => {
-                const { name, value } = e.target;
-                setInvoiceDetails(prev => ({ ...prev, [name]: value }));
-            };
-
-            // Handle logo upload
-            const handleLogoUpload = (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    if (file.size > 2 * 1024 * 1024) { // Max 2MB
-                        alert(t.errorImageSize);
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        setInvoiceDetails(prev => ({ ...prev, logoImage: reader.result }));
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-
-            // Handle changes for item fields
-            const handleItemChange = (id, e) => {
-                const { name, value } = e.target;
-                setItems(prev => prev.map(item =>
-                    item.id === id ? { ...item, [name]: name === 'quantity' || name === 'unitPrice' ? parseFloat(value) || 0 : value } : item
-                ));
-            };
-
-            // Add new item row
-            const addItem = () => {
-                setItems(prev => [...prev, { id: Date.now(), description: '', quantity: 1, unitPrice: 0 }]);
-            };
-
-            // Delete item row
-            const deleteItem = (id) => {
-                setItems(prev => prev.filter(item => item.id !== id));
-            };
-
-            // Calculations
-            const calculateItemTotal = (quantity, unitPrice) => {
-                return (quantity * unitPrice).toFixed(2);
-            };
-
-            const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-            const taxAmount = subtotal * (invoiceDetails.taxRate / 100);
-            const grandTotal = (subtotal + taxAmount - invoiceDetails.discount).toFixed(2);
-
-            // Print functionality
-            const handlePrint = () => {
-                window.print();
-            };
-
-            // Download as PNG functionality
-            const downloadInvoice = () => {
-                if (invoiceRef.current) {
-                    html2canvas(invoiceRef.current, {
-                        useCORS: true,
-                        allowTaint: true,
-                        scale: 2 // Increase scale for better resolution
-                    }).then(canvas => {
-                        const link = document.createElement('a');
-                        link.download = `Invoice_${invoiceDetails.invoiceNumber}.png`;
-                        link.href = canvas.toDataURL('image/png');
-                        link.click();
-                    }).catch(err => {
-                        console.error("Error generating image:", err);
-                        alert(t.downloadFailMessage);
-                    });
-                }
-            };
-
-            return (
-                <div className="min-h-screen flex flex-col items-center justify-center py-10 w-full">
-                    <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-6xl w-full flex flex-col lg:flex-row gap-8 transform transition-all duration-300 hover:scale-[1.005] border-4 border-purple-400">
-                        {/* Input Form Section */}
-                        <div className="w-full lg:w-1/2 p-4 border-r-0 lg:border-r-2 border-purple-200 pr-8 no-print">
-                            <h2 className="text-3xl font-extrabold text-purple-700 mb-6 text-center">
-                                {t.invoiceDetails}
-                            </h2>
-
-                            {/* Language Selector */}
-                            <div className="mb-6 flex justify-end items-center gap-2 w-full">
-                                <label htmlFor="language-select" className="block text-gray-700 text-sm font-bold">{t.selectLanguage}</label>
-                                <select
-                                    id="language-select"
-                                    value={language}
-                                    onChange={(e) => setLanguage(e.target.value)}
-                                    className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="ur">اردو (Urdu)</option>
-                                    <option value="en">English</option>
-                                </select>
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column - Invoice Form -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl invoice-shadow p-6 mb-6">
+                    <!-- Template Selection -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-palette mr-2 text-blue-600"></i>
+                            Choose Invoice Template
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="template-card active p-4 border-2 rounded-lg cursor-pointer" onclick="selectTemplate('modern')">
+                                <div class="bg-gradient-to-br from-blue-500 to-purple-600 h-20 rounded mb-2"></div>
+                                <p class="text-sm font-medium">Modern</p>
+                                <p class="text-xs text-gray-600">Clean & Professional</p>
                             </div>
-
-                            {/* Invoice Meta Info */}
-                            <div className="mb-6 border-b pb-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label htmlFor="invoiceNumber" className="block text-gray-700 text-sm font-bold mb-2">{t.invoiceNumber}</label>
-                                        <input type="text" name="invoiceNumber" id="invoiceNumber" value={invoiceDetails.invoiceNumber} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="invoiceDate" className="block text-gray-700 text-sm font-bold mb-2">{t.invoiceDate}</label>
-                                        <input type="date" name="invoiceDate" id="invoiceDate" value={invoiceDetails.invoiceDate} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label htmlFor="dueDate" className="block text-gray-700 text-sm font-bold mb-2">{t.dueDate}</label>
-                                        <input type="date" name="dueDate" id="dueDate" value={invoiceDetails.dueDate} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                    </div>
-                                </div>
+                            <div class="template-card p-4 border-2 rounded-lg cursor-pointer" onclick="selectTemplate('classic')">
+                                <div class="bg-gradient-to-br from-gray-600 to-gray-800 h-20 rounded mb-2"></div>
+                                <p class="text-sm font-medium">Classic</p>
+                                <p class="text-xs text-gray-600">Traditional & Elegant</p>
                             </div>
-
-                            {/* Company Info */}
-                            <div className="mb-6 border-b pb-4">
-                                <h3 className="text-xl font-bold text-gray-800 mb-4">{t.companyInfo}</h3>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <input type="text" name="companyName" placeholder={t.companyName} value={invoiceDetails.companyName} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                    <textarea name="companyAddress" placeholder={t.companyAddress} value={invoiceDetails.companyAddress} onChange={handleInvoiceDetailChange} rows="2" className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                                    <input type="text" name="companyPhone" placeholder={t.companyPhone} value={invoiceDetails.companyPhone} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                    <input type="email" name="companyEmail" placeholder={t.companyEmail} value={invoiceDetails.companyEmail} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                    <div className="mt-4">
-                                        <label htmlFor="companyLogo" className="block text-gray-700 text-sm font-bold mb-2">{t.companyLogo}</label>
-                                        <input
-                                            type="file"
-                                            id="companyLogo"
-                                            accept="image/*"
-                                            onChange={handleLogoUpload}
-                                            className="block w-full text-sm text-gray-500
-                                                       file:mr-4 file:py-2 file:px-4
-                                                       file:rounded-full file:border-0
-                                                       file:text-sm file:font-semibold
-                                                       file:bg-purple-50 file:text-purple-700
-                                                       hover:file:bg-purple-100 cursor-pointer"
-                                        />
-                                        {invoiceDetails.logoImage && (
-                                            <div className="mt-4 text-center">
-                                                <p className="text-sm text-gray-600 mb-2">{t.logoPreview}</p>
-                                                <img src={invoiceDetails.logoImage} alt="Company Logo" className="max-w-[100px] max-h-[100px] mx-auto border rounded-lg shadow-sm" />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                            <div class="template-card p-4 border-2 rounded-lg cursor-pointer" onclick="selectTemplate('colorful')">
+                                <div class="bg-gradient-to-br from-pink-500 to-orange-500 h-20 rounded mb-2"></div>
+                                <p class="text-sm font-medium">Colorful</p>
+                                <p class="text-xs text-gray-600">Vibrant & Creative</p>
                             </div>
-
-                            {/* Client Info */}
-                            <div className="mb-6 border-b pb-4">
-                                <h3 className="text-xl font-bold text-gray-800 mb-4">{t.clientInfo}</h3>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <input type="text" name="clientName" placeholder={t.clientName} value={invoiceDetails.clientName} onChange={handleInvoiceDetailChange} className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                                    <textarea name="clientAddress" placeholder={t.clientAddress} value={invoiceDetails.clientAddress} onChange={handleInvoiceDetailChange} rows="2" className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                                </div>
-                            </div>
-
-                            {/* Items */}
-                            <div className="mb-6 border-b pb-4">
-                                <h3 className="text-xl font-bold text-gray-800 mb-4">{t.items}</h3>
-                                {items.map(item => (
-                                    <div key={item.id} className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-3 p-3 border border-gray-200 rounded-lg relative">
-                                        <input type="text" name="description" placeholder={t.description} value={item.description} onChange={(e) => handleItemChange(item.id, e)} className="p-2 border border-gray-300 rounded-lg col-span-full md:col-span-2" />
-                                        <input type="number" name="quantity" placeholder={t.quantity} value={item.quantity} onChange={(e) => handleItemChange(item.id, e)} className="p-2 border border-gray-300 rounded-lg" min="0" />
-                                        <input type="number" name="unitPrice" placeholder={t.unitPrice} value={item.unitPrice} onChange={(e) => handleItemChange(item.id, e)} className="p-2 border border-gray-300 rounded-lg" min="0" step="0.01" />
-                                        <div className="p-2 flex items-center justify-end font-semibold text-gray-800 col-span-full md:col-span-1">
-                                            {t.currency} {calculateItemTotal(item.quantity, item.unitPrice)}
-                                        </div>
-                                        {items.length > 1 && (
-                                            <button onClick={() => deleteItem(item.id)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm shadow-md hover:bg-red-600 transition">
-                                                <i className="fas fa-minus"></i>
-                                            </button>
-                                        )}
-                                    </div>
-                                ))}
-                                <button onClick={addItem} className="bg-purple-500 text-white py-2 px-4 rounded-lg hover:bg-purple-600 transition duration-200 ease-in-out flex items-center gap-2 mx-auto mt-4">
-                                    <i className="fas fa-plus"></i> {t.addItem}
-                                </button>
-                            </div>
-
-                            {/* Summary */}
-                            <div className="mb-6 border-b pb-4">
-                                <div className="grid grid-cols-2 gap-4 mb-2">
-                                    <label className="text-gray-700 text-sm font-bold text-right">{t.subtotal}:</label>
-                                    <span className="text-gray-800 font-semibold text-right">{t.currency} {subtotal.toFixed(2)}</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 mb-2">
-                                    <label htmlFor="taxRate" className="text-gray-700 text-sm font-bold text-right">{t.taxRate}:</label>
-                                    <input type="number" name="taxRate" id="taxRate" value={invoiceDetails.taxRate} onChange={handleInvoiceDetailChange} className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-right" min="0" step="0.01" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 mb-2">
-                                    <label htmlFor="discount" className="text-gray-700 text-sm font-bold text-right">{t.discount}:</label>
-                                    <input type="number" name="discount" id="discount" value={invoiceDetails.discount} onChange={handleInvoiceDetailChange} className="p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-right" min="0" step="0.01" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 pt-4 border-t-2 border-gray-300">
-                                    <label className="text-gray-800 text-xl font-bold text-right">{t.grandTotal}:</label>
-                                    <span className="text-purple-700 text-2xl font-extrabold text-right">{t.currency} {grandTotal}</span>
-                                </div>
-                            </div>
-
-                            {/* Notes / Terms */}
-                            <div className="mb-6">
-                                <h3 className="text-xl font-bold text-gray-800 mb-4">{t.notesTerms}</h3>
-                                <textarea name="notes" placeholder={t.notesTerms} value={invoiceDetails.notes} onChange={handleInvoiceDetailChange} rows="4" className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="text-center mt-8 flex flex-col md:flex-row gap-4 justify-center">
-                                <button
-                                    onClick={handlePrint}
-                                    className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold
-                                               hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105
-                                               shadow-lg flex items-center justify-center gap-2"
-                                >
-                                    <i className="fas fa-print mr-2"></i> {t.printInvoice}
-                                </button>
-                                <button
-                                    onClick={downloadInvoice}
-                                    className="bg-green-600 text-white py-3 px-8 rounded-full text-lg font-bold
-                                               hover:bg-green-700 transition duration-300 ease-in-out transform hover:scale-105
-                                               shadow-lg flex items-center justify-center gap-2"
-                                >
-                                    <i className="fas fa-download mr-2"></i> {t.downloadInvoice}
-                                </button>
-                            </div>
-                            <p className="text-gray-500 text-xs mt-2 text-center">
-                                {t.downloadFailMessage}
-                            </p>
                         </div>
+                    </div>
 
-                        {/* Live Preview Section */}
-                        <div className="w-full lg:w-1/2 p-4 flex items-center justify-center">
-                            <div ref={invoiceRef} className="invoice-preview rounded-xl border-4 border-gray-300">
-                                {/* Header */}
-                                <div className="flex flex-col sm:flex-row justify-between items-start mb-8">
-                                    <div>
-                                        <h1 className="text-3xl sm:text-4xl font-extrabold text-purple-700 mb-2">{t.appTitle}</h1>
-                                        <p className="text-lg text-gray-700">#{invoiceDetails.invoiceNumber}</p>
-                                        <p className="text-sm text-gray-600">Date: {invoiceDetails.invoiceDate}</p>
-                                        <p className="text-sm text-gray-600">Due Date: {invoiceDetails.dueDate}</p>
-                                    </div>
-                                    {invoiceDetails.logoImage && (
-                                        <img src={invoiceDetails.logoImage} alt="Company Logo" className="max-w-[100px] max-h-[100px] object-contain mt-4 sm:mt-0 sm:ml-4 mx-auto sm:mx-0" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/100x100/cccccc/333333?text=Logo"; }} />
-                                    )}
+                    <!-- Company Information -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-building mr-2 text-blue-600"></i>
+                            Company Information
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="companyName" placeholder="Company Name" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" id="companyEmail" placeholder="Company Email" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" id="companyPhone" placeholder="Phone Number" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" id="companyWebsite" placeholder="Website" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <textarea id="companyAddress" placeholder="Company Address" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-4" rows="3"></textarea>
+                    </div>
+
+                    <!-- Client Information -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-user-tie mr-2 text-blue-600"></i>
+                            Client Information
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="clientName" placeholder="Client Name" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" id="clientEmail" placeholder="Client Email" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" id="clientPhone" placeholder="Client Phone" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" id="clientCompany" placeholder="Client Company" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <textarea id="clientAddress" placeholder="Client Address" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-4" rows="3"></textarea>
+                    </div>
+
+                    <!-- Invoice Details -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-file-alt mr-2 text-blue-600"></i>
+                            Invoice Details
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Number</label>
+                                <input type="text" id="invoiceNumber" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Date</label>
+                                <input type="date" id="invoiceDate" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+                                <input type="date" id="dueDate" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Items Section -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold flex items-center">
+                                <i class="fas fa-list mr-2 text-blue-600"></i>
+                                Invoice Items
+                            </h3>
+                            <button onclick="addItem()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>Add Item
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b">
+                                        <th class="text-left p-2">Description</th>
+                                        <th class="text-right p-2">Qty</th>
+                                        <th class="text-right p-2">Rate</th>
+                                        <th class="text-right p-2">Amount</th>
+                                        <th class="text-center p-2">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="itemsTable">
+                                    <tr class="border-b">
+                                        <td class="p-2">
+                                            <input type="text" class="w-full p-2 border rounded item-description" placeholder="Item description">
+                                        </td>
+                                        <td class="p-2">
+                                            <input type="number" class="w-full p-2 border rounded text-right item-quantity" placeholder="1" min="1">
+                                        </td>
+                                        <td class="p-2">
+                                            <input type="number" class="w-full p-2 border rounded text-right item-rate" placeholder="0.00" step="0.01">
+                                        </td>
+                                        <td class="p-2 text-right item-amount">$0.00</td>
+                                        <td class="p-2 text-center">
+                                            <button onclick="removeItem(this)" class="text-red-500 hover:text-red-700">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Totals Section -->
+                    <div class="mb-6">
+                        <div class="flex justify-end">
+                            <div class="w-full max-w-md">
+                                <div class="flex justify-between py-2 border-b">
+                                    <span>Subtotal:</span>
+                                    <span id="subtotal">$0.00</span>
                                 </div>
-
-                                {/* Company & Client Info */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
-                                    <div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">{t.companyInfo}</h3>
-                                        <p className="font-semibold text-gray-700">{invoiceDetails.companyName}</p>
-                                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{invoiceDetails.companyAddress}</p>
-                                        <p className="text-sm text-gray-600">{invoiceDetails.companyPhone}</p>
-                                        <p className="text-sm text-gray-600">{invoiceDetails.companyEmail}</p>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">{t.clientInfo}</h3>
-                                        <p className="font-semibold text-gray-700">{invoiceDetails.clientName}</p>
-                                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{invoiceDetails.clientAddress}</p>
+                                <div class="flex justify-between py-2 border-b">
+                                    <span>Tax (%):</span>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="number" id="taxRate" class="w-16 p-1 border rounded text-right" placeholder="0" min="0" max="100">
+                                        <span id="taxAmount">$0.00</span>
                                     </div>
                                 </div>
-
-                                {/* Items Table */}
-                                <div className="mb-8 table-container">
-                                    <table className="min-w-full bg-white border border-gray-200">
-                                        <thead>
-                                            <tr className="bg-gray-100 text-gray-700 uppercase text-sm leading-normal">
-                                                <th className="py-3 px-6 text-left">{t.description}</th>
-                                                <th className="py-3 px-6 text-center">{t.quantity}</th>
-                                                <th className="py-3 px-6 text-right">{t.unitPrice}</th>
-                                                <th className="py-3 px-6 text-right">{t.total}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="text-gray-700 text-sm font-light">
-                                            {items.map(item => (
-                                                <tr key={item.id} className="border-b border-gray-200 hover:bg-gray-50">
-                                                    <td className="py-3 px-6 text-left whitespace-nowrap">{item.description}</td>
-                                                    <td className="py-3 px-6 text-center">{item.quantity}</td>
-                                                    <td className="py-3 px-6 text-right">{t.currency} {item.unitPrice.toFixed(2)}</td>
-                                                    <td className="py-3 px-6 text-right font-semibold">{t.currency} {calculateItemTotal(item.quantity, item.unitPrice)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                {/* Summary Totals */}
-                                <div className="flex justify-end mb-8">
-                                    <div className="w-full sm:w-1/2">
-                                        <div className="flex justify-between mb-2">
-                                            <span className="text-gray-700 font-semibold">{t.subtotal}:</span>
-                                            <span className="text-gray-800">{t.currency} {subtotal.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between mb-2">
-                                            <span className="text-gray-700 font-semibold">{t.taxRate} ({invoiceDetails.taxRate}%):</span>
-                                            <span className="text-gray-800">{t.currency} {taxAmount.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between mb-2">
-                                            <span className="text-gray-700 font-semibold">{t.discount}:</span>
-                                            <span className="text-gray-800">- {t.currency} {invoiceDetails.discount.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between pt-4 border-t-2 border-gray-300">
-                                            <span className="text-purple-700 text-xl font-bold">{t.grandTotal}:</span>
-                                            <span className="text-purple-700 text-2xl font-extrabold">{t.currency} {grandTotal}</span>
-                                        </div>
+                                <div class="flex justify-between py-2 border-b">
+                                    <span>Discount:</span>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="number" id="discountAmount" class="w-20 p-1 border rounded text-right" placeholder="0.00" step="0.01">
+                                        <span>$</span>
                                     </div>
                                 </div>
-
-                                {/* Notes / Terms */}
-                                {invoiceDetails.notes && (
-                                    <div className="mb-4">
-                                        <h3 className="text-lg font-bold text-gray-800 mb-2">{t.notesTerms}</h3>
-                                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{invoiceDetails.notes}</p>
-                                    </div>
-                                )}
-
-                                <div className="text-center text-gray-500 text-xs mt-8">
-                                    <p>{t.appTitle} - {t.tagline}</p>
+                                <div class="flex justify-between py-3 text-lg font-bold border-t-2">
+                                    <span>Total:</span>
+                                    <span id="totalAmount">$0.00</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            );
-        };
 
-        // Render the App component into the root div
-        window.onload = function() {
-            const rootElement = document.getElementById('root');
-            if (rootElement) {
-                const root = ReactDOM.createRoot(rootElement);
-                root.render(<App />);
+                    <!-- Payment Terms -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-credit-card mr-2 text-blue-600"></i>
+                            Payment Information
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <select id="paymentMethod" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Payment Method</option>
+                                <option value="bank">Bank Transfer</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="stripe">Credit Card</option>
+                                <option value="cash">Cash</option>
+                                <option value="check">Check</option>
+                            </select>
+                            <select id="paymentStatus" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                                <option value="overdue">Overdue</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <textarea id="paymentTerms" placeholder="Payment Terms & Conditions" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-4" rows="3"></textarea>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-sticky-note mr-2 text-blue-600"></i>
+                            Additional Notes
+                        </h3>
+                        <textarea id="invoiceNotes" placeholder="Any additional notes or comments..." class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="4"></textarea>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap gap-4 justify-center">
+                        <button onclick="generateInvoice()" class="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all transform hover:scale-105">
+                            <i class="fas fa-file-invoice mr-2"></i>Generate Invoice
+                        </button>
+                        <button onclick="saveInvoice()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-save mr-2"></i>Save Invoice
+                        </button>
+                        <button onclick="previewInvoice()" class="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors">
+                            <i class="fas fa-eye mr-2"></i>Preview
+                        </button>
+                        <button onclick="emailInvoice()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+                            <i class="fas fa-envelope mr-2"></i>Email Invoice
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Invoice Preview & Management -->
+            <div class="lg:col-span-1">
+                <!-- Invoice Preview -->
+                <div class="bg-white rounded-xl invoice-shadow p-6 mb-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-eye mr-2 text-blue-600"></i>
+                        Live Preview
+                    </h3>
+                    <div id="invoicePreview" class="border rounded-lg p-4 bg-gray-50 min-h-96">
+                        <div class="text-center text-gray-500 mt-8">
+                            <i class="fas fa-file-invoice text-4xl mb-4"></i>
+                            <p>Invoice preview will appear here</p>
+                            <p class="text-sm">Fill the form to see live preview</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Invoices -->
+                <div class="bg-white rounded-xl invoice-shadow p-6 mb-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-history mr-2 text-blue-600"></i>
+                        Recent Invoices
+                    </h3>
+                    <div id="recentInvoices" class="space-y-3">
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fas fa-inbox text-3xl mb-3"></i>
+                            <p>No invoices yet</p>
+                            <p class="text-sm">Create your first invoice to see it here</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="bg-white rounded-xl invoice-shadow p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-chart-bar mr-2 text-blue-600"></i>
+                        Quick Stats
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">This Month</span>
+                            <span class="font-semibold" id="thisMonthAmount">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">This Year</span>
+                            <span class="font-semibold" id="thisYearAmount">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Average Invoice</span>
+                            <span class="font-semibold" id="avgInvoiceAmount">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Payment Rate</span>
+                            <span class="font-semibold text-green-600" id="paymentRate">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice History Table -->
+        <div class="bg-white rounded-xl invoice-shadow p-6 mt-8">
+            <h3 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-table mr-2 text-blue-600"></i>
+                Invoice Management
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="text-left p-3">Invoice #</th>
+                            <th class="text-left p-3">Client</th>
+                            <th class="text-left p-3">Date</th>
+                            <th class="text-right p-3">Amount</th>
+                            <th class="text-center p-3">Status</th>
+                            <th class="text-center p-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceHistoryTable">
+                        <tr>
+                            <td colspan="6" class="text-center text-gray-500 py-8">
+                                <i class="fas fa-inbox text-3xl mb-3"></i>
+                                <p>No invoices found</p>
+                                <p class="text-sm">Start creating invoices to see them here</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Invoice Preview -->
+    <div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl max-w-4xl max-h-screen overflow-y-auto m-4 w-full">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">Invoice Preview</h3>
+                    <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div id="fullInvoicePreview" class="border rounded-lg p-6">
+                    <!-- Invoice content will be generated here -->
+                </div>
+                <div class="flex justify-end space-x-4 mt-6">
+                    <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-print mr-2"></i>Print
+                    </button>
+                    <button onclick="downloadPDF()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                        <i class="fas fa-download mr-2"></i>Download PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let selectedTemplate = 'modern';
+        let invoiceCounter = 1;
+        let invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+        let clients = JSON.parse(localStorage.getItem('clients')) || [];
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            // Set default values
+            document.getElementById('invoiceNumber').value = 'INV-' + String(invoiceCounter).padStart(4, '0');
+            document.getElementById('invoiceDate').value = new Date().toISOString().split('T')[0];
+            
+            // Set due date to 30 days from today
+            const dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + 30);
+            document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
+
+            // Load saved data
+            loadInvoices();
+            updateDashboard();
+            
+            // Add event listeners
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            // Auto-calculate totals
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('item-quantity') || 
+                    e.target.classList.contains('item-rate') ||
+                    e.target.id === 'taxRate' ||
+                    e.target.id === 'discountAmount') {
+                    calculateTotals();
+                }
+            });
+
+            // Live preview update
+            document.addEventListener('input', function(e) {
+                if (e.target.form || e.target.closest('form')) {
+                    updateLivePreview();
+                }
+            });
+        }
+
+        function selectTemplate(template) {
+            selectedTemplate = template;
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.target.closest('.template-card').classList.add('active');
+            updateLivePreview();
+        }
+
+        function addItem() {
+            const tbody = document.getElementById('itemsTable');
+            const row = document.createElement('tr');
+            row.className = 'border-b';
+            row.innerHTML = `
+                <td class="p-2">
+                    <input type="text" class="w-full p-2 border rounded item-description" placeholder="Item description">
+                </td>
+                <td class="p-2">
+                    <input type="number" class="w-full p-2 border rounded text-right item-quantity" placeholder="1" min="1">
+                </td>
+                <td class="p-2">
+                    <input type="number" class="w-full p-2 border rounded text-right item-rate" placeholder="0.00" step="0.01">
+                </td>
+                <td class="p-2 text-right item-amount">$0.00</td>
+                <td class="p-2 text-center">
+                    <button onclick="removeItem(this)" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        function removeItem(button) {
+            button.closest('tr').remove();
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            const rows = document.querySelectorAll('#itemsTable tr');
+            let subtotal = 0;
+
+            rows.forEach(row => {
+                const quantity = parseFloat(row.querySelector('.item-quantity')?.value) || 0;
+                const rate = parseFloat(row.querySelector('.item-rate')?.value) || 0;
+                const amount = quantity * rate;
+                
+                const amountCell = row.querySelector('.item-amount');
+                if (amountCell) {
+                    amountCell.textContent = '$' + amount.toFixed(2);
+                    subtotal += amount;
+                }
+            });
+
+            const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+            const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
+            
+            const taxAmount = (subtotal * taxRate) / 100;
+            const total = subtotal + taxAmount - discountAmount;
+
+            document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+            document.getElementById('taxAmount').textContent = '$' + taxAmount.toFixed(2);
+            document.getElementById('totalAmount').textContent = '$' + total.toFixed(2);
+
+            updateLivePreview();
+        }
+
+        function updateLivePreview() {
+            const preview = document.getElementById('invoicePreview');
+            const invoiceData = collectInvoiceData();
+            
+            if (!invoiceData.companyName && !invoiceData.clientName) {
+                preview.innerHTML = `
+                    <div class="text-center text-gray-500 mt-8">
+                        <i class="fas fa-file-invoice text-4xl mb-4"></i>
+                        <p>Invoice preview will appear here</p>
+                        <p class="text-sm">Fill the form to see live preview</p>
+                    </div>
+                `;
+                return;
             }
-        };
+
+            preview.innerHTML = generateInvoiceHTML(invoiceData, true);
+        }
+
+        function collectInvoiceData() {
+            const items = [];
+            document.querySelectorAll('#itemsTable tr').forEach(row => {
+                const description = row.querySelector('.item-description')?.value || '';
+                const quantity = parseFloat(row.querySelector('.item-quantity')?.value) || 0;
+                const rate = parseFloat(row.querySelector('.item-rate')?.value) || 0;
+                
+                if (description || quantity || rate) {
+                    items.push({
+                        description,
+                        quantity,
+                        rate,
+                        amount: quantity * rate
+                    });
+                }
+            });
+
+            const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
+            const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+            const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
+            const taxAmount = (subtotal * taxRate) / 100;
+            const total = subtotal + taxAmount - discountAmount;
+
+            return {
+                invoiceNumber: document.getElementById('invoiceNumber').value,
+                invoiceDate: document.getElementById('invoiceDate').value,
+                dueDate: document.getElementById('dueDate').value,
+                companyName: document.getElementById('companyName').value,
+                companyEmail: document.getElementById('companyEmail').value,
+                companyPhone: document.getElementById('companyPhone').value,
+                companyWebsite: document.getElementById('companyWebsite').value,
+                companyAddress: document.getElementById('companyAddress').value,
+                clientName: document.getElementById('clientName').value,
+                clientEmail: document.getElementById('clientEmail').value,
+                clientPhone: document.getElementById('clientPhone').value,
+                clientCompany: document.getElementById('clientCompany').value,
+                clientAddress: document.getElementById('clientAddress').value,
+                items,
+                subtotal,
+                taxRate,
+                taxAmount,
+                discountAmount,
+                total,
+                paymentMethod: document.getElementById('paymentMethod').value,
+                paymentStatus: document.getElementById('paymentStatus').value,
+                paymentTerms: document.getElementById('paymentTerms').value,
+                notes: document.getElementById('invoiceNotes').value,
+                template: selectedTemplate,
+                createdAt: new Date().toISOString()
+            };
+        }
+
+        function generateInvoiceHTML(data, isPreview = false) {
+            const templateStyles = {
+                modern: 'bg-gradient-to-br from-blue-600 to-purple-600',
+                classic: 'bg-gradient-to-br from-gray-600 to-gray-800',
+                colorful: 'bg-gradient-to-br from-pink-500 to-orange-500'
+            };
+
+            const headerStyle = templateStyles[data.template] || templateStyles.modern;
+            const previewClass = isPreview ? 'text-xs' : '';
+
+            return `
+                <div class="max-w-4xl mx-auto bg-white ${isPreview ? 'text-xs' : ''}">
+                    <!-- Header -->
+                    <div class="${headerStyle} text-white p-6 rounded-t-lg">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h1 class="text-2xl font-bold mb-2">${data.companyName || 'Your Company'}</h1>
+                                <div class="text-sm opacity-90">
+                                    ${data.companyAddress ? `<p>${data.companyAddress}</p>` : ''}
+                                    ${data.companyEmail ? `<p><i class="fas fa-envelope mr-1"></i>${data.companyEmail}</p>` : ''}
+                                    ${data.companyPhone ? `<p><i class="fas fa-phone mr-1"></i>${data.companyPhone}</p>` : ''}
+                                    ${data.companyWebsite ? `<p><i class="fas fa-globe mr-1"></i>${data.companyWebsite}</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <h2 class="text-3xl font-bold">INVOICE</h2>
+                                <p class="text-lg">#${data.invoiceNumber}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Details -->
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <!-- Bill To -->
+                            <div>
+                                <h3 class="text-lg font-semibold mb-3 text-gray-700">Bill To:</h3>
+                                <div class="text-gray-600">
+                                    <p class="font-medium text-gray-800">${data.clientName || 'Client Name'}</p>
+                                    ${data.clientCompany ? `<p>${data.clientCompany}</p>` : ''}
+                                    ${data.clientAddress ? `<p>${data.clientAddress}</p>` : ''}
+                                    ${data.clientEmail ? `<p><i class="fas fa-envelope mr-1"></i>${data.clientEmail}</p>` : ''}
+                                    ${data.clientPhone ? `<p><i class="fas fa-phone mr-1"></i>${data.clientPhone}</p>` : ''}
+                                </div>
+                            </div>
+
+                            <!-- Invoice Info -->
+                            <div>
+                                <h3 class="text-lg font-semibold mb-3 text-gray-700">Invoice Information:</h3>
+                                <div class="text-gray-600">
+                                    <div class="flex justify-between mb-1">
+                                        <span>Invoice Date:</span>
+                                        <span>${data.invoiceDate || new Date().toLocaleDateString()}</span>
+                                    </div>
+                                    <div class="flex justify-between mb-1">
+                                        <span>Due Date:</span>
+                                        <span>${data.dueDate || 'N/A'}</span>
+                                    </div>
+                                    <div class="flex justify-between mb-1">
+                                        <span>Payment Method:</span>
+                                        <span>${data.paymentMethod || 'N/A'}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Status:</span>
+                                        <span class="px-2 py-1 rounded text-xs text-white ${getStatusColor(data.paymentStatus)}">${data.paymentStatus || 'Pending'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Items Table -->
+                        <div class="mb-6">
+                            <table class="w-full border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th class="border p-3 text-left">Description</th>
+                                        <th class="border p-3 text-right">Qty</th>
+                                        <th class="border p-3 text-right">Rate</th>
+                                        <th class="border p-3 text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.items.map(item => `
+                                        <tr>
+                                            <td class="border p-3">${item.description}</td>
+                                            <td class="border p-3 text-right">${item.quantity}</td>
+                                            <td class="border p-3 text-right">$${item.rate.toFixed(2)}</td>
+                                            <td class="border p-3 text-right">$${item.amount.toFixed(2)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Totals -->
+                        <div class="flex justify-end mb-6">
+                            <div class="w-64">
+                                <div class="flex justify-between py-2 border-b">
+                                    <span>Subtotal:</span>
+                                    <span>$${data.subtotal.toFixed(2)}</span>
+                                </div>
+                                ${data.taxRate > 0 ? `
+                                    <div class="flex justify-between py-2 border-b">
+                                        <span>Tax (${data.taxRate}%):</span>
+                                        <span>$${data.taxAmount.toFixed(2)}</span>
+                                    </div>
+                                ` : ''}
+                                ${data.discountAmount > 0 ? `
+                                    <div class="flex justify-between py-2 border-b">
+                                        <span>Discount:</span>
+                                        <span>-$${data.discountAmount.toFixed(2)}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="flex justify-between py-3 text-lg font-bold border-t-2 border-gray-300">
+                                    <span>Total:</span>
+                                    <span>$${data.total.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Terms -->
+                        ${data.paymentTerms ? `
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold mb-3 text-gray-700">Payment Terms:</h3>
+                                <p class="text-gray-600">${data.paymentTerms}</p>
+                            </div>
+                        ` : ''}
+
+                        <!-- Notes -->
+                        ${data.notes ? `
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold mb-3 text-gray-700">Notes:</h3>
+                                <p class="text-gray-600">${data.notes}</p>
+                            </div>
+                        ` : ''}
+
+                        <!-- Footer -->
+                        <div class="text-center text-gray-500 text-sm border-t pt-4">
+                            <p>Thank you for your business!</p>
+                            <p>Generated with Invoice Generator Pro</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'paid': return 'bg-green-500';
+                case 'pending': return 'bg-yellow-500';
+                case 'overdue': return 'bg-red-500';
+                case 'cancelled': return 'bg-gray-500';
+                default: return 'bg-yellow-500';
+            }
+        }
+
+        function generateInvoice() {
+            const data = collectInvoiceData();
+            if (!data.companyName || !data.clientName || data.items.length === 0) {
+                alert('Please fill in company name, client name, and at least one item.');
+                return;
+            }
+
+            // Generate a unique invoice number if not provided
+            if (!data.invoiceNumber) {
+                data.invoiceNumber = 'INV-' + String(invoiceCounter).padStart(4, '0');
+                document.getElementById('invoiceNumber').value = data.invoiceNumber;
+            }
+
+            // Show success message
+            showNotification('Invoice generated successfully!', 'success');
+            
+            // Update preview
+            updateLivePreview();
+            
+            // Increment counter for next invoice
+            invoiceCounter++;
+            document.getElementById('invoiceNumber').value = 'INV-' + String(invoiceCounter).padStart(4, '0');
+        }
+
+        function saveInvoice() {
+            const data = collectInvoiceData();
+            if (!data.companyName || !data.clientName) {
+                alert('Please fill in company name and client name.');
+                return;
+            }
+
+            // Add unique ID
+            data.id = Date.now().toString();
+            
+            // Save to localStorage
+            invoices.push(data);
+            localStorage.setItem('invoices', JSON.stringify(invoices));
+
+            // Save client info
+            const clientExists = clients.find(client => client.email === data.clientEmail);
+            if (!clientExists && data.clientEmail) {
+                clients.push({
+                    name: data.clientName,
+                    email: data.clientEmail,
+                    phone: data.clientPhone,
+                    company: data.clientCompany,
+                    address: data.clientAddress
+                });
+                localStorage.setItem('clients', JSON.stringify(clients));
+            }
+
+            // Update UI
+            loadInvoices();
+            updateDashboard();
+            showNotification('Invoice saved successfully!', 'success');
+        }
+
+        function previewInvoice() {
+            const data = collectInvoiceData();
+            const modal = document.getElementById('previewModal');
+            const preview = document.getElementById('fullInvoicePreview');
+            
+            preview.innerHTML = generateInvoiceHTML(data, false);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closePreview() {
+            const modal = document.getElementById('previewModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function emailInvoice() {
+            const data = collectInvoiceData();
+            if (!data.clientEmail) {
+                alert('Please enter client email address.');
+                return;
+            }
+
+            const subject = `Invoice ${data.invoiceNumber} from ${data.companyName}`;
+            const body = `Dear ${data.clientName},\n\nPlease find your invoice attached.\n\nInvoice Details:\n- Invoice Number: ${data.invoiceNumber}\n- Amount: $${data.total.toFixed(2)}\n- Due Date: ${data.dueDate}\n\nThank you for your business!\n\nBest regards,\n${data.companyName}`;
+            
+            const mailtoLink = `mailto:${data.clientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.open(mailtoLink);
+            
+            showNotification('Email client opened!', 'info');
+        }
+
+        function loadInvoices() {
+            const recentInvoicesList = document.getElementById('recentInvoices');
+            const historyTable = document.getElementById('invoiceHistoryTable');
+            
+            if (invoices.length === 0) {
+                recentInvoicesList.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-inbox text-3xl mb-3"></i>
+                        <p>No invoices yet</p>
+                        <p class="text-sm">Create your first invoice to see it here</p>
+                    </div>
+                `;
+                
+                historyTable.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-gray-500 py-8">
+                            <i class="fas fa-inbox text-3xl mb-3"></i>
+                            <p>No invoices found</p>
+                            <p class="text-sm">Start creating invoices to see them here</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Recent invoices (last 5)
+            const recentInvoices = invoices.slice(-5).reverse();
+            recentInvoicesList.innerHTML = recentInvoices.map(invoice => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-medium">${invoice.invoiceNumber}</p>
+                        <p class="text-sm text-gray-600">${invoice.clientName}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium">$${invoice.total.toFixed(2)}</p>
+                        <span class="px-2 py-1 rounded text-xs text-white ${getStatusColor(invoice.paymentStatus)}">${invoice.paymentStatus}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Invoice history table
+            historyTable.innerHTML = invoices.map(invoice => `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-3">${invoice.invoiceNumber}</td>
+                    <td class="p-3">${invoice.clientName}</td>
+                    <td class="p-3">${new Date(invoice.invoiceDate).toLocaleDateString()}</td>
+                    <td class="p-3 text-right">$${invoice.total.toFixed(2)}</td>
+                    <td class="p-3 text-center">
+                        <span class="px-2 py-1 rounded text-xs text-white ${getStatusColor(invoice.paymentStatus)}">${invoice.paymentStatus}</span>
+                    </td>
+                    <td class="p-3 text-center">
+                        <button onclick="viewInvoice('${invoice.id}')" class="text-blue-600 hover:text-blue-800 mr-2">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="editInvoice('${invoice.id}')" class="text-green-600 hover:text-green-800 mr-2">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteInvoice('${invoice.id}')" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateDashboard() {
+            const totalInvoices = invoices.length;
+            const paidInvoices = invoices.filter(inv => inv.paymentStatus === 'paid').length;
+            const pendingAmount = invoices.filter(inv => inv.paymentStatus === 'pending').reduce((sum, inv) => sum + inv.total, 0);
+            const overdueInvoices = invoices.filter(inv => inv.paymentStatus === 'overdue').length;
+            const totalAmount = invoices.reduce((sum, inv) => sum + inv.total, 0);
+            
+            // Current month calculations
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const thisMonthInvoices = invoices.filter(inv => {
+                const invDate = new Date(inv.invoiceDate);
+                return invDate.getMonth() === currentMonth && invDate.getFullYear() === currentYear;
+            });
+            const thisMonthAmount = thisMonthInvoices.reduce((sum, inv) => sum + inv.total, 0);
+            
+            // Current year calculations
+            const thisYearInvoices = invoices.filter(inv => {
+                const invDate = new Date(inv.invoiceDate);
+                return invDate.getFullYear() === currentYear;
+            });
+            const thisYearAmount = thisYearInvoices.reduce((sum, inv) => sum + inv.total, 0);
+            
+            // Average invoice amount
+            const avgAmount = totalInvoices > 0 ? totalAmount / totalInvoices : 0;
+            
+            // Payment rate
+            const paymentRate = totalInvoices > 0 ? Math.round((paidInvoices / totalInvoices) * 100) : 0;
+
+            // Update dashboard
+            document.getElementById('totalInvoices').textContent = totalInvoices;
+            document.getElementById('totalAmount').textContent = '$' + totalAmount.toFixed(2);
+            document.getElementById('dashTotalInvoices').textContent = totalInvoices;
+            document.getElementById('dashPaidInvoices').textContent = paidInvoices;
+            document.getElementById('dashPendingAmount').textContent = '$' + pendingAmount.toFixed(2);
+            document.getElementById('dashOverdueInvoices').textContent = overdueInvoices;
+            document.getElementById('thisMonthAmount').textContent = '$' + thisMonthAmount.toFixed(2);
+            document.getElementById('thisYearAmount').textContent = '$' + thisYearAmount.toFixed(2);
+            document.getElementById('avgInvoiceAmount').textContent = '$' + avgAmount.toFixed(2);
+            document.getElementById('paymentRate').textContent = paymentRate + '%';
+        }
+
+        function viewInvoice(id) {
+            const invoice = invoices.find(inv => inv.id === id);
+            if (!invoice) return;
+            
+            const modal = document.getElementById('previewModal');
+            const preview = document.getElementById('fullInvoicePreview');
+            
+            preview.innerHTML = generateInvoiceHTML(invoice, false);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function editInvoice(id) {
+            const invoice = invoices.find(inv => inv.id === id);
+            if (!invoice) return;
+            
+            // Populate form with invoice data
+            document.getElementById('invoiceNumber').value = invoice.invoiceNumber;
+            document.getElementById('invoiceDate').value = invoice.invoiceDate;
+            document.getElementById('dueDate').value = invoice.dueDate;
+            document.getElementById('companyName').value = invoice.companyName;
+            document.getElementById('companyEmail').value = invoice.companyEmail;
+            document.getElementById('companyPhone').value = invoice.companyPhone;
+            document.getElementById('companyWebsite').value = invoice.companyWebsite;
+            document.getElementById('companyAddress').value = invoice.companyAddress;
+            document.getElementById('clientName').value = invoice.clientName;
+            document.getElementById('clientEmail').value = invoice.clientEmail;
+            document.getElementById('clientPhone').value = invoice.clientPhone;
+            document.getElementById('clientCompany').value = invoice.clientCompany;
+            document.getElementById('clientAddress').value = invoice.clientAddress;
+            document.getElementById('taxRate').value = invoice.taxRate;
+            document.getElementById('discountAmount').value = invoice.discountAmount;
+            document.getElementById('paymentMethod').value = invoice.paymentMethod;
+            document.getElementById('paymentStatus').value = invoice.paymentStatus;
+            document.getElementById('paymentTerms').value = invoice.paymentTerms;
+            document.getElementById('invoiceNotes').value = invoice.notes;
+            
+            // Populate items
+            const tbody = document.getElementById('itemsTable');
+            tbody.innerHTML = '';
+            invoice.items.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'border-b';
+                row.innerHTML = `
+                    <td class="p-2">
+                        <input type="text" class="w-full p-2 border rounded item-description" value="${item.description}">
+                    </td>
+                    <td class="p-2">
+                        <input type="number" class="w-full p-2 border rounded text-right item-quantity" value="${item.quantity}" min="1">
+                    </td>
+                    <td class="p-2">
+                        <input type="number" class="w-full p-2 border rounded text-right item-rate" value="${item.rate}" step="0.01">
+                    </td>
+                    <td class="p-2 text-right item-amount">$${item.amount.toFixed(2)}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="removeItem(this)" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Select template
+            selectTemplate(invoice.template);
+            
+            // Delete original invoice
+            invoices = invoices.filter(inv => inv.id !== id);
+            localStorage.setItem('invoices', JSON.stringify(invoices));
+            
+            // Update UI
+            loadInvoices();
+            updateDashboard();
+            calculateTotals();
+            updateLivePreview();
+            
+            showNotification('Invoice loaded for editing!', 'info');
+        }
+
+        function deleteInvoice(id) {
+            if (confirm('Are you sure you want to delete this invoice?')) {
+                invoices = invoices.filter(inv => inv.id !== id);
+                localStorage.setItem('invoices', JSON.stringify(invoices));
+                loadInvoices();
+                updateDashboard();
+                showNotification('Invoice deleted successfully!', 'success');
+            }
+        }
+
+        function downloadPDF() {
+            window.print();
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 
+                'bg-blue-500'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Initialize totals calculation
+        calculateTotals();
     </script>
 </body>
 </html>
