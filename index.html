@@ -1,20 +1,108 @@
-<div class="sidebar">
-  <h2>HF Digital Agency</h2>
-  <p>test@hf.com</p>
-  <hr>
-  <a href="AgeCalculator.html">🧓 Age Calculator</a>
-  <a href="BMI-Calculator.html">⚖️ BMI Calculator</a>
-  <a href="file_canverter.html">📁 File Converter</a>
-  <a href="groccery-trackre.html">🛒 Grocery Tracker</a>
-  <a href="cv-builder.html">📄 CV Builder</a>
-  <a href="resume_generator.html">📑 Resume Generator</a>
-  <a href="invoice-generator.html">🧾 Invoice Generator</a>
-  <a href="quize_game.html">🧠 Quiz Game</a>
-  <a href="tik-tak-game.html">❌⭕ Tik Tak Game</a>
-  <a href="personal_finance_manager.html">💰 Personal Finance</a>
-  <a href="pic-puzzuls.html">🧩 Picture Puzzle</a>
-  <a href="sliding_puzzal.html">🧩 Sliding Puzzle</a>
-  <a href="rango-ka-jadoo.html">🎨 Rango Ka Jadoo</a>
-  <a href="word_corrector.html">🔤 Word Corrector</a>
-  <div class="logout">Logout</div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HF Digital Agency</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      text-align: center;
+    }
+
+    .intro {
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 0 20px;
+    }
+
+    .tool-card {
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+      text-decoration: none;
+      color: #333;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .tool-card span {
+      font-size: 24px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .logout-btn {
+      margin-top: 40px;
+      background-color: #e74c3c;
+      color: white;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .logout-btn:hover {
+      background-color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>HF Digital Agency</h1>
+    <p>test@hf.com</p>
+  </header>
+
+  <div class="container">
+    <div class="intro">Welcome to Your Planner! Select a tool to get started.</div>
+
+    <div class="tools-grid">
+      <a class="tool-card" href="AgeCalculator.html"><span>🧓</span> Age Calculator</a>
+      <a class="tool-card" href="BMI-Calculator.html"><span>⚖️</span> BMI Calculator</a>
+      <a class="tool-card" href="file_canverter.html"><span>📁</span> File Converter</a>
+      <a class="tool-card" href="groccery-trackre.html"><span>🛒</span> Grocery Tracker</a>
+      <a class="tool-card" href="cv-builder.html"><span>📄</span> CV Builder</a>
+      <a class="tool-card" href="resume_generator.html"><span>📑</span> Resume Generator</a>
+      <a class="tool-card" href="invoice-generator.html"><span>🧾</span> Invoice Generator</a>
+      <a class="tool-card" href="quize_game.html"><span>🧠</span> Quiz Game</a>
+      <a class="tool-card" href="tik-tak-game.html"><span>❌⭕</span> Tik Tak Game</a>
+      <a class="tool-card" href="personal_finance_manager.html"><span>💰</span> Personal Finance</a>
+      <a class="tool-card" href="pic-puzzuls.html"><span>🧩</span> Picture Puzzle</a>
+      <a class="tool-card" href="sliding_puzzal.html"><span>🧩</span> Sliding Puzzle</a>
+      <a class="tool-card" href="rango-ka-jadoo.html"><span>🎨</span> Rango Ka Jadoo</a>
+      <a class="tool-card" href="word_corrector.html"><span>🔤</span> Word Corrector</a>
+    </div>
+
+    <button class="logout-btn">Logout</button>
+  </div>
+
+</body>
+</html>
