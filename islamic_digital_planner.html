@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Islamic Digital Planner - Interactive App</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Sans+Arabic:wght@400;600&display=swap');
+        
+        .arabic-font { font-family: 'Amiri', serif; }
+        .islamic-pattern {
+            background-image: radial-gradient(circle at 25% 25%, #10B981 0%, transparent 50%),
+                            radial-gradient(circle at 75% 75%, #059669 0%, transparent 50%);
+        }
+        .prayer-card { transition: all 0.3s ease; }
+        .prayer-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .habit-checkbox:checked + .habit-label { background-color: #10B981; color: white; }
+        .prayer-completed { background-color: #D1FAE5; border-color: #10B981; }
+        .dua-card { backdrop-filter: blur(10px); }
+        .animate-fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .section { min-height: 100vh; padding: 2rem 0; }
+        .nav-link.active { background-color: #10B981; color: white; }
+        
+        /* Custom styles for better PDF export */
+        @media print {
+            .no-print { display: none !important; }
+            .section { break-inside: avoid; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-green-50 to-blue-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed top-0 w-full z-50 no-print">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-mosque text-green-600 text-2xl"></i>
+                    <h1 class="text-xl font-bold text-green-800">Islamic Digital Planner</h1>
+                </div>
+                <div class="flex space-x-2 overflow-x-auto">
+                    <button onclick="showSection('prayer')" class="nav-link px-3 py-1 rounded-lg text-sm whitespace-nowrap">
+                        <i class="fas fa-pray"></i> Prayer
+                    </button>
+                    <button onclick="showSection('quran')" class="nav-link px-3 py-1 rounded-lg text-sm whitespace-nowrap">
+                        <i class="fas fa-book"></i> Quran
+                    </button>
+                    <button onclick="showSection('habits')" class="nav-link px-3 py-1 rounded-lg text-sm whitespace-nowrap">
+                        <i class="fas fa-check-circle"></i> Habits
+                    </button>
+                    <button onclick="showSection('duas')" class="nav-link px-3 py-1 rounded-lg text-sm whitespace-nowrap">
+                        <i class="fas fa-hands"></i> Duas
+                    </button>
+                    <button onclick="showSection('ramadan')" class="nav-link px-3 py-1 rounded-lg text-sm whitespace-nowrap">
+                        <i class="fas fa-moon"></i> Ramadan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-20">
+        <!-- Prayer Tracker Section -->
+        <div id="prayer-section" class="section">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-green-800 mb-2">
+                        <i class="fas fa-pray text-green-600"></i> Prayer Tracker
+                    </h2>
+                    <p class="text-gray-600">Track your daily prayers and stay connected with Allah</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="prayer-card bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-green-800">Fajr</h3>
+                            <span class="text-sm text-gray-500">5:30 AM</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="fajr-prayer" class="w-5 h-5 text-green-600 rounded" onchange="updatePrayer('fajr')">
+                            <label for="fajr-prayer" class="text-gray-700">Completed</label>
+                        </div>
+                        <div class="mt-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="fajr-progress" class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prayer-card bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-green-800">Dhuhr</h3>
+                            <span class="text-sm text-gray-500">1:15 PM</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="dhuhr-prayer" class="w-5 h-5 text-green-600 rounded" onchange="updatePrayer('dhuhr')">
+                            <label for="dhuhr-prayer" class="text-gray-700">Completed</label>
+                        </div>
+                        <div class="mt-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="dhuhr-progress" class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prayer-card bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-green-800">Asr</h3>
+                            <span class="text-sm text-gray-500">4:30 PM</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="asr-prayer" class="w-5 h-5 text-green-600 rounded" onchange="updatePrayer('asr')">
+                            <label for="asr-prayer" class="text-gray-700">Completed</label>
+                        </div>
+                        <div class="mt-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="asr-progress" class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prayer-card bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-green-800">Maghrib</h3>
+                            <span class="text-sm text-gray-500">6:45 PM</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="maghrib-prayer" class="w-5 h-5 text-green-600 rounded" onchange="updatePrayer('maghrib')">
+                            <label for="maghrib-prayer" class="text-gray-700">Completed</label>
+                        </div>
+                        <div class="mt-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="maghrib-progress" class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prayer-card bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-green-800">Isha</h3>
+                            <span class="text-sm text-gray-500">8:00 PM</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="isha-prayer" class="w-5 h-5 text-green-600 rounded" onchange="updatePrayer('isha')">
+                            <label for="isha-prayer" class="text-gray-700">Completed</label>
+                        </div>
+                        <div class="mt-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="isha-progress" class="bg-green-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prayer-card bg-green-100 rounded-lg shadow-md p-6">
+                        <div class="text-center">
+                            <h3 class="text-2xl font-bold text-green-800 mb-2">Daily Progress</h3>
+                            <div class="text-4xl font-bold text-green-600" id="prayer-percentage">0%</div>
+                            <p class="text-gray-600 mt-2">Prayers Completed</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prayer Statistics -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <h3 class="text-xl font-bold text-green-800 mb-4">Weekly Prayer Statistics</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="weekly-fajr">0</div>
+                            <p class="text-gray-600">Fajr</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="weekly-dhuhr">0</div>
+                            <p class="text-gray-600">Dhuhr</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="weekly-asr">0</div>
+                            <p class="text-gray-600">Asr</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="weekly-maghrib">0</div>
+                            <p class="text-gray-600">Maghrib</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quran Reading Section -->
+        <div id="quran-section" class="section hidden">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-green-800 mb-2">
+                        <i class="fas fa-book text-green-600"></i> Quran Reading Planner
+                    </h2>
+                    <p class="text-gray-600">Set and track your daily Quran reading goals</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-bold text-green-800 mb-4">Daily Reading Goal</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 mb-2">Pages to read today:</label>
+                                <input type="number" id="daily-pages" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500" placeholder="Enter number of pages" min="1" max="20">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Pages completed:</label>
+                                <input type="number" id="completed-pages" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500" placeholder="Enter completed pages" min="0" onchange="updateQuranProgress()">
+                            </div>
+                            <button onclick="setQuranGoal()" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-check"></i> Set Goal
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-bold text-green-800 mb-4">Today's Progress</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Daily Goal:</span>
+                                <span id="goal-pages" class="font-bold text-green-600">0 pages</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-700">Completed:</span>
+                                <span id="completed-pages-display" class="font-bold text-green-600">0 pages</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-4">
+                                <div id="quran-progress" class="bg-green-600 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <div class="text-center">
+                                <span id="quran-percentage" class="text-2xl font-bold text-green-600">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-bold text-green-800 mb-4">Quran Reading Tracker</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600" id="weekly-quran-pages">0</div>
+                            <p class="text-gray-600">Pages This Week</p>
+                        </div>
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600" id="monthly-quran-pages">0</div>
+                            <p class="text-gray-600">Pages This Month</p>
+                        </div>
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600" id="streak-days">0</div>
+                            <p class="text-gray-600">Day Streak</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-green-100 rounded-lg p-6">
+                    <h3 class="text-xl font-bold text-green-800 mb-4">Popular Surahs</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-green-700 mb-2">Surah Al-Fatiha</h4>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="fatiha-read" class="w-4 h-4 text-green-600 rounded" onchange="updateSurahRead('fatiha')">
+                                <label for="fatiha-read" class="text-gray-700">Read today</label>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-green-700 mb-2">Surah Al-Baqarah</h4>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="baqarah-read" class="w-4 h-4 text-green-600 rounded" onchange="updateSurahRead('baqarah')">
+                                <label for="baqarah-read" class="text-gray-700">Read today</label>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-green-700 mb-2">Surah Yasin</h4>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="yasin-read" class="w-4 h-4 text-green-600 rounded" onchange="updateSurahRead('yasin')">
+                                <label for="yasin-read" class="text-gray-700">Read today</label>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-green-700 mb-2">Surah Al-Mulk</h4>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="mulk-read" class="w-4 h-4 text-green-600 rounded" onchange="updateSurahRead('mulk')">
+                                <label for="mulk-read" class="text-gray-700">Read today</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Habits Section -->
+        <div id="habits-section" class="section hidden">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-green-800 mb-2">
+                        <i class="fas fa-check-circle text-green-600"></i> Islamic Habits Tracker
+                    </h2>
+                    <p class="text-gray-600">Build good Islamic habits and track your progress</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-bold text-green-800 mb-4">Daily Islamic Habits</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="morning-dhikr" class="habit-checkbox w-5 h-5 text-green-600 rounded" onchange="updateHabit('morning-dhikr')">
+                                <label for="morning-dhikr" class="habit-label flex-1 p-2 rounded cursor-pointer">Morning Dhikr</label>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="evening-dhikr" class="habit-checkbox w-5 h-5 text-green-600 rounded" onchange="updateHabit('evening-dhikr')">
+                                <label for="evening-dhikr" class="habit-label flex-1 p-2 rounded cursor-pointer">Evening Dhikr</label>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="istighfar" class="habit-checkbox w-5 h-5 text-green-600 rounded" onchange="updateHabit('istighfar')">
+                                <label for="istighfar" class="habit-label flex-1 p-2 rounded cursor-pointer">Istighfar (100 times)</label>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="salawat" class="habit-checkbox w-5 h-5 text-green-600 rounded" onchange="updateHabit('salawat')">
+                                <label for="salawat" class="habit-label flex-1 p-2 rounded cursor-pointer">Salawat on Prophet</label>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" id="charity" class="habit-checkbox w-5 h-5 text-green-600 rounded" onchange="updateHabit('charity')">
+                                <label for="charity" class="habit-label flex-1 p-2 rounded cursor-pointer">Daily Charity</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-bold text-green-800 mb-4">Habit Progress</h3>
+                        <div class="space-y-4">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-600" id="habits-percentage">0%</div>
+                                <p class="text-gray-600">Today's Completion</p>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-6">
+                                <div id="habits-progress" class="bg-green-600 h-6 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-bold text-green-800 mb-4">Add Custom Habit</h3>
+                    <div class="flex space-x-4">
+                        <input type="text" id="custom-habit" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500" placeholder="Enter your Islamic habit...">
+                        <button onclick="addCustomHabit()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                    <div id="custom-habits-list" class="mt-4 space-y-2"></div>
+                </div>
+
+                <div class="mt-8 bg-green-100 rounded-lg p-6">
+                    <h3 class="text-xl font-bold text-green-800 mb-4">Weekly Habit Statistics</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="dhikr-count">0</div>
+                            <p class="text-gray-600">Dhikr Days</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="istighfar-count">0</div>
+                            <p class="text-gray-600">Istighfar Days</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="salawat-count">0</div>
+                            <p class="text-gray-600">Salawat Days</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="charity-count">0</div>
+                            <p class="text-gray-600">Charity Days</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="habit-streak">0</div>
+                            <p class="text-gray-600">Best Streak</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Duas Section -->
+        <div id="duas-section" class="section hidden">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-green-800 mb-2">
+                        <i class="fas fa-hands text-green-600"></i> Daily Duas Collection
+                    </h2>
+                    <p class="text-gray-600">Essential duas for daily life with Arabic text and translation</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="dua-card bg-white rounded-lg shadow-md p-6">
+                        <div class="text-center mb-4">
+                            <h3 class="text-xl font-bold text-green-800">Morning Dua</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="text-center arabic-font text-xl text-green-700 leading-relaxed">
+                                أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ
+                            </div>
+                            <div class="text-center text-gray-600 italic">
+                                "We have reached the morning and at this very time unto Allah belongs all sovereignty."
+                            </div>
+                            <div class="text-center">
+                                <button onclick="markDuaRead('morning')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-check"></i> Mark as Read
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dua-card bg-white rounded-lg shadow-md p-6">
+                        <div class="text-center mb-4">
+                            <h3 class="text-xl font-bold text-green-800">Evening Dua</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="text-center arabic-font text-xl text-green-700 leading-relaxed">
+                                أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ
+                            </div>
+                            <div class="text-center text-gray-600 italic">
+                                "We have reached the evening and at this very time unto Allah belongs all sovereignty."
+                            </div>
+                            <div class="text-center">
+                                <button onclick="markDuaRead('evening')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-check"></i> Mark as Read
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dua-card bg-white rounded-lg shadow-md p-6">
+                        <div class="text-center mb-4">
+                            <h3 class="text-xl font-bold text-green-800">Before Eating</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="text-center arabic-font text-xl text-green-700 leading-relaxed">
+                                بِسْمِ اللَّهِ
+                            </div>
+                            <div class="text-center text-gray-600 italic">
+                                "In the name of Allah."
+                            </div>
+                            <div class="text-center">
+                                <button onclick="markDuaRead('eating')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-check"></i> Mark as Read
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dua-card bg-white rounded-lg shadow-md p-6">
+                        <div class="text-center mb-4">
+                            <h3 class="text-xl font-bold text-green-800">After Eating</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="text-center arabic-font text-xl text-green-700 leading-relaxed">
+                                الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا
+                            </div>
+                            <div class="text-center text-gray-600 italic">
+                                "Praise be to Allah who has fed us and given us drink."
+                            </div>
+                            <div class="text-center">
+                                <button onclick="markDuaRead('after-eating')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-check"></i> Mark as Read
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dua-card bg-white rounded-lg shadow-md p-6">
+                        <div class="text-center mb-4">
+                            <h3 class="text-xl font-bold text-green-800">Before Sleep</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="text-center arabic-font text-xl text-green-700 leading-relaxed">
+                                بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا
+                            </div>
+                            <div class="text-center text-gray-600 italic">
+                                "In Your name, O Allah, I die and I live."
+                            </div>
+                            <div class="text-center">
+                                <button onclick="markDuaRead('sleep')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-check"></i> Mark as Read
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dua-card bg-white rounded-lg shadow-md p-6">
+                        <div class="text-center mb-4">
+                            <h3 class="text-xl font-bold text-green-800">Upon Waking</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="text-center arabic-font text-xl text-green-700 leading-relaxed">
+                                الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا
+                            </div>
+                            <div class="text-center text-gray-600 italic">
+                                "Praise be to Allah who has brought us back to life after causing us to die."
+                            </div>
+                            <div class="text-center">
+                                <button onclick="markDuaRead('waking')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-check"></i> Mark as Read
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-green-100 rounded-lg p-6">
+                    <h3 class="text-xl font-bold text-green-800 mb-4">Dua Progress Today</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+                        <div class="text-center">
+                            <div class="w-8 h-8 rounded-full mx-auto mb-2 bg-gray-300" id="morning-dua-status"></div>
+                            <p class="text-sm text-gray-600">Morning</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-8 h-8 rounded-full mx-auto mb-2 bg-gray-300" id="evening-dua-status"></div>
+                            <p class="text-sm text-gray-600">Evening</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-8 h-8 rounded-full mx-auto mb-2 bg-gray-300" id="eating-dua-status"></div>
+                            <p class="text-sm text-gray-600">Eating</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-8 h-8 rounded-full mx-auto mb-2 bg-gray-300" id="after-eating-dua-status"></div>
+                            <p class="text-sm text-gray-600">After Eating</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-8 h-8 rounded-full mx-auto mb-2 bg-gray-300" id="sleep-dua-status"></div>
+                            <p class="text-sm text-gray-600">Sleep</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-8 h-8 rounded-full mx-auto mb-2 bg-gray-300" id="waking-dua-status"></div>
+                            <p class="text-sm text-gray-600">Waking</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ramadan Section -->
+        <div id="ramadan-section" class="section hidden">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-green-800 mb-2">
+                        <i class="fas fa-moon text-green-600"></i> Ramadan Planner
+                    </h2>
+                    <p class="text-gray-600">Track your Ramadan activities and spiritual goals</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-bold text-green-800 mb-4">Daily Ramadan Tracker</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700">Suhoor</span>
+                                <input type="checkbox" id="suhoor" class="w-5 h-5 text-green-600 rounded" onchange="updateRamadanActivity('suhoor')">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700">Fasting</span>
+                                <input type="checkbox" id="fasting" class="w-5 h-5 text-green-600 rounded" onchange="updateRamadanActivity('fasting')">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700">Iftar</span>
+                                <input type="checkbox" id="iftar" class="w-5 h-5 text-green-600 rounded" onchange="updateRamadanActivity('iftar')">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700">Tarawih</span>
+                                <input type="checkbox" id="tarawih" class="w-5 h-5 text-green-600 rounded" onchange="updateRamadanActivity('tarawih')">
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700">Qiyam ul-Layl</span>
+                                <input type="checkbox" id="qiyam" class="w-5 h-5 text-green-600 rounded" onchange="updateRamadanActivity('qiyam')">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-bold text-green-800 mb-4">Ramadan Progress</h3>
+                        <div class="space-y-4">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-600" id="ramadan-day">Day 1</div>
+                                <p class="text-gray-600">of Ramadan</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600" id="ramadan-percentage">0%</div>
+                                <p class="text-gray-600">Today's Activities</p>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-4">
+                                <div id="ramadan-progress" class="bg-green-600 h-4 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-bold text-green-800 mb-4">Ramadan Goals</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 mb-2">Quran Completion Goal:</label>
+                            <div class="flex space-x-4">
+                                <input type="number" id="quran-goal" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500" placeholder="Number of times" min="1" max="3">
+                                <button onclick="setQuranGoalRamadan()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">Set</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Daily Charity Goal (PKR):</label>
+                            <div class="flex space-x-4">
+                                <input type="number" id="charity-goal" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500" placeholder="Amount in PKR" min="0">
+                                <button onclick="setCharityGoal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">Set</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-green-100 rounded-lg p-6">
+                    <h3 class="text-xl font-bold text-green-800 mb-4">Ramadan Statistics</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="fasting-days">0</div>
+                            <p class="text-gray-600">Fasting Days</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="tarawih-count">0</div>
+                            <p class="text-gray-600">Tarawih Prayers</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="charity-total">₨0</div>
+                            <p class="text-gray-600">Total Charity</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600" id="quran-completion">0%</div>
+                            <p class="text-gray-600">Quran Progress</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Share Button -->
+    <div class="fixed bottom-4 right-4 no-print">
+        <button onclick="shareOnWhatsApp()" class="bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 transition-colors">
+            <i class="fab fa-whatsapp text-xl"></i>
+        </button>
+    </div>
+
+    <script>
+        // Initialize data storage
+        let userData = {
+            prayers: { fajr: false, dhuhr: false, asr: false, maghrib: false, isha: false },
+            quran: { dailyGoal: 0, completed: 0, streak: 0 },
+            habits: { 'morning-dhikr': false, 'evening-dhikr': false, 'istighfar': false, 'salawat': false, 'charity': false },
+            duas: { morning: false, evening: false, eating: false, 'after-eating': false, sleep: false, waking: false },
+            ramadan: { suhoor: false, fasting: false, iftar: false, tarawih: false, qiyam: false, day: 1, quranGoal: 1, charityGoal: 0 },
+            customHabits: []
+        };
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('islamicPlannerData');
+            if (saved) {
+                userData = { ...userData, ...JSON.parse(saved) };
+            }
+            updateUI();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('islamicPlannerData', JSON.stringify(userData));
+        }
+
+        // Show specific section
+        function showSection(sectionName) {
+            const sections = ['prayer', 'quran', 'habits', 'duas', 'ramadan'];
+            sections.forEach(section => {
+                const element = document.getElementById(section + '-section');
+                if (element) {
+                    element.classList.add('hidden');
+                }
+            });
+            
+            const targetSection = document.getElementById(sectionName + '-section');
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Prayer functions
+        function updatePrayer(prayerName) {
+            const checkbox = document.getElementById(prayerName + '-prayer');
+            userData.prayers[prayerName] = checkbox.checked;
+            
+            // Update progress bar
+            const progress = document.getElementById(prayerName + '-progress');
+            progress.style.width = checkbox.checked ? '100%' : '0%';
+            
+            // Update overall prayer percentage
+            const completed = Object.values(userData.prayers).filter(p => p).length;
+            const percentage = Math.round((completed / 5) * 100);
+            document.getElementById('prayer-percentage').textContent = percentage + '%';
+            
+            saveData();
+        }
+
+        // Quran functions
+        function setQuranGoal() {
+            const dailyPages = parseInt(document.getElementById('daily-pages').value) || 0;
+            userData.quran.dailyGoal = dailyPages;
+            document.getElementById('goal-pages').textContent = dailyPages + ' pages';
+            updateQuranProgress();
+            saveData();
+        }
+
+        function updateQuranProgress() {
+            const completed = parseInt(document.getElementById('completed-pages').value) || 0;
+            userData.quran.completed = completed;
+            document.getElementById('completed-pages-display').textContent = completed + ' pages';
+            
+            const percentage = userData.quran.dailyGoal > 0 ? Math.min(Math.round((completed / userData.quran.dailyGoal) * 100), 100) : 0;
+            document.getElementById('quran-percentage').textContent = percentage + '%';
+            document.getElementById('quran-progress').style.width = percentage + '%';
+            
+            saveData();
+        }
+
+        function updateSurahRead(surahName) {
+            const checkbox = document.getElementById(surahName + '-read');
+            // This could be expanded to track individual surah reading
+            saveData();
+        }
+
+        // Habits functions
+        function updateHabit(habitName) {
+            const checkbox = document.getElementById(habitName);
+            userData.habits[habitName] = checkbox.checked;
+            
+            // Update habits percentage
+            const completed = Object.values(userData.habits).filter(h => h).length;
+            const total = Object.keys(userData.habits).length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+            document.getElementById('habits-percentage').textContent = percentage + '%';
+            document.getElementById('habits-progress').style.width = percentage + '%';
+            
+            saveData();
+        }
+
+        function addCustomHabit() {
+            const habitInput = document.getElementById('custom-habit');
+            const habitName = habitInput.value.trim();
+            
+            if (habitName) {
+                userData.customHabits.push({ name: habitName, completed: false });
+                habitInput.value = '';
+                renderCustomHabits();
+                saveData();
+            }
+        }
+
+        function renderCustomHabits() {
+            const container = document.getElementById('custom-habits-list');
+            container.innerHTML = '';
+            
+            userData.customHabits.forEach((habit, index) => {
+                const habitDiv = document.createElement('div');
+                habitDiv.className = 'flex items-center space-x-3';
+                habitDiv.innerHTML = `
+                    <input type="checkbox" id="custom-habit-${index}" class="habit-checkbox w-5 h-5 text-green-600 rounded" ${habit.completed ? 'checked' : ''} onchange="updateCustomHabit(${index})">
+                    <label for="custom-habit-${index}" class="habit-label flex-1 p-2 rounded cursor-pointer">${habit.name}</label>
+                    <button onclick="removeCustomHabit(${index})" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(habitDiv);
+            });
+        }
+
+        function updateCustomHabit(index) {
+            const checkbox = document.getElementById(`custom-habit-${index}`);
+            userData.customHabits[index].completed = checkbox.checked;
+            saveData();
+        }
+
+        function removeCustomHabit(index) {
+            userData.customHabits.splice(index, 1);
+            renderCustomHabits();
+            saveData();
+        }
+
+        // Duas functions
+        function markDuaRead(duaName) {
+            userData.duas[duaName] = true;
+            const statusElement = document.getElementById(duaName + '-dua-status');
+            if (statusElement) {
+                statusElement.className = 'w-8 h-8 rounded-full mx-auto mb-2 bg-green-500';
+            }
+            saveData();
+        }
+
+        // Ramadan functions
+        function updateRamadanActivity(activity) {
+            const checkbox = document.getElementById(activity);
+            userData.ramadan[activity] = checkbox.checked;
+            
+            // Update ramadan percentage
+            const activities = ['suhoor', 'fasting', 'iftar', 'tarawih', 'qiyam'];
+            const completed = activities.filter(a => userData.ramadan[a]).length;
+            const percentage = Math.round((completed / activities.length) * 100);
+            document.getElementById('ramadan-percentage').textContent = percentage + '%';
+            document.getElementById('ramadan-progress').style.width = percentage + '%';
+            
+            saveData();
+        }
+
+        function setQuranGoalRamadan() {
+            const goal = parseInt(document.getElementById('quran-goal').value) || 1;
+            userData.ramadan.quranGoal = goal;
+            saveData();
+        }
+
+        function setCharityGoal() {
+            const goal = parseInt(document.getElementById('charity-goal').value) || 0;
+            userData.ramadan.charityGoal = goal;
+            saveData();
+        }
+
+        // WhatsApp share function
+        function shareOnWhatsApp() {
+            const message = `🕌 *Islamic Digital Planner Progress* 🕌\n\n` +
+                          `📿 *Prayer Completion:* ${Math.round((Object.values(userData.prayers).filter(p => p).length / 5) * 100)}%\n` +
+                          `📖 *Quran Reading:* ${userData.quran.completed}/${userData.quran.dailyGoal} pages\n` +
+                          `✅ *Habits Progress:* ${Math.round((Object.values(userData.habits).filter(h => h).length / Object.keys(userData.habits).length) * 100)}%\n` +
+                          `🤲 *Duas Completed:* ${Object.values(userData.duas).filter(d => d).length}/6\n\n` +
+                          `May Allah bless our efforts! 🤲`;
+            
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Update UI with current data
+        function updateUI() {
+            // Update prayers
+            Object.keys(userData.prayers).forEach(prayer => {
+                const checkbox = document.getElementById(prayer + '-prayer');
+                if (checkbox) {
+                    checkbox.checked = userData.prayers[prayer];
+                    updatePrayer(prayer);
+                }
+            });
+
+            // Update quran
+            document.getElementById('goal-pages').textContent = userData.quran.dailyGoal + ' pages';
+            document.getElementById('completed-pages-display').textContent = userData.quran.completed + ' pages';
+            updateQuranProgress();
+
+            // Update habits
+            Object.keys(userData.habits).forEach(habit => {
+                const checkbox = document.getElementById(habit);
+                if (checkbox) {
+                    checkbox.checked = userData.habits[habit];
+                    updateHabit(habit);
+                }
+            });
+
+            // Update duas
+            Object.keys(userData.duas).forEach(dua => {
+                if (userData.duas[dua]) {
+                    const statusElement = document.getElementById(dua + '-dua-status');
+                    if (statusElement) {
+                        statusElement.className = 'w-8 h-8 rounded-full mx-auto mb-2 bg-green-500';
+                    }
+                }
+            });
+
+            // Update ramadan
+            Object.keys(userData.ramadan).forEach(activity => {
+                const checkbox = document.getElementById(activity);
+                if (checkbox) {
+                    checkbox.checked = userData.ramadan[activity];
+                }
+            });
+
+            // Render custom habits
+            renderCustomHabits();
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            showSection('prayer');
+        });
+    </script>
+</body>
+</html>
+<a href="islamic_digital_planner.html">🕌 Islamic Digital Planner</a>
+<a href="financial_calculator.html">📊 Financial Calculator</a>
+<a href="word_corrector.html">💻 Word Corrector</a>
+<a href="card_maker_urdu_eng.html">🖼️ Urdu Card Maker</a>
