@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Financial Calculator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for overflow areas */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #a78bfa; /* purple-400 */
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #8b5cf6; /* purple-500 */
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-200 to-purple-300 min-h-screen flex items-center justify-center p-4">
+    <div id="root"></div>
+
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel CDN - for JSX transformation in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        const translations = {
+            ur: {
+                appTitle: "فنانشل کیلکولیٹر",
+                tagline: "مالی حسابات آسانی سے کریں۔",
+                selectLanguage: "زبان منتخب کریں:",
+                simpleInterest: "سادہ سود",
+                compoundInterest: "مرکب سود",
+                loanEMI: "قرض EMI",
+                savingsGoal: "بچت کا مقصد",
+                principalAmount: "اصل رقم (Rs.)",
+                annualRate: "سالانہ شرح (%)",
+                timeInYears: "مدت (سال)",
+                calculate: "حساب لگائیں",
+                interestEarned: "کمایا گیا سود",
+                futureValue: "مستقبل کی قیمت",
+                compoundingFrequency: "مرکب تعدد",
+                annually: "سالانہ (1)",
+                semiAnnually: "چھ ماہانہ (2)",
+                quarterly: "سہ ماہی (4)",
+                monthly: "ماہانہ (12)",
+                loanAmount: "قرض کی رقم (Rs.)",
+                loanTermYears: "قرض کی مدت (سال)",
+                loanTermMonths: "قرض کی مدت (ماہ)",
+                monthlyEMI: "ماہانہ EMI",
+                targetAmount: "ہدف کی رقم (Rs.)",
+                initialSavings: "ابتدائی بچت (Rs.)",
+                requiredMonthlySavings: "مطلوبہ ماہانہ بچت",
+                result: "نتیجہ",
+                enterValidNumbers: "براہ کرم درست نمبرز درج کریں۔",
+                currency: "Rs.",
+                years: "سال",
+                months: "ماہ"
+            },
+            en: {
+                appTitle: "Financial Calculator",
+                tagline: "Perform financial calculations with ease.",
+                selectLanguage: "Select Language:",
+                simpleInterest: "Simple Interest",
+                compoundInterest: "Compound Interest",
+                loanEMI: "Loan EMI",
+                savingsGoal: "Savings Goal",
+                principalAmount: "Principal Amount (Rs.)",
+                annualRate: "Annual Rate (%)",
+                timeInYears: "Time (Years)",
+                calculate: "Calculate",
+                interestEarned: "Interest Earned",
+                futureValue: "Future Value",
+                compoundingFrequency: "Compounding Frequency",
+                annually: "Annually (1)",
+                semiAnnually: "Semi-Annually (2)",
+                quarterly: "Quarterly (4)",
+                monthly: "Monthly (12)",
+                loanAmount: "Loan Amount (Rs.)",
+                loanTermYears: "Loan Term (Years)",
+                loanTermMonths: "Loan Term (Months)",
+                monthlyEMI: "Monthly EMI",
+                targetAmount: "Target Amount (Rs.)",
+                initialSavings: "Initial Savings (Rs.)",
+                requiredMonthlySavings: "Required Monthly Savings",
+                result: "Result",
+                enterValidNumbers: "Please enter valid numbers.",
+                currency: "Rs.",
+                years: "Years",
+                months: "Months"
+            }
+        };
+
+        const App = () => {
+            const [language, setLanguage] = React.useState('ur'); // Default to Urdu
+            const t = translations[language];
+
+            const [activeTab, setActiveTab] = React.useState('simpleInterest');
+
+            // State for Simple Interest
+            const [siPrincipal, setSiPrincipal] = React.useState('');
+            const [siRate, setSiRate] = React.useState('');
+            const [siTime, setSiTime] = React.useState('');
+            const [siResult, setSiResult] = React.useState(null);
+
+            // State for Compound Interest
+            const [ciPrincipal, setCiPrincipal] = React.useState('');
+            const [ciRate, setCiRate] = React.useState('');
+            const [ciTime, setCiTime] = React.useState('');
+            const [ciFrequency, setCiFrequency] = React.useState('1'); // 1: Annually, 2: Semi-annually, 4: Quarterly, 12: Monthly
+            const [ciResult, setCiResult] = React.useState(null);
+
+            // State for Loan EMI
+            const [loanAmount, setLoanAmount] = React.useState('');
+            const [loanRate, setLoanRate] = React.useState('');
+            const [loanTermYears, setLoanTermYears] = React.useState('');
+            const [loanTermMonths, setLoanTermMonths] = React.useState('');
+            const [emiResult, setEmiResult] = React.useState(null);
+
+            // State for Savings Goal
+            const [sgTargetAmount, setSgTargetAmount] = React.useState('');
+            const [sgInitialSavings, setSgInitialSavings] = React.useState('');
+            const [sgRate, setSgRate] = React.useState('');
+            const [sgTime, setSgTime] = React.useState('');
+            const [sgResult, setSgResult] = React.useState(null);
+
+            // --- Simple Interest Calculation ---
+            const calculateSimpleInterest = () => {
+                const P = parseFloat(siPrincipal);
+                const R = parseFloat(siRate);
+                const T = parseFloat(siTime);
+
+                if (isNaN(P) || isNaN(R) || isNaN(T) || P < 0 || R < 0 || T < 0) {
+                    setSiResult(t.enterValidNumbers);
+                    return;
+                }
+
+                const interest = (P * R * T) / 100;
+                setSiResult(interest.toFixed(2));
+            };
+
+            // --- Compound Interest Calculation ---
+            const calculateCompoundInterest = () => {
+                const P = parseFloat(ciPrincipal);
+                const R = parseFloat(ciRate) / 100; // Convert to decimal
+                const T = parseFloat(ciTime);
+                const N = parseFloat(ciFrequency);
+
+                if (isNaN(P) || isNaN(R) || isNaN(T) || isNaN(N) || P < 0 || R < 0 || T < 0 || N <= 0) {
+                    setCiResult(t.enterValidNumbers);
+                    return;
+                }
+
+                const futureValue = P * Math.pow((1 + R / N), (N * T));
+                setCiResult(futureValue.toFixed(2));
+            };
+
+            // --- Loan EMI Calculation ---
+            const calculateLoanEMI = () => {
+                const P = parseFloat(loanAmount);
+                const annualRate = parseFloat(loanRate);
+                const termYears = parseFloat(loanTermYears);
+                const termMonths = parseFloat(loanTermMonths);
+
+                let n; // Total number of months
+                if (termYears > 0) {
+                    n = termYears * 12;
+                } else if (termMonths > 0) {
+                    n = termMonths;
+                } else {
+                    setEmiResult(t.enterValidNumbers);
+                    return;
+                }
+
+                if (isNaN(P) || isNaN(annualRate) || P < 0 || annualRate < 0 || n <= 0) {
+                    setEmiResult(t.enterValidNumbers);
+                    return;
+                }
+
+                const r = (annualRate / 12) / 100; // Monthly interest rate in decimal
+
+                if (r === 0) { // Handle zero interest rate
+                    setEmiResult((P / n).toFixed(2));
+                    return;
+                }
+
+                const emi = P * r * Math.pow((1 + r), n) / (Math.pow((1 + r), n) - 1);
+                setEmiResult(emi.toFixed(2));
+            };
+
+            // --- Savings Goal Calculation (Required Monthly Savings) ---
+            const calculateSavingsGoal = () => {
+                const FV = parseFloat(sgTargetAmount);
+                const PV = parseFloat(sgInitialSavings || 0); // Initial savings, default to 0
+                const annualRate = parseFloat(sgRate);
+                const T = parseFloat(sgTime); // Time in years
+
+                if (isNaN(FV) || isNaN(PV) || isNaN(annualRate) || isNaN(T) || FV <= 0 || PV < 0 || annualRate < 0 || T <= 0) {
+                    setSgResult(t.enterValidNumbers);
+                    return;
+                }
+
+                const n = T * 12; // Total number of months
+                const r = (annualRate / 12) / 100; // Monthly interest rate in decimal
+
+                if (r === 0) { // Handle zero interest rate
+                    const remainingAmount = FV - PV;
+                    if (remainingAmount <= 0) {
+                        setSgResult('0.00'); // Already reached or exceeded goal
+                    } else {
+                        setSgResult((remainingAmount / n).toFixed(2));
+                    }
+                    return;
+                }
+
+                // Calculate future value of initial savings
+                const fvOfInitialSavings = PV * Math.pow((1 + r), n);
+
+                // Remaining future value needed from monthly contributions
+                const remainingFvNeeded = FV - fvOfInitialSavings;
+
+                if (remainingFvNeeded <= 0) {
+                    setSgResult('0.00'); // Goal already met or exceeded with initial savings and their growth
+                    return;
+                }
+
+                // Calculate required monthly payment (PMT)
+                const pmt = remainingFvNeeded * (r / (Math.pow((1 + r), n) - 1));
+                setSgResult(pmt.toFixed(2));
+            };
+
+            // Common input field component
+            const InputField = ({ label, name, value, onChange, type = "number", placeholder, min = "0", step = "any" }) => (
+                <div>
+                    <label htmlFor={name} className="block text-gray-700 text-sm font-bold mb-2">{label}</label>
+                    <input
+                        type={type}
+                        name={name}
+                        id={name}
+                        placeholder={placeholder}
+                        value={value}
+                        onChange={onChange}
+                        className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        min={min}
+                        step={step}
+                        required
+                    />
+                </div>
+            );
+
+            // Common result display component
+            const ResultDisplay = ({ label, value }) => (
+                <div className="mt-6 p-4 bg-blue-50 rounded-xl shadow-md border border-blue-200 text-center">
+                    <p className="text-xl font-semibold text-blue-800 mb-2">{label}</p>
+                    <p className="text-3xl font-extrabold text-blue-900">
+                        {typeof value === 'number' ? `${t.currency} ${value.toLocaleString()}` : value}
+                    </p>
+                </div>
+            );
+
+            return (
+                <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-4xl w-full flex flex-col items-center transform transition-all duration-300 hover:scale-[1.005] border-4 border-purple-400">
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-purple-700 mb-4 text-center">
+                        {t.appTitle}
+                    </h1>
+                    <p className="text-lg text-gray-700 mb-6 text-center">
+                        {t.tagline}
+                    </p>
+
+                    {/* Language Selector */}
+                    <div className="mb-6 flex justify-end items-center gap-2 w-full">
+                        <label htmlFor="language-select" className="block text-gray-700 text-sm font-bold">{t.selectLanguage}</label>
+                        <select
+                            id="language-select"
+                            value={language}
+                            onChange={(e) => setLanguage(e.target.value)}
+                            className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="ur">اردو (Urdu)</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+
+                    {/* Navigation Tabs */}
+                    <div className="flex justify-center flex-wrap gap-2 mb-8 w-full border-b border-gray-200 pb-4">
+                        <button
+                            onClick={() => setActiveTab('simpleInterest')}
+                            className={`py-2 px-4 rounded-full text-md font-bold transition duration-200 ease-in-out shadow-md
+                                ${activeTab === 'simpleInterest' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-percent mr-2"></i> {t.simpleInterest}
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('compoundInterest')}
+                            className={`py-2 px-4 rounded-full text-md font-bold transition duration-200 ease-in-out shadow-md
+                                ${activeTab === 'compoundInterest' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-chart-line mr-2"></i> {t.compoundInterest}
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('loanEMI')}
+                            className={`py-2 px-4 rounded-full text-md font-bold transition duration-200 ease-in-out shadow-md
+                                ${activeTab === 'loanEMI' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-hand-holding-usd mr-2"></i> {t.loanEMI}
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('savingsGoal')}
+                            className={`py-2 px-4 rounded-full text-md font-bold transition duration-200 ease-in-out shadow-md
+                                ${activeTab === 'savingsGoal' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+                            `}
+                        >
+                            <i className="fas fa-piggy-bank mr-2"></i> {t.savingsGoal}
+                        </button>
+                    </div>
+
+                    {/* --- Calculator Content --- */}
+                    <div className="w-full bg-gray-50 p-6 rounded-xl shadow-lg border border-gray-200">
+                        {/* Simple Interest Calculator */}
+                        {activeTab === 'simpleInterest' && (
+                            <div className="space-y-4">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">{t.simpleInterest}</h3>
+                                <InputField label={t.principalAmount} name="siPrincipal" value={siPrincipal} onChange={(e) => setSiPrincipal(e.target.value)} placeholder="e.g., 10000" />
+                                <InputField label={t.annualRate} name="siRate" value={siRate} onChange={(e) => setSiRate(e.target.value)} placeholder="e.g., 5" />
+                                <InputField label={t.timeInYears} name="siTime" value={siTime} onChange={(e) => setSiTime(e.target.value)} placeholder="e.g., 3" />
+                                <button
+                                    onClick={calculateSimpleInterest}
+                                    className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold w-full
+                                               hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-lg mt-6"
+                                >
+                                    <i className="fas fa-calculator mr-2"></i> {t.calculate}
+                                </button>
+                                {siResult !== null && <ResultDisplay label={t.interestEarned} value={siResult} />}
+                            </div>
+                        )}
+
+                        {/* Compound Interest Calculator */}
+                        {activeTab === 'compoundInterest' && (
+                            <div className="space-y-4">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">{t.compoundInterest}</h3>
+                                <InputField label={t.principalAmount} name="ciPrincipal" value={ciPrincipal} onChange={(e) => setCiPrincipal(e.target.value)} placeholder="e.g., 10000" />
+                                <InputField label={t.annualRate} name="ciRate" value={ciRate} onChange={(e) => setCiRate(e.target.value)} placeholder="e.g., 5" />
+                                <InputField label={t.timeInYears} name="ciTime" value={ciTime} onChange={(e) => setCiTime(e.target.value)} placeholder="e.g., 3" />
+                                <div>
+                                    <label htmlFor="ciFrequency" className="block text-gray-700 text-sm font-bold mb-2">{t.compoundingFrequency}</label>
+                                    <select
+                                        id="ciFrequency"
+                                        value={ciFrequency}
+                                        onChange={(e) => setCiFrequency(e.target.value)}
+                                        className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="1">{t.annually}</option>
+                                        <option value="2">{t.semiAnnually}</option>
+                                        <option value="4">{t.quarterly}</option>
+                                        <option value="12">{t.monthly}</option>
+                                    </select>
+                                </div>
+                                <button
+                                    onClick={calculateCompoundInterest}
+                                    className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold w-full
+                                               hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-lg mt-6"
+                                >
+                                    <i className="fas fa-calculator mr-2"></i> {t.calculate}
+                                </button>
+                                {ciResult !== null && <ResultDisplay label={t.futureValue} value={ciResult} />}
+                            </div>
+                        )}
+
+                        {/* Loan EMI Calculator */}
+                        {activeTab === 'loanEMI' && (
+                            <div className="space-y-4">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">{t.loanEMI}</h3>
+                                <InputField label={t.loanAmount} name="loanAmount" value={loanAmount} onChange={(e) => setLoanAmount(e.target.value)} placeholder="e.g., 1000000" />
+                                <InputField label={t.annualRate} name="loanRate" value={loanRate} onChange={(e) => setLoanRate(e.target.value)} placeholder="e.g., 10" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <InputField label={t.loanTermYears} name="loanTermYears" value={loanTermYears} onChange={(e) => { setLoanTermYears(e.target.value); setLoanTermMonths(''); }} placeholder="e.g., 5" />
+                                    <InputField label={t.loanTermMonths} name="loanTermMonths" value={loanTermMonths} onChange={(e) => { setLoanTermMonths(e.target.value); setLoanTermYears(''); }} placeholder="e.g., 60" />
+                                </div>
+                                <button
+                                    onClick={calculateLoanEMI}
+                                    className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold w-full
+                                               hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-lg mt-6"
+                                >
+                                    <i className="fas fa-calculator mr-2"></i> {t.calculate}
+                                </button>
+                                {emiResult !== null && <ResultDisplay label={t.monthlyEMI} value={emiResult} />}
+                            </div>
+                        )}
+
+                        {/* Savings Goal Calculator */}
+                        {activeTab === 'savingsGoal' && (
+                            <div className="space-y-4">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">{t.savingsGoal}</h3>
+                                <InputField label={t.targetAmount} name="sgTargetAmount" value={sgTargetAmount} onChange={(e) => setSgTargetAmount(e.target.value)} placeholder="e.g., 500000" />
+                                <InputField label={t.initialSavings} name="sgInitialSavings" value={sgInitialSavings} onChange={(e) => setSgInitialSavings(e.target.value)} placeholder="e.g., 50000 (Optional)" min="0" required={false}/>
+                                <InputField label={t.annualRate} name="sgRate" value={sgRate} onChange={(e) => setSgRate(e.target.value)} placeholder="e.g., 7" />
+                                <InputField label={t.timeInYears} name="sgTime" value={sgTime} onChange={(e) => setSgTime(e.target.value)} placeholder="e.g., 5" />
+                                <button
+                                    onClick={calculateSavingsGoal}
+                                    className="bg-blue-600 text-white py-3 px-8 rounded-full text-lg font-bold w-full
+                                               hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-lg mt-6"
+                                >
+                                    <i className="fas fa-calculator mr-2"></i> {t.calculate}
+                                </button>
+                                {sgResult !== null && <ResultDisplay label={t.requiredMonthlySavings} value={sgResult} />}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the App component into the root div
+        window.onload = function() {
+            const rootElement = document.getElementById('root');
+            if (rootElement) {
+                const root = ReactDOM.createRoot(rootElement);
+                root.render(<App />);
+            }
+        };
+    </script>
+</body>
+</html>
