@@ -74,7 +74,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <header class="gradient-bg text-white py-6 mb-8">
+    <header class="gradient-bg text-white py-6 mb-8 no-print">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
@@ -93,7 +93,17 @@
                     </div>
                     <div class="text-right">
                         <p class="text-sm text-white text-opacity-80">Total Amount</p>
-                        <p class="text-xl font-bold" id="totalAmount">$0.00</p>
+                        <p class="text-xl font-bold" id="totalAmountHeader">$0.00</p>
+                    </div>
+                    <!-- Currency Selector in Header -->
+                    <div class="flex items-center space-x-2">
+                        <label for="invoiceCurrencySelect" class="text-sm text-white text-opacity-80">Currency:</label>
+                        <select id="invoiceCurrencySelect" class="p-1 rounded bg-white bg-opacity-20 text-white text-sm focus:outline-none focus:ring-1 focus:ring-white">
+                            <option value="PKR">PKR</option>
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -102,7 +112,7 @@
 
     <div class="container mx-auto px-4 pb-8">
         <!-- Dashboard Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 no-print">
             <div class="bg-white rounded-xl p-6 invoice-shadow hover-scale">
                 <div class="flex items-center justify-between">
                     <div>
@@ -156,7 +166,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left Column - Invoice Form -->
             <div class="lg:col-span-2">
-                <div class="bg-white rounded-xl invoice-shadow p-6 mb-6">
+                <div class="bg-white rounded-xl invoice-shadow p-6 mb-6 no-print">
                     <!-- Template Selection -->
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold mb-4 flex items-center">
@@ -164,17 +174,17 @@
                             Choose Invoice Template
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="template-card active p-4 border-2 rounded-lg cursor-pointer" onclick="selectTemplate('modern')">
+                            <div class="template-card active p-4 border-2 rounded-lg cursor-pointer" onclick="selectTemplate(this, 'modern')">
                                 <div class="bg-gradient-to-br from-blue-500 to-purple-600 h-20 rounded mb-2"></div>
                                 <p class="text-sm font-medium">Modern</p>
                                 <p class="text-xs text-gray-600">Clean & Professional</p>
                             </div>
-                            <div class="template-card p-4 border-2 rounded-lg cursor-pointer" onclick="selectTemplate('classic')">
+                            <div class="template-card p-4 border-2 rounded-lg cursor-pointer" onclick="selectTemplate(this, 'classic')">
                                 <div class="bg-gradient-to-br from-gray-600 to-gray-800 h-20 rounded mb-2"></div>
                                 <p class="text-sm font-medium">Classic</p>
                                 <p class="text-xs text-gray-600">Traditional & Elegant</p>
                             </div>
-                            <div class="template-card p-4 border-2 rounded-lg cursor-pointer" onclick="selectTemplate('colorful')">
+                            <div class="template-card p-4 border-2 rounded-lg cursor-pointer" onclick="selectTemplate(this, 'colorful')">
                                 <div class="bg-gradient-to-br from-pink-500 to-orange-500 h-20 rounded mb-2"></div>
                                 <p class="text-sm font-medium">Colorful</p>
                                 <p class="text-xs text-gray-600">Vibrant & Creative</p>
@@ -298,7 +308,7 @@
                                     <span>Discount:</span>
                                     <div class="flex items-center space-x-2">
                                         <input type="number" id="discountAmount" class="w-20 p-1 border rounded text-right" placeholder="0.00" step="0.01">
-                                        <span>$</span>
+                                        <span id="discountSymbol">$</span>
                                     </div>
                                 </div>
                                 <div class="flex justify-between py-3 text-lg font-bold border-t-2">
@@ -357,6 +367,9 @@
                         <button onclick="emailInvoice()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">
                             <i class="fas fa-envelope mr-2"></i>Email Invoice
                         </button>
+                        <button onclick="shareInvoiceOnWhatsApp()" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors">
+                            <i class="fab fa-whatsapp mr-2"></i>Share on WhatsApp
+                        </button>
                     </div>
                 </div>
             </div>
@@ -379,7 +392,7 @@
                 </div>
 
                 <!-- Recent Invoices -->
-                <div class="bg-white rounded-xl invoice-shadow p-6 mb-6">
+                <div class="bg-white rounded-xl invoice-shadow p-6 mb-6 no-print">
                     <h3 class="text-lg font-semibold mb-4 flex items-center">
                         <i class="fas fa-history mr-2 text-blue-600"></i>
                         Recent Invoices
@@ -394,7 +407,7 @@
                 </div>
 
                 <!-- Quick Stats -->
-                <div class="bg-white rounded-xl invoice-shadow p-6">
+                <div class="bg-white rounded-xl invoice-shadow p-6 no-print">
                     <h3 class="text-lg font-semibold mb-4 flex items-center">
                         <i class="fas fa-chart-bar mr-2 text-blue-600"></i>
                         Quick Stats
@@ -422,7 +435,7 @@
         </div>
 
         <!-- Invoice History Table -->
-        <div class="bg-white rounded-xl invoice-shadow p-6 mt-8">
+        <div class="bg-white rounded-xl invoice-shadow p-6 mt-8 no-print">
             <h3 class="text-lg font-semibold mb-4 flex items-center">
                 <i class="fas fa-table mr-2 text-blue-600"></i>
                 Invoice Management
@@ -454,7 +467,7 @@
     </div>
 
     <!-- Modal for Invoice Preview -->
-    <div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 no-print">
         <div class="bg-white rounded-xl max-w-4xl max-h-screen overflow-y-auto m-4 w-full">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-4">
@@ -478,12 +491,56 @@
         </div>
     </div>
 
+    <!-- Custom Alert Modal -->
+    <div id="customAlertModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 shadow-xl max-w-sm w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="customAlertTitle" class="text-xl font-semibold text-gray-800"></h3>
+                <button onclick="closeCustomAlert()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <p id="customAlertMessage" class="text-gray-700 mb-6"></p>
+            <div class="text-right">
+                <button onclick="closeCustomAlert()" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="customConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 shadow-xl max-w-sm w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="customConfirmTitle" class="text-xl font-semibold text-gray-800"></h3>
+                <button onclick="closeCustomConfirm(false)" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <p id="customConfirmMessage" class="text-gray-700 mb-6"></p>
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeCustomConfirm(false)" class="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
+                <button id="customConfirmOkBtn" class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         // Global variables
         let selectedTemplate = 'modern';
         let invoiceCounter = 1;
         let invoices = JSON.parse(localStorage.getItem('invoices')) || [];
         let clients = JSON.parse(localStorage.getItem('clients')) || [];
+        let lastGeneratedInvoiceData = null; // To store data for WhatsApp share
+        let selectedInvoiceCurrency = 'PKR'; // Default currency for the invoice
+
+        const currencySymbols = {
+            'USD': '$',
+            'PKR': 'Rs.',
+            'EUR': '€',
+            'GBP': '£'
+        };
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
@@ -500,12 +557,18 @@
             dueDate.setDate(dueDate.getDate() + 30);
             document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
 
+            // Set default currency select value in header
+            document.getElementById('invoiceCurrencySelect').value = selectedInvoiceCurrency;
+
             // Load saved data
             loadInvoices();
             updateDashboard();
             
             // Add event listeners
             setupEventListeners();
+
+            // Initial preview update
+            updateLivePreview();
         }
 
         function setupEventListeners() {
@@ -519,20 +582,29 @@
                 }
             });
 
-            // Live preview update
+            // Live preview update for main form fields
             document.addEventListener('input', function(e) {
-                if (e.target.form || e.target.closest('form')) {
+                const formElements = ['companyName', 'companyEmail', 'companyPhone', 'companyWebsite', 'companyAddress',
+                                      'clientName', 'clientEmail', 'clientPhone', 'clientCompany', 'clientAddress',
+                                      'invoiceNumber', 'invoiceDate', 'dueDate', 'paymentMethod', 'paymentStatus', 'paymentTerms', 'invoiceNotes'];
+                if (formElements.includes(e.target.id) || e.target.classList.contains('item-description')) {
                     updateLivePreview();
                 }
             });
+
+            // Event listener for currency select in header
+            document.getElementById('invoiceCurrencySelect').addEventListener('change', function() {
+                selectedInvoiceCurrency = this.value;
+                calculateTotals(); // Recalculate and update display with new currency
+            });
         }
 
-        function selectTemplate(template) {
+        function selectTemplate(element, template) {
             selectedTemplate = template;
             document.querySelectorAll('.template-card').forEach(card => {
                 card.classList.remove('active');
             });
-            event.target.closest('.template-card').classList.add('active');
+            element.classList.add('active'); // Use the passed element directly
             updateLivePreview();
         }
 
@@ -550,7 +622,7 @@
                 <td class="p-2">
                     <input type="number" class="w-full p-2 border rounded text-right item-rate" placeholder="0.00" step="0.01">
                 </td>
-                <td class="p-2 text-right item-amount">$0.00</td>
+                <td class="p-2 text-right item-amount">${currencySymbols[selectedInvoiceCurrency]}0.00</td>
                 <td class="p-2 text-center">
                     <button onclick="removeItem(this)" class="text-red-500 hover:text-red-700">
                         <i class="fas fa-trash"></i>
@@ -558,11 +630,12 @@
                 </td>
             `;
             tbody.appendChild(row);
+            calculateTotals(); // Recalculate totals after adding item
         }
 
         function removeItem(button) {
             button.closest('tr').remove();
-            calculateTotals();
+            calculateTotals(); // Recalculate totals after removing item
         }
 
         function calculateTotals() {
@@ -576,7 +649,7 @@
                 
                 const amountCell = row.querySelector('.item-amount');
                 if (amountCell) {
-                    amountCell.textContent = '$' + amount.toFixed(2);
+                    amountCell.textContent = currencySymbols[selectedInvoiceCurrency] + amount.toFixed(2);
                     subtotal += amount;
                 }
             });
@@ -587,58 +660,28 @@
             const taxAmount = (subtotal * taxRate) / 100;
             const total = subtotal + taxAmount - discountAmount;
 
-            document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
-            document.getElementById('taxAmount').textContent = '$' + taxAmount.toFixed(2);
-            document.getElementById('totalAmount').textContent = '$' + total.toFixed(2);
+            document.getElementById('subtotal').textContent = currencySymbols[selectedInvoiceCurrency] + subtotal.toFixed(2); // Subtotal should be just sum of items
+            document.getElementById('taxAmount').textContent = currencySymbols[selectedInvoiceCurrency] + taxAmount.toFixed(2);
+            document.getElementById('discountSymbol').textContent = currencySymbols[selectedInvoiceCurrency]; // Update discount symbol
+            document.getElementById('totalAmount').textContent = currencySymbols[selectedInvoiceCurrency] + total.toFixed(2);
 
             updateLivePreview();
-        }
-
-        function updateLivePreview() {
-            const preview = document.getElementById('invoicePreview');
-            const invoiceData = collectInvoiceData();
-            
-            if (!invoiceData.companyName && !invoiceData.clientName) {
-                preview.innerHTML = `
-                    <div class="text-center text-gray-500 mt-8">
-                        <i class="fas fa-file-invoice text-4xl mb-4"></i>
-                        <p>Invoice preview will appear here</p>
-                        <p class="text-sm">Fill the form to see live preview</p>
-                    </div>
-                `;
-                return;
-            }
-
-            preview.innerHTML = generateInvoiceHTML(invoiceData, true);
         }
 
         function collectInvoiceData() {
             const items = [];
             document.querySelectorAll('#itemsTable tr').forEach(row => {
-                const description = row.querySelector('.item-description')?.value || '';
-                const quantity = parseFloat(row.querySelector('.item-quantity')?.value) || 0;
-                const rate = parseFloat(row.querySelector('.item-rate')?.value) || 0;
-                
-                if (description || quantity || rate) {
-                    items.push({
-                        description,
-                        quantity,
-                        rate,
-                        amount: quantity * rate
-                    });
-                }
+                items.push({
+                    description: row.querySelector('.item-description')?.value || '',
+                    quantity: parseFloat(row.querySelector('.item-quantity')?.value) || 0,
+                    rate: parseFloat(row.querySelector('.item-rate')?.value) || 0,
+                    // Parse amount from textContent, removing the currency symbol
+                    amount: parseFloat(row.querySelector('.item-amount')?.textContent.replace(currencySymbols[selectedInvoiceCurrency], '')) || 0
+                });
             });
 
-            const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
-            const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
-            const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
-            const taxAmount = (subtotal * taxRate) / 100;
-            const total = subtotal + taxAmount - discountAmount;
-
             return {
-                invoiceNumber: document.getElementById('invoiceNumber').value,
-                invoiceDate: document.getElementById('invoiceDate').value,
-                dueDate: document.getElementById('dueDate').value,
+                template: selectedTemplate,
                 companyName: document.getElementById('companyName').value,
                 companyEmail: document.getElementById('companyEmail').value,
                 companyPhone: document.getElementById('companyPhone').value,
@@ -649,279 +692,403 @@
                 clientPhone: document.getElementById('clientPhone').value,
                 clientCompany: document.getElementById('clientCompany').value,
                 clientAddress: document.getElementById('clientAddress').value,
-                items,
-                subtotal,
-                taxRate,
-                taxAmount,
-                discountAmount,
-                total,
+                invoiceNumber: document.getElementById('invoiceNumber').value,
+                invoiceDate: document.getElementById('invoiceDate').value,
+                dueDate: document.getElementById('dueDate').value,
+                items: items,
+                subtotal: parseFloat(document.getElementById('subtotal').textContent.replace(currencySymbols[selectedInvoiceCurrency], '')),
+                taxRate: parseFloat(document.getElementById('taxRate').value),
+                taxAmount: parseFloat(document.getElementById('taxAmount').textContent.replace(currencySymbols[selectedInvoiceCurrency], '')),
+                discountAmount: parseFloat(document.getElementById('discountAmount').value),
+                totalAmount: parseFloat(document.getElementById('totalAmount').textContent.replace(currencySymbols[selectedInvoiceCurrency], '')),
                 paymentMethod: document.getElementById('paymentMethod').value,
                 paymentStatus: document.getElementById('paymentStatus').value,
                 paymentTerms: document.getElementById('paymentTerms').value,
-                notes: document.getElementById('invoiceNotes').value,
-                template: selectedTemplate,
-                createdAt: new Date().toISOString()
+                invoiceNotes: document.getElementById('invoiceNotes').value,
+                generatedAt: new Date().toISOString(),
+                currency: selectedInvoiceCurrency // Store the currency used for this invoice
             };
         }
 
-        function generateInvoiceHTML(data, isPreview = false) {
-            const templateStyles = {
-                modern: 'bg-gradient-to-br from-blue-600 to-purple-600',
-                classic: 'bg-gradient-to-br from-gray-600 to-gray-800',
-                colorful: 'bg-gradient-to-br from-pink-500 to-orange-500'
-            };
+        function updateLivePreview() {
+            const preview = document.getElementById('invoicePreview');
+            const invoiceData = collectInvoiceData(); // This will now include the selected currency
+            const currentSymbol = currencySymbols[invoiceData.currency]; // Use the currency stored in invoiceData
+            
+            if (!invoiceData.companyName && !invoiceData.clientName && invoiceData.items.filter(item => item.description).length === 0) {
+                preview.innerHTML = `
+                    <div class="text-center text-gray-500 mt-8">
+                        <i class="fas fa-file-invoice text-4xl mb-4"></i>
+                        <p>Invoice preview will appear here</p>
+                        <p class="text-sm">Fill the form to see live preview</p>
+                    </div>
+                `;
+                return;
+            }
 
-            const headerStyle = templateStyles[data.template] || templateStyles.modern;
-            const previewClass = isPreview ? 'text-xs' : '';
+            let headerBgClass = '';
+            let textColorClass = 'text-gray-800';
+            let accentColor = '#667eea'; // Default accent color
 
-            return `
-                <div class="max-w-4xl mx-auto bg-white ${isPreview ? 'text-xs' : ''}">
-                    <!-- Header -->
-                    <div class="${headerStyle} text-white p-6 rounded-t-lg">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h1 class="text-2xl font-bold mb-2">${data.companyName || 'Your Company'}</h1>
-                                <div class="text-sm opacity-90">
-                                    ${data.companyAddress ? `<p>${data.companyAddress}</p>` : ''}
-                                    ${data.companyEmail ? `<p><i class="fas fa-envelope mr-1"></i>${data.companyEmail}</p>` : ''}
-                                    ${data.companyPhone ? `<p><i class="fas fa-phone mr-1"></i>${data.companyPhone}</p>` : ''}
-                                    ${data.companyWebsite ? `<p><i class="fas fa-globe mr-1"></i>${data.companyWebsite}</p>` : ''}
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <h2 class="text-3xl font-bold">INVOICE</h2>
-                                <p class="text-lg">#${data.invoiceNumber}</p>
-                            </div>
+            switch (invoiceData.template) {
+                case 'modern':
+                    headerBgClass = 'bg-gradient-to-r from-blue-600 to-purple-600';
+                    textColorClass = 'text-white';
+                    accentColor = '#667eea';
+                    break;
+                case 'classic':
+                    headerBgClass = 'bg-gray-800';
+                    textColorClass = 'text-white';
+                    accentColor = '#4a5568';
+                    break;
+                case 'colorful':
+                    headerBgClass = 'bg-gradient-to-r from-pink-500 to-orange-500';
+                    textColorClass = 'text-white';
+                    accentColor = '#ed64a6';
+                    break;
+            }
+
+            let statusClass = '';
+            let statusText = invoiceData.paymentStatus;
+            switch (invoiceData.paymentStatus) {
+                case 'paid': statusClass = 'status-paid'; statusText = 'PAID'; break;
+                case 'pending': statusClass = 'status-pending'; statusText = 'PENDING'; break;
+                case 'overdue': statusClass = 'status-overdue'; statusText = 'OVERDUE'; break;
+                case 'cancelled': statusClass = 'bg-gray-500'; statusText = 'CANCELLED'; break;
+            }
+
+            let itemsHtml = invoiceData.items.map(item => `
+                <tr class="border-b border-gray-200">
+                    <td class="py-2 px-1 text-gray-700">${item.description}</td>
+                    <td class="py-2 px-1 text-right text-gray-700">${item.quantity}</td>
+                    <td class="py-2 px-1 text-right text-gray-700">${currentSymbol}${item.rate.toFixed(2)}</td>
+                    <td class="py-2 px-1 text-right font-semibold text-gray-800">${currentSymbol}${item.amount.toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            preview.innerHTML = `
+                <div class="p-6 bg-white rounded-lg animate-fade-in">
+                    <div class="${headerBgClass} p-6 rounded-t-lg flex justify-between items-center ${textColorClass}">
+                        <div>
+                            <h2 class="text-3xl font-bold">${invoiceData.companyName || 'Your Company'}</h2>
+                            <p class="text-sm">${invoiceData.companyAddress || 'Your Company Address'}</p>
+                            <p class="text-sm">${invoiceData.companyEmail || 'email@example.com'}</p>
+                            <p class="text-sm">${invoiceData.companyPhone || '+123 456 7890'}</p>
+                        </div>
+                        <div class="text-right">
+                            <h1 class="text-4xl font-extrabold">INVOICE</h1>
+                            <p class="text-lg"># ${invoiceData.invoiceNumber || 'INV-0001'}</p>
                         </div>
                     </div>
 
-                    <!-- Invoice Details -->
                     <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <!-- Bill To -->
+                        <div class="flex justify-between mb-8">
                             <div>
-                                <h3 class="text-lg font-semibold mb-3 text-gray-700">Bill To:</h3>
-                                <div class="text-gray-600">
-                                    <p class="font-medium text-gray-800">${data.clientName || 'Client Name'}</p>
-                                    ${data.clientCompany ? `<p>${data.clientCompany}</p>` : ''}
-                                    ${data.clientAddress ? `<p>${data.clientAddress}</p>` : ''}
-                                    ${data.clientEmail ? `<p><i class="fas fa-envelope mr-1"></i>${data.clientEmail}</p>` : ''}
-                                    ${data.clientPhone ? `<p><i class="fas fa-phone mr-1"></i>${data.clientPhone}</p>` : ''}
-                                </div>
+                                <h3 class="text-md font-semibold text-gray-700 mb-2">Bill To:</h3>
+                                <p class="font-bold text-lg">${invoiceData.clientName || 'Client Name'}</p>
+                                <p class="text-gray-600">${invoiceData.clientCompany || 'Client Company'}</p>
+                                <p class="text-gray-600">${invoiceData.clientAddress || 'Client Address'}</p>
+                                <p class="text-gray-600">${invoiceData.clientEmail || 'client@example.com'}</p>
+                                <p class="text-gray-600">${invoiceData.clientPhone || '+098 765 4321'}</p>
                             </div>
-
-                            <!-- Invoice Info -->
-                            <div>
-                                <h3 class="text-lg font-semibold mb-3 text-gray-700">Invoice Information:</h3>
-                                <div class="text-gray-600">
-                                    <div class="flex justify-between mb-1">
-                                        <span>Invoice Date:</span>
-                                        <span>${data.invoiceDate || new Date().toLocaleDateString()}</span>
-                                    </div>
-                                    <div class="flex justify-between mb-1">
-                                        <span>Due Date:</span>
-                                        <span>${data.dueDate || 'N/A'}</span>
-                                    </div>
-                                    <div class="flex justify-between mb-1">
-                                        <span>Payment Method:</span>
-                                        <span>${data.paymentMethod || 'N/A'}</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span>Status:</span>
-                                        <span class="px-2 py-1 rounded text-xs text-white ${getStatusColor(data.paymentStatus)}">${data.paymentStatus || 'Pending'}</span>
-                                    </div>
+                            <div class="text-right">
+                                <p class="text-gray-700">Invoice Date: <span class="font-semibold">${invoiceData.invoiceDate || 'N/A'}</span></p>
+                                <p class="text-gray-700">Due Date: <span class="font-semibold">${invoiceData.dueDate || 'N/A'}</span></p>
+                                <div class="mt-4 px-4 py-2 rounded-full text-white font-bold inline-block ${statusClass}">
+                                    ${statusText}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Items Table -->
-                        <div class="mb-6">
-                            <table class="w-full border-collapse">
-                                <thead>
-                                    <tr class="bg-gray-50">
-                                        <th class="border p-3 text-left">Description</th>
-                                        <th class="border p-3 text-right">Qty</th>
-                                        <th class="border p-3 text-right">Rate</th>
-                                        <th class="border p-3 text-right">Amount</th>
+                        <table class="w-full mb-8">
+                            <thead>
+                                <tr style="background-color: ${accentColor}; color: white;">
+                                    <th class="py-2 px-1 text-left rounded-tl-lg">Description</th>
+                                    <th class="py-2 px-1 text-right">Qty</th>
+                                    <th class="py-2 px-1 text-right">Rate</th>
+                                    <th class="py-2 px-1 text-right rounded-tr-lg">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml || `
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-gray-500">No items added</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    ${data.items.map(item => `
-                                        <tr>
-                                            <td class="border p-3">${item.description}</td>
-                                            <td class="border p-3 text-right">${item.quantity}</td>
-                                            <td class="border p-3 text-right">$${item.rate.toFixed(2)}</td>
-                                            <td class="border p-3 text-right">$${item.amount.toFixed(2)}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
+                                `}
+                            </tbody>
+                        </table>
 
-                        <!-- Totals -->
-                        <div class="flex justify-end mb-6">
-                            <div class="w-64">
-                                <div class="flex justify-between py-2 border-b">
+                        <div class="flex justify-end mb-8">
+                            <div class="w-full max-w-xs">
+                                <div class="flex justify-between text-gray-700 py-1">
                                     <span>Subtotal:</span>
-                                    <span>$${data.subtotal.toFixed(2)}</span>
+                                    <span>${currentSymbol}${invoiceData.subtotal.toFixed(2)}</span>
                                 </div>
-                                ${data.taxRate > 0 ? `
-                                    <div class="flex justify-between py-2 border-b">
-                                        <span>Tax (${data.taxRate}%):</span>
-                                        <span>$${data.taxAmount.toFixed(2)}</span>
-                                    </div>
-                                ` : ''}
-                                ${data.discountAmount > 0 ? `
-                                    <div class="flex justify-between py-2 border-b">
-                                        <span>Discount:</span>
-                                        <span>-$${data.discountAmount.toFixed(2)}</span>
-                                    </div>
-                                ` : ''}
-                                <div class="flex justify-between py-3 text-lg font-bold border-t-2 border-gray-300">
-                                    <span>Total:</span>
-                                    <span>$${data.total.toFixed(2)}</span>
+                                <div class="flex justify-between text-gray-700 py-1">
+                                    <span>Tax (${invoiceData.taxRate}%):</span>
+                                    <span>${currentSymbol}${invoiceData.taxAmount.toFixed(2)}</span>
+                                </div>
+                                <div class="flex justify-between text-gray-700 py-1">
+                                    <span>Discount:</span>
+                                    <span>-${currentSymbol}${invoiceData.discountAmount.toFixed(2)}</span>
+                                </div>
+                                <div class="flex justify-between text-2xl font-bold pt-4 border-t-2 border-gray-300">
+                                    <span>TOTAL:</span>
+                                    <span>${currentSymbol}${invoiceData.totalAmount.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Payment Terms -->
-                        ${data.paymentTerms ? `
+                        ${invoiceData.paymentTerms ? `
                             <div class="mb-6">
-                                <h3 class="text-lg font-semibold mb-3 text-gray-700">Payment Terms:</h3>
-                                <p class="text-gray-600">${data.paymentTerms}</p>
+                                <h3 class="text-md font-semibold text-gray-700 mb-2">Payment Terms:</h3>
+                                <p class="text-gray-600">${invoiceData.paymentTerms}</p>
                             </div>
                         ` : ''}
 
-                        <!-- Notes -->
-                        ${data.notes ? `
-                            <div class="mb-6">
-                                <h3 class="text-lg font-semibold mb-3 text-gray-700">Notes:</h3>
-                                <p class="text-gray-600">${data.notes}</p>
+                        ${invoiceData.invoiceNotes ? `
+                            <div>
+                                <h3 class="text-md font-semibold text-gray-700 mb-2">Notes:</h3>
+                                <p class="text-gray-600">${invoiceData.invoiceNotes}</p>
                             </div>
                         ` : ''}
 
-                        <!-- Footer -->
-                        <div class="text-center text-gray-500 text-sm border-t pt-4">
-                            <p>Thank you for your business!</p>
-                            <p>Generated with Invoice Generator Pro</p>
+                        <div class="text-center mt-8 text-gray-500 text-sm">
+                            Thank you for your business!
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        function getStatusColor(status) {
-            switch(status) {
-                case 'paid': return 'bg-green-500';
-                case 'pending': return 'bg-yellow-500';
-                case 'overdue': return 'bg-red-500';
-                case 'cancelled': return 'bg-gray-500';
-                default: return 'bg-yellow-500';
-            }
-        }
-
         function generateInvoice() {
-            const data = collectInvoiceData();
-            if (!data.companyName || !data.clientName || data.items.length === 0) {
-                alert('Please fill in company name, client name, and at least one item.');
-                return;
-            }
-
-            // Generate a unique invoice number if not provided
-            if (!data.invoiceNumber) {
-                data.invoiceNumber = 'INV-' + String(invoiceCounter).padStart(4, '0');
-                document.getElementById('invoiceNumber').value = data.invoiceNumber;
-            }
-
-            // Show success message
-            showNotification('Invoice generated successfully!', 'success');
-            
-            // Update preview
-            updateLivePreview();
-            
-            // Increment counter for next invoice
-            invoiceCounter++;
-            document.getElementById('invoiceNumber').value = 'INV-' + String(invoiceCounter).padStart(4, '0');
+            const invoiceData = collectInvoiceData();
+            // Store the last generated invoice data for WhatsApp share
+            lastGeneratedInvoiceData = invoiceData;
+            updateLivePreview(); // Ensure preview is updated with latest data
+            showCustomAlert('Invoice Generated!', 'Check the Live Preview section to see your invoice.');
         }
 
         function saveInvoice() {
-            const data = collectInvoiceData();
-            if (!data.companyName || !data.clientName) {
-                alert('Please fill in company name and client name.');
+            const invoiceData = collectInvoiceData();
+            if (!invoiceData.invoiceNumber) {
+                showCustomAlert('Error', 'Invoice Number is required to save the invoice.', true);
                 return;
             }
 
-            // Add unique ID
-            data.id = Date.now().toString();
-            
-            // Save to localStorage
-            invoices.push(data);
-            localStorage.setItem('invoices', JSON.stringify(invoices));
+            // Store the last generated invoice data for WhatsApp share
+            lastGeneratedInvoiceData = invoiceData;
 
-            // Save client info
-            const clientExists = clients.find(client => client.email === data.clientEmail);
-            if (!clientExists && data.clientEmail) {
-                clients.push({
-                    name: data.clientName,
-                    email: data.clientEmail,
-                    phone: data.clientPhone,
-                    company: data.clientCompany,
-                    address: data.clientAddress
-                });
-                localStorage.setItem('clients', JSON.stringify(clients));
+            // Check if invoice number already exists
+            const existingIndex = invoices.findIndex(inv => inv.invoiceNumber === invoiceData.invoiceNumber);
+            if (existingIndex > -1) {
+                // Update existing invoice
+                invoices[existingIndex] = invoiceData;
+                showCustomAlert('Invoice Updated!', 'Invoice has been successfully updated.');
+            } else {
+                // Add new invoice
+                invoices.push(invoiceData);
+                invoiceCounter++;
+                document.getElementById('invoiceNumber').value = 'INV-' + String(invoiceCounter).padStart(4, '0');
+                showCustomAlert('Invoice Saved!', 'New invoice has been successfully saved.');
             }
-
-            // Update UI
-            loadInvoices();
+            localStorage.setItem('invoices', JSON.stringify(invoices));
             updateDashboard();
-            showNotification('Invoice saved successfully!', 'success');
+            loadInvoices(); // Reload history table
         }
 
         function previewInvoice() {
-            const data = collectInvoiceData();
             const modal = document.getElementById('previewModal');
-            const preview = document.getElementById('fullInvoicePreview');
+            const fullPreview = document.getElementById('fullInvoicePreview');
+            const invoiceData = collectInvoiceData();
             
-            preview.innerHTML = generateInvoiceHTML(data, false);
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            // Generate the full HTML for the modal preview
+            let headerBgClass = '';
+            let textColorClass = 'text-gray-800';
+            let accentColor = '#667eea'; // Default accent color
+
+            switch (invoiceData.template) {
+                case 'modern':
+                    headerBgClass = 'bg-gradient-to-r from-blue-600 to-purple-600';
+                    textColorClass = 'text-white';
+                    accentColor = '#667eea';
+                    break;
+                case 'classic':
+                    headerBgClass = 'bg-gray-800';
+                    textColorClass = 'text-white';
+                    accentColor = '#4a5568';
+                    break;
+                case 'colorful':
+                    headerBgClass = 'bg-gradient-to-r from-pink-500 to-orange-500';
+                    textColorClass = 'text-white';
+                    accentColor = '#ed64a6';
+                    break;
+            }
+
+            let statusClass = '';
+            let statusText = invoiceData.paymentStatus;
+            switch (invoiceData.paymentStatus) {
+                case 'paid': statusClass = 'status-paid'; statusText = 'PAID'; break;
+                case 'pending': statusClass = 'status-pending'; statusText = 'PENDING'; break;
+                case 'overdue': statusClass = 'status-overdue'; statusText = 'OVERDUE'; break;
+                case 'cancelled': statusClass = 'bg-gray-500'; statusText = 'CANCELLED'; break;
+            }
+
+            const currentSymbol = currencySymbols[invoiceData.currency]; // Use the currency stored in invoiceData
+
+            let itemsHtml = invoiceData.items.map(item => `
+                <tr class="border-b border-gray-200">
+                    <td class="py-2 px-1 text-gray-700">${item.description}</td>
+                    <td class="py-2 px-1 text-right text-gray-700">${item.quantity}</td>
+                    <td class="py-2 px-1 text-right text-gray-700">${currentSymbol}${item.rate.toFixed(2)}</td>
+                    <td class="py-2 px-1 text-right font-semibold text-gray-800">${currentSymbol}${item.amount.toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            fullPreview.innerHTML = `
+                <div class="p-6 bg-white rounded-lg">
+                    <div class="${headerBgClass} p-6 rounded-t-lg flex justify-between items-center ${textColorClass}">
+                        <div>
+                            <h2 class="text-3xl font-bold">${invoiceData.companyName || 'Your Company'}</h2>
+                            <p class="text-sm">${invoiceData.companyAddress || 'Your Company Address'}</p>
+                            <p class="text-sm">${invoiceData.companyEmail || 'email@example.com'}</p>
+                            <p class="text-sm">${invoiceData.companyPhone || '+123 456 7890'}</p>
+                        </div>
+                        <div class="text-right">
+                            <h1 class="text-4xl font-extrabold">INVOICE</h1>
+                            <p class="text-lg"># ${invoiceData.invoiceNumber || 'INV-0001'}</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="flex justify-between mb-8">
+                            <div>
+                                <h3 class="text-md font-semibold text-gray-700 mb-2">Bill To:</h3>
+                                <p class="font-bold text-lg">${invoiceData.clientName || 'Client Name'}</p>
+                                <p class="text-gray-600">${invoiceData.clientCompany || 'Client Company'}</p>
+                                <p class="text-gray-600">${invoiceData.clientAddress || 'Client Address'}</p>
+                                <p class="text-gray-600">${invoiceData.clientEmail || 'client@example.com'}</p>
+                                <p class="text-gray-600">${invoiceData.clientPhone || '+098 765 4321'}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-700">Invoice Date: <span class="font-semibold">${invoiceData.invoiceDate || 'N/A'}</span></p>
+                                <p class="text-gray-700">Due Date: <span class="font-semibold">${invoiceData.dueDate || 'N/A'}</span></p>
+                                <div class="mt-4 px-4 py-2 rounded-full text-white font-bold inline-block ${statusClass}">
+                                    ${statusText}
+                                </div>
+                            </div>
+                        </div>
+
+                        <table class="w-full mb-8">
+                            <thead>
+                                <tr style="background-color: ${accentColor}; color: white;">
+                                    <th class="py-2 px-1 text-left rounded-tl-lg">Description</th>
+                                    <th class="py-2 px-1 text-right">Qty</th>
+                                    <th class="py-2 px-1 text-right">Rate</th>
+                                    <th class="py-2 px-1 text-right rounded-tr-lg">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml || `
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-gray-500">No items added</td>
+                                    </tr>
+                                `}
+                            </tbody>
+                        </table>
+
+                        <div class="flex justify-end mb-8">
+                            <div class="w-full max-w-xs">
+                                <div class="flex justify-between text-gray-700 py-1">
+                                    <span>Subtotal:</span>
+                                    <span>${currentSymbol}${invoiceData.subtotal.toFixed(2)}</span>
+                                </div>
+                                <div class="flex justify-between text-gray-700 py-1">
+                                    <span>Tax (${invoiceData.taxRate}%):</span>
+                                    <span>${currentSymbol}${invoiceData.taxAmount.toFixed(2)}</span>
+                                </div>
+                                <div class="flex justify-between text-gray-700 py-1">
+                                    <span>Discount:</span>
+                                    <span>-${currentSymbol}${invoiceData.discountAmount.toFixed(2)}</span>
+                                </div>
+                                <div class="flex justify-between text-2xl font-bold pt-4 border-t-2 border-gray-300">
+                                    <span>TOTAL:</span>
+                                    <span>${currentSymbol}${invoiceData.totalAmount.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${invoiceData.paymentTerms ? `
+                            <div class="mb-6">
+                                <h3 class="text-md font-semibold text-gray-700 mb-2">Payment Terms:</h3>
+                                <p class="text-gray-600">${invoiceData.paymentTerms}</p>
+                            </div>
+                        ` : ''}
+
+                        ${invoiceData.invoiceNotes ? `
+                            <div>
+                                <h3 class="text-md font-semibold text-gray-700 mb-2">Notes:</h3>
+                                <p class="text-gray-600">${invoiceData.invoiceNotes}</p>
+                            </div>
+                        ` : ''}
+
+                        <div class="text-center mt-8 text-gray-500 text-sm">
+                            Thank you for your business!
+                        </div>
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'flex';
         }
 
         function closePreview() {
-            const modal = document.getElementById('previewModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            document.getElementById('previewModal').style.display = 'none';
         }
 
         function emailInvoice() {
-            const data = collectInvoiceData();
-            if (!data.clientEmail) {
-                alert('Please enter client email address.');
+            showCustomAlert('Functionality Not Implemented', 'Email sending requires a backend server and is not available in this demo.');
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const invoiceContent = document.getElementById('fullInvoicePreview'); // Get the content from the modal preview
+
+            if (!invoiceContent || invoiceContent.innerHTML.includes('No items added') && !invoiceContent.innerHTML.includes('Invoice #')) { // Check if it's the placeholder or empty
+                showCustomAlert('Error', 'No invoice content to download. Please generate or preview an invoice first.', true);
                 return;
             }
 
-            const subject = `Invoice ${data.invoiceNumber} from ${data.companyName}`;
-            const body = `Dear ${data.clientName},\n\nPlease find your invoice attached.\n\nInvoice Details:\n- Invoice Number: ${data.invoiceNumber}\n- Amount: $${data.total.toFixed(2)}\n- Due Date: ${data.dueDate}\n\nThank you for your business!\n\nBest regards,\n${data.companyName}`;
-            
-            const mailtoLink = `mailto:${data.clientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            window.open(mailtoLink);
-            
-            showNotification('Email client opened!', 'info');
+            html2canvas(invoiceContent, { scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 297; // A4 height in mm
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                pdf.save(`invoice_${document.getElementById('invoiceNumber').value || 'untitled'}.pdf`);
+            }).catch(error => {
+                console.error("Error generating PDF:", error);
+                showCustomAlert('PDF Generation Error', 'There was an error generating the PDF. Please try again.', true);
+            });
         }
 
+
         function loadInvoices() {
-            const recentInvoicesList = document.getElementById('recentInvoices');
             const historyTable = document.getElementById('invoiceHistoryTable');
-            
+            historyTable.innerHTML = ''; // Clear existing rows
+
             if (invoices.length === 0) {
-                recentInvoicesList.innerHTML = `
-                    <div class="text-center text-gray-500 py-8">
-                        <i class="fas fa-inbox text-3xl mb-3"></i>
-                        <p>No invoices yet</p>
-                        <p class="text-sm">Create your first invoice to see it here</p>
-                    </div>
-                `;
-                
                 historyTable.innerHTML = `
                     <tr>
                         <td colspan="6" class="text-center text-gray-500 py-8">
@@ -934,108 +1101,47 @@
                 return;
             }
 
-            // Recent invoices (last 5)
-            const recentInvoices = invoices.slice(-5).reverse();
-            recentInvoicesList.innerHTML = recentInvoices.map(invoice => `
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                        <p class="font-medium">${invoice.invoiceNumber}</p>
-                        <p class="text-sm text-gray-600">${invoice.clientName}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-medium">$${invoice.total.toFixed(2)}</p>
-                        <span class="px-2 py-1 rounded text-xs text-white ${getStatusColor(invoice.paymentStatus)}">${invoice.paymentStatus}</span>
-                    </div>
-                </div>
-            `).join('');
+            invoices.forEach((invoice, index) => {
+                let statusClass = '';
+                switch (invoice.paymentStatus) {
+                    case 'paid': statusClass = 'bg-green-500'; break;
+                    case 'pending': statusClass = 'bg-orange-500'; break;
+                    case 'overdue': statusClass = 'bg-red-500'; break;
+                    case 'cancelled': statusClass = 'bg-gray-500'; break;
+                }
 
-            // Invoice history table
-            historyTable.innerHTML = invoices.map(invoice => `
-                <tr class="hover:bg-gray-50">
+                // Use the currency stored with the invoice, or fallback to current selected
+                const displaySymbol = currencySymbols[invoice.currency || selectedInvoiceCurrency]; 
+
+                const row = document.createElement('tr');
+                row.className = 'border-b hover:bg-gray-50';
+                row.innerHTML = `
                     <td class="p-3">${invoice.invoiceNumber}</td>
-                    <td class="p-3">${invoice.clientName}</td>
-                    <td class="p-3">${new Date(invoice.invoiceDate).toLocaleDateString()}</td>
-                    <td class="p-3 text-right">$${invoice.total.toFixed(2)}</td>
+                    <td class="p-3">${invoice.clientName || 'N/A'}</td>
+                    <td class="p-3">${invoice.invoiceDate}</td>
+                    <td class="p-3 text-right">${displaySymbol}${invoice.totalAmount.toFixed(2)}</td>
                     <td class="p-3 text-center">
-                        <span class="px-2 py-1 rounded text-xs text-white ${getStatusColor(invoice.paymentStatus)}">${invoice.paymentStatus}</span>
+                        <span class="px-3 py-1 rounded-full text-white text-xs font-semibold ${statusClass}">
+                            ${invoice.paymentStatus.toUpperCase()}
+                        </span>
                     </td>
                     <td class="p-3 text-center">
-                        <button onclick="viewInvoice('${invoice.id}')" class="text-blue-600 hover:text-blue-800 mr-2">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button onclick="editInvoice('${invoice.id}')" class="text-green-600 hover:text-green-800 mr-2">
+                        <button onclick="editInvoice(${index})" class="text-blue-500 hover:text-blue-700 mr-2">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button onclick="deleteInvoice('${invoice.id}')" class="text-red-600 hover:text-red-800">
+                        <button onclick="deleteInvoice(${index})" class="text-red-500 hover:text-red-700">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
-                </tr>
-            `).join('');
-        }
-
-        function updateDashboard() {
-            const totalInvoices = invoices.length;
-            const paidInvoices = invoices.filter(inv => inv.paymentStatus === 'paid').length;
-            const pendingAmount = invoices.filter(inv => inv.paymentStatus === 'pending').reduce((sum, inv) => sum + inv.total, 0);
-            const overdueInvoices = invoices.filter(inv => inv.paymentStatus === 'overdue').length;
-            const totalAmount = invoices.reduce((sum, inv) => sum + inv.total, 0);
-            
-            // Current month calculations
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-            const thisMonthInvoices = invoices.filter(inv => {
-                const invDate = new Date(inv.invoiceDate);
-                return invDate.getMonth() === currentMonth && invDate.getFullYear() === currentYear;
+                `;
+                historyTable.appendChild(row);
             });
-            const thisMonthAmount = thisMonthInvoices.reduce((sum, inv) => sum + inv.total, 0);
-            
-            // Current year calculations
-            const thisYearInvoices = invoices.filter(inv => {
-                const invDate = new Date(inv.invoiceDate);
-                return invDate.getFullYear() === currentYear;
-            });
-            const thisYearAmount = thisYearInvoices.reduce((sum, inv) => sum + inv.total, 0);
-            
-            // Average invoice amount
-            const avgAmount = totalInvoices > 0 ? totalAmount / totalInvoices : 0;
-            
-            // Payment rate
-            const paymentRate = totalInvoices > 0 ? Math.round((paidInvoices / totalInvoices) * 100) : 0;
-
-            // Update dashboard
-            document.getElementById('totalInvoices').textContent = totalInvoices;
-            document.getElementById('totalAmount').textContent = '$' + totalAmount.toFixed(2);
-            document.getElementById('dashTotalInvoices').textContent = totalInvoices;
-            document.getElementById('dashPaidInvoices').textContent = paidInvoices;
-            document.getElementById('dashPendingAmount').textContent = '$' + pendingAmount.toFixed(2);
-            document.getElementById('dashOverdueInvoices').textContent = overdueInvoices;
-            document.getElementById('thisMonthAmount').textContent = '$' + thisMonthAmount.toFixed(2);
-            document.getElementById('thisYearAmount').textContent = '$' + thisYearAmount.toFixed(2);
-            document.getElementById('avgInvoiceAmount').textContent = '$' + avgAmount.toFixed(2);
-            document.getElementById('paymentRate').textContent = paymentRate + '%';
         }
 
-        function viewInvoice(id) {
-            const invoice = invoices.find(inv => inv.id === id);
-            if (!invoice) return;
-            
-            const modal = document.getElementById('previewModal');
-            const preview = document.getElementById('fullInvoicePreview');
-            
-            preview.innerHTML = generateInvoiceHTML(invoice, false);
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
+        function editInvoice(index) {
+            const invoice = invoices[index];
 
-        function editInvoice(id) {
-            const invoice = invoices.find(inv => inv.id === id);
-            if (!invoice) return;
-            
-            // Populate form with invoice data
-            document.getElementById('invoiceNumber').value = invoice.invoiceNumber;
-            document.getElementById('invoiceDate').value = invoice.invoiceDate;
-            document.getElementById('dueDate').value = invoice.dueDate;
+            // Populate form fields
             document.getElementById('companyName').value = invoice.companyName;
             document.getElementById('companyEmail').value = invoice.companyEmail;
             document.getElementById('companyPhone').value = invoice.companyPhone;
@@ -1046,87 +1152,228 @@
             document.getElementById('clientPhone').value = invoice.clientPhone;
             document.getElementById('clientCompany').value = invoice.clientCompany;
             document.getElementById('clientAddress').value = invoice.clientAddress;
+            document.getElementById('invoiceNumber').value = invoice.invoiceNumber;
+            document.getElementById('invoiceDate').value = invoice.invoiceDate;
+            document.getElementById('dueDate').value = invoice.dueDate;
             document.getElementById('taxRate').value = invoice.taxRate;
             document.getElementById('discountAmount').value = invoice.discountAmount;
             document.getElementById('paymentMethod').value = invoice.paymentMethod;
             document.getElementById('paymentStatus').value = invoice.paymentStatus;
             document.getElementById('paymentTerms').value = invoice.paymentTerms;
-            document.getElementById('invoiceNotes').value = invoice.notes;
-            
-            // Populate items
-            const tbody = document.getElementById('itemsTable');
-            tbody.innerHTML = '';
+            document.getElementById('invoiceNotes').value = invoice.invoiceNotes;
+
+            // Populate items table
+            const itemsTableBody = document.getElementById('itemsTable');
+            itemsTableBody.innerHTML = ''; // Clear existing items
             invoice.items.forEach(item => {
                 const row = document.createElement('tr');
                 row.className = 'border-b';
                 row.innerHTML = `
                     <td class="p-2">
-                        <input type="text" class="w-full p-2 border rounded item-description" value="${item.description}">
+                        <input type="text" class="w-full p-2 border rounded item-description" placeholder="Item description" value="${item.description}">
                     </td>
                     <td class="p-2">
-                        <input type="number" class="w-full p-2 border rounded text-right item-quantity" value="${item.quantity}" min="1">
+                        <input type="number" class="w-full p-2 border rounded text-right item-quantity" placeholder="1" min="1" value="${item.quantity}">
                     </td>
                     <td class="p-2">
-                        <input type="number" class="w-full p-2 border rounded text-right item-rate" value="${item.rate}" step="0.01">
+                        <input type="number" class="w-full p-2 border rounded text-right item-rate" placeholder="0.00" step="0.01" value="${item.rate}">
                     </td>
-                    <td class="p-2 text-right item-amount">$${item.amount.toFixed(2)}</td>
+                    <td class="p-2 text-right item-amount">${currencySymbols[invoice.currency || selectedInvoiceCurrency]}${item.amount.toFixed(2)}</td>
                     <td class="p-2 text-center">
                         <button onclick="removeItem(this)" class="text-red-500 hover:text-red-700">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
                 `;
-                tbody.appendChild(row);
+                itemsTableBody.appendChild(row);
             });
-            
-            // Select template
-            selectTemplate(invoice.template);
-            
-            // Delete original invoice
-            invoices = invoices.filter(inv => inv.id !== id);
-            localStorage.setItem('invoices', JSON.stringify(invoices));
-            
-            // Update UI
-            loadInvoices();
-            updateDashboard();
-            calculateTotals();
-            updateLivePreview();
-            
-            showNotification('Invoice loaded for editing!', 'info');
+
+            // Set active template
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('active');
+                if (card.onclick.toString().includes(`'${invoice.template}'`)) {
+                    card.classList.add('active');
+                }
+            });
+            selectedTemplate = invoice.template;
+
+            // Set the currency selector in the header to the invoice's currency
+            selectedInvoiceCurrency = invoice.currency || 'PKR'; // Default to PKR if not saved
+            document.getElementById('invoiceCurrencySelect').value = selectedInvoiceCurrency;
+
+            calculateTotals(); // Recalculate totals to update display
+            updateLivePreview(); // Update live preview
+            showCustomAlert('Invoice Loaded!', 'Invoice has been loaded into the form for editing.');
         }
 
-        function deleteInvoice(id) {
-            if (confirm('Are you sure you want to delete this invoice?')) {
-                invoices = invoices.filter(inv => inv.id !== id);
+        function deleteInvoice(index) {
+            // Using a custom confirmation modal instead of browser's confirm()
+            showCustomConfirm('Delete Invoice', 'Are you sure you want to delete this invoice?', () => {
+                invoices.splice(index, 1);
                 localStorage.setItem('invoices', JSON.stringify(invoices));
-                loadInvoices();
                 updateDashboard();
-                showNotification('Invoice deleted successfully!', 'success');
+                loadInvoices();
+                showCustomAlert('Invoice Deleted!', 'Invoice has been successfully deleted.');
+            });
+        }
+
+        function updateDashboard() {
+            let totalInvoicesCount = invoices.length;
+            let paidInvoicesCount = 0;
+            let pendingAmount = 0;
+            let overdueInvoicesCount = 0;
+            let totalOverallAmount = 0;
+            let paidAmount = 0;
+
+            const now = new Date();
+
+            invoices.forEach(invoice => {
+                totalOverallAmount += invoice.totalAmount;
+                if (invoice.paymentStatus === 'paid') {
+                    paidInvoicesCount++;
+                    paidAmount += invoice.totalAmount;
+                } else if (invoice.paymentStatus === 'pending') {
+                    pendingAmount += invoice.totalAmount;
+                    const dueDate = new Date(invoice.dueDate);
+                    if (dueDate < now) {
+                        overdueInvoicesCount++;
+                    }
+                }
+            });
+
+            // Use the currently selected currency for dashboard totals
+            const currentSymbol = currencySymbols[selectedInvoiceCurrency];
+
+            document.getElementById('totalInvoices').textContent = totalInvoicesCount;
+            document.getElementById('totalAmountHeader').textContent = currentSymbol + totalOverallAmount.toFixed(2);
+            document.getElementById('dashTotalInvoices').textContent = totalInvoicesCount;
+            document.getElementById('dashPaidInvoices').textContent = paidInvoicesCount;
+            document.getElementById('dashPendingAmount').textContent = currentSymbol + pendingAmount.toFixed(2);
+            document.getElementById('dashOverdueInvoices').textContent = overdueInvoicesCount;
+
+            // Quick Stats
+            let thisMonthAmount = 0;
+            let thisYearAmount = 0;
+            invoices.forEach(invoice => {
+                const invoiceDate = new Date(invoice.invoiceDate);
+                if (invoiceDate.getMonth() === now.getMonth() && invoiceDate.getFullYear() === now.getFullYear()) {
+                    thisMonthAmount += invoice.totalAmount;
+                }
+                if (invoiceDate.getFullYear() === now.getFullYear()) {
+                    thisYearAmount += invoice.totalAmount;
+                }
+            });
+            document.getElementById('thisMonthAmount').textContent = currentSymbol + thisMonthAmount.toFixed(2);
+            document.getElementById('thisYearAmount').textContent = currentSymbol + thisYearAmount.toFixed(2);
+            document.getElementById('avgInvoiceAmount').textContent = totalInvoicesCount > 0 ? currentSymbol + (totalOverallAmount / totalInvoicesCount).toFixed(2) : currentSymbol + '0.00';
+            document.getElementById('paymentRate').textContent = totalOverallAmount > 0 ? ((paidAmount / totalOverallAmount) * 100).toFixed(1) + '%' : '0%';
+        }
+
+
+        // --- Removed Currency Converter Functions (as per user request) ---
+        // The previous convertCurrency() function and related HTML elements have been removed.
+
+
+        // --- WhatsApp Share Function ---
+        function shareInvoiceOnWhatsApp() {
+            if (!lastGeneratedInvoiceData) {
+                showCustomAlert('No Invoice to Share', 'Please generate or save an invoice first to share its details on WhatsApp.', true);
+                return;
             }
-        }
 
-        function downloadPDF() {
-            window.print();
-        }
+            const invoiceNum = lastGeneratedInvoiceData.invoiceNumber || 'N/A';
+            const totalAmt = lastGeneratedInvoiceData.totalAmount;
+            const clientName = lastGeneratedInvoiceData.clientName || 'Client';
+            const invoiceCurrency = lastGeneratedInvoiceData.currency || selectedInvoiceCurrency; // Use saved currency or current selected
+            const displaySymbol = currencySymbols[invoiceCurrency];
 
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 ${
-                type === 'success' ? 'bg-green-500' : 
-                type === 'error' ? 'bg-red-500' : 
-                'bg-blue-500'
-            }`;
-            notification.textContent = message;
+            const message = `Invoice Details:\nInvoice #: ${invoiceNum}\nClient: ${clientName}\nTotal Amount: ${displaySymbol}${totalAmt.toFixed(2)}\n\nCheck out this professional invoice generator!`;
             
-            document.body.appendChild(notification);
+            // Use the WhatsApp Web URL for broader compatibility
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
             
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
+            window.open(whatsappUrl, '_blank');
         }
 
-        // Initialize totals calculation
-        calculateTotals();
+        // --- Custom Alert/Confirm Modals (Replaces alert() and confirm()) ---
+        function showCustomAlert(title, message, isError = false) {
+            let alertModal = document.getElementById('customAlertModal');
+            if (!alertModal) {
+                alertModal = document.createElement('div');
+                alertModal.id = 'customAlertModal';
+                alertModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden';
+                alertModal.innerHTML = `
+                    <div class="bg-white rounded-lg p-6 shadow-xl max-w-sm w-full mx-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 id="customAlertTitle" class="text-xl font-semibold text-gray-800"></h3>
+                            <button onclick="closeCustomAlert()" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <p id="customAlertMessage" class="text-gray-700 mb-6"></p>
+                        <div class="text-right">
+                            <button onclick="closeCustomAlert()" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700">OK</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(alertModal);
+            }
+            
+            document.getElementById('customAlertTitle').textContent = title;
+            document.getElementById('customAlertMessage').textContent = message;
+            if (isError) {
+                document.getElementById('customAlertTitle').classList.add('text-red-600');
+            } else {
+                document.getElementById('customAlertTitle').classList.remove('text-red-600');
+            }
+            alertModal.classList.remove('hidden');
+            alertModal.classList.add('flex');
+        }
+
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').classList.add('hidden');
+            document.getElementById('customAlertModal').classList.remove('flex');
+        }
+
+        function showCustomConfirm(title, message, onConfirmCallback) {
+            let confirmModal = document.getElementById('customConfirmModal');
+            if (!confirmModal) {
+                confirmModal = document.createElement('div');
+                confirmModal.id = 'customConfirmModal';
+                confirmModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden';
+                confirmModal.innerHTML = `
+                    <div class="bg-white rounded-lg p-6 shadow-xl max-w-sm w-full mx-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 id="customConfirmTitle" class="text-xl font-semibold text-gray-800"></h3>
+                            <button onclick="closeCustomConfirm(false)" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <p id="customConfirmMessage" class="text-gray-700 mb-6"></p>
+                        <div class="flex justify-end space-x-3">
+                            <button onclick="closeCustomConfirm(false)" class="bg-gray-300 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
+                            <button id="customConfirmOkBtn" class="bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700">Confirm</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(confirmModal);
+            }
+            
+            document.getElementById('customConfirmTitle').textContent = title;
+            document.getElementById('customConfirmMessage').textContent = message;
+            document.getElementById('customConfirmOkBtn').onclick = () => {
+                onConfirmCallback();
+                closeCustomConfirm(true);
+            };
+            confirmModal.classList.remove('hidden');
+            confirmModal.classList.add('flex');
+        }
+
+        function closeCustomConfirm(confirmed) {
+            document.getElementById('customConfirmModal').classList.add('hidden');
+            document.getElementById('customConfirmModal').classList.remove('flex');
+        }
+
     </script>
 </body>
 </html>
