@@ -76,7 +76,7 @@
     <!-- Header -->
     <header class="gradient-bg text-white py-6 mb-8 no-print">
         <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row items-center justify-between md:space-x-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="flex items-center space-x-4 mb-4 md:mb-0">
                     <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
                         <i class="fas fa-file-invoice-dollar text-2xl"></i>
@@ -354,21 +354,21 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="grid grid-cols-2 md:flex md:flex-wrap gap-4 justify-center">
-                        <button onclick="generateInvoice()" class="w-full md:w-auto bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all transform hover:scale-105">
-                            <i class="fas fa-file-invoice mr-2"></i>Generate Invoice
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap gap-4 justify-center">
+                        <button onclick="generateInvoice()" class="w-full md:w-auto flex-1 min-w-[140px] bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-lg hover:shadow-lg transition-all transform hover:scale-105 text-sm md:text-base">
+                            <i class="fas fa-file-invoice mr-2"></i>Generate
                         </button>
-                        <button onclick="saveInvoice()" class="w-full md:w-auto bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
-                            <i class="fas fa-save mr-2"></i>Save Invoice
+                        <button onclick="saveInvoice()" class="w-full md:w-auto flex-1 min-w-[140px] bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors text-sm md:text-base">
+                            <i class="fas fa-save mr-2"></i>Save
                         </button>
-                        <button onclick="previewInvoice()" class="w-full md:w-auto bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors">
+                        <button onclick="previewInvoice()" class="w-full md:w-auto flex-1 min-w-[140px] bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700 transition-colors text-sm md:text-base">
                             <i class="fas fa-eye mr-2"></i>Preview
                         </button>
-                        <button onclick="emailInvoice()" class="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">
-                            <i class="fas fa-envelope mr-2"></i>Email Invoice
+                        <button onclick="emailInvoice()" class="w-full md:w-auto flex-1 min-w-[140px] bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 transition-colors text-sm md:text-base">
+                            <i class="fas fa-envelope mr-2"></i>Email
                         </button>
-                        <button onclick="shareInvoiceOnWhatsApp()" class="w-full md:w-auto bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors">
-                            <i class="fab fa-whatsapp mr-2"></i>Share on WhatsApp
+                        <button onclick="shareInvoiceOnWhatsApp()" class="w-full md:w-auto flex-1 min-w-[140px] bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition-colors text-sm md:text-base">
+                            <i class="fab fa-whatsapp mr-2"></i>WhatsApp
                         </button>
                     </div>
                 </div>
@@ -382,7 +382,7 @@
                         <i class="fas fa-eye mr-2 text-blue-600"></i>
                         Live Preview
                     </h3>
-                    <div id="invoicePreview" class="border rounded-lg p-4 bg-gray-50 min-h-96">
+                    <div id="invoicePreview" class="border rounded-lg p-4 bg-gray-50 min-h-96 overflow-x-auto">
                         <div class="text-center text-gray-500 mt-8">
                             <i class="fas fa-file-invoice text-4xl mb-4"></i>
                             <p>Invoice preview will appear here</p>
@@ -458,8 +458,8 @@
                                 <i class="fas fa-inbox text-3xl mb-3"></i>
                                 <p>No invoices found</p>
                                 <p class="text-sm">Start creating invoices to see them here</p>
-                            </td>
-                        </tr>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -476,7 +476,7 @@
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
-                <div id="fullInvoicePreview" class="border rounded-lg p-6">
+                <div id="fullInvoicePreview" class="border rounded-lg p-6 overflow-x-auto">
                     <!-- Invoice content will be generated here -->
                 </div>
                 <div class="flex justify-end space-x-4 mt-6">
@@ -768,6 +768,186 @@
 
             preview.innerHTML = `
                 <div class="p-6 bg-white rounded-lg animate-fade-in">
+                    <div class="${headerBgClass} p-6 rounded-t-lg flex justify-between items-center ${textColorClass}">
+                        <div>
+                            <h2 class="text-3xl font-bold">${invoiceData.companyName || 'Your Company'}</h2>
+                            <p class="text-sm">${invoiceData.companyAddress || 'Your Company Address'}</p>
+                            <p class="text-sm">${invoiceData.companyEmail || 'email@example.com'}</p>
+                            <p class="text-sm">${invoiceData.companyPhone || '+123 456 7890'}</p>
+                        </div>
+                        <div class="text-right">
+                            <h1 class="text-4xl font-extrabold">INVOICE</h1>
+                            <p class="text-lg"># ${invoiceData.invoiceNumber || 'INV-0001'}</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="flex justify-between mb-8">
+                            <div>
+                                <h3 class="text-md font-semibold text-gray-700 mb-2">Bill To:</h3>
+                                <p class="font-bold text-lg">${invoiceData.clientName || 'Client Name'}</p>
+                                <p class="text-gray-600">${invoiceData.clientCompany || 'Client Company'}</p>
+                                <p class="text-gray-600">${invoiceData.clientAddress || 'Client Address'}</p>
+                                <p class="text-gray-600">${invoiceData.clientEmail || 'client@example.com'}</p>
+                                <p class="text-gray-600">${invoiceData.clientPhone || '+098 765 4321'}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-gray-700">Invoice Date: <span class="font-semibold">${invoiceData.invoiceDate || 'N/A'}</span></p>
+                                <p class="text-gray-700">Due Date: <span class="font-semibold">${invoiceData.dueDate || 'N/A'}</span></p>
+                                <div class="mt-4 px-4 py-2 rounded-full text-white font-bold inline-block ${statusClass}">
+                                    ${statusText}
+                                </div>
+                            </div>
+                        </div>
+
+                        <table class="w-full mb-8">
+                            <thead>
+                                <tr style="background-color: ${accentColor}; color: white;">
+                                    <th class="py-2 px-1 text-left rounded-tl-lg">Description</th>
+                                    <th class="py-2 px-1 text-right">Qty</th>
+                                    <th class="py-2 px-1 text-right">Rate</th>
+                                    <th class="py-2 px-1 text-right rounded-tr-lg">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml || `
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-gray-500">No items added</td>
+                                    </tr>
+                                `}
+                            </tbody>
+                        </table>
+
+                        <div class="flex justify-end mb-8">
+                            <div class="w-full max-w-xs">
+                                <div class="flex justify-between text-gray-700 py-1">
+                                    <span>Subtotal:</span>
+                                    <span>${currentSymbol}${invoiceData.subtotal.toFixed(2)}</span>
+                                </div>
+                                <div class="flex justify-between text-gray-700 py-1">
+                                    <span>Tax (${invoiceData.taxRate}%):</span>
+                                    <span>${currentSymbol}${invoiceData.taxAmount.toFixed(2)}</span>
+                                </div>
+                                <div class="flex justify-between text-gray-700 py-1">
+                                    <span>Discount:</span>
+                                    <span>-${currentSymbol}${invoiceData.discountAmount.toFixed(2)}</span>
+                                </div>
+                                <div class="flex justify-between text-2xl font-bold pt-4 border-t-2 border-gray-300">
+                                    <span>TOTAL:</span>
+                                    <span>${currentSymbol}${invoiceData.totalAmount.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${invoiceData.paymentTerms ? `
+                            <div class="mb-6">
+                                <h3 class="text-md font-semibold text-gray-700 mb-2">Payment Terms:</h3>
+                                <p class="text-gray-600">${invoiceData.paymentTerms}</p>
+                            </div>
+                        ` : ''}
+
+                        ${invoiceData.invoiceNotes ? `
+                            <div>
+                                <h3 class="text-md font-semibold text-gray-700 mb-2">Notes:</h3>
+                                <p class="text-gray-600">${invoiceData.invoiceNotes}</p>
+                            </div>
+                        ` : ''}
+
+                        <div class="text-center mt-8 text-gray-500 text-sm">
+                            Thank you for your business!
+                        </div>
+                    </div>
+                </div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function generateInvoice() {
+            const invoiceData = collectInvoiceData();
+            // Store the last generated invoice data for WhatsApp share
+            lastGeneratedInvoiceData = invoiceData;
+            updateLivePreview(); // Ensure preview is updated with latest data
+            showCustomAlert('Invoice Generated!', 'Check the Live Preview section to see your invoice.');
+        }
+
+        function saveInvoice() {
+            const invoiceData = collectInvoiceData();
+            if (!invoiceData.invoiceNumber) {
+                showCustomAlert('Error', 'Invoice Number is required to save the invoice.', true);
+                return;
+            }
+
+            // Store the last generated invoice data for WhatsApp share
+            lastGeneratedInvoiceData = invoiceData;
+
+            // Check if invoice number already exists
+            const existingIndex = invoices.findIndex(inv => inv.invoiceNumber === invoiceData.invoiceNumber);
+            if (existingIndex > -1) {
+                // Update existing invoice
+                invoices[existingIndex] = invoiceData;
+                showCustomAlert('Invoice Updated!', 'Invoice has been successfully updated.');
+            } else {
+                // Add new invoice
+                invoices.push(invoiceData);
+                invoiceCounter++;
+                document.getElementById('invoiceNumber').value = 'INV-' + String(invoiceCounter).padStart(4, '0');
+                showCustomAlert('Invoice Saved!', 'New invoice has been successfully saved.');
+            }
+            localStorage.setItem('invoices', JSON.stringify(invoices));
+            updateDashboard();
+            loadInvoices(); // Reload history table
+        }
+
+        function previewInvoice() {
+            const modal = document.getElementById('previewModal');
+            const fullPreview = document.getElementById('fullInvoicePreview');
+            const invoiceData = collectInvoiceData();
+            
+            // Generate the full HTML for the modal preview
+            let headerBgClass = '';
+            let textColorClass = 'text-gray-800';
+            let accentColor = '#667eea'; // Default accent color
+
+            switch (invoiceData.template) {
+                case 'modern':
+                    headerBgClass = 'bg-gradient-to-r from-blue-600 to-purple-600';
+                    textColorClass = 'text-white';
+                    accentColor = '#667eea';
+                    break;
+                case 'classic':
+                    headerBgClass = 'bg-gray-800';
+                    textColorClass = 'text-white';
+                    accentColor = '#4a5568';
+                    break;
+                case 'colorful':
+                    headerBgClass = 'bg-gradient-to-r from-pink-500 to-orange-500';
+                    textColorClass = 'text-white';
+                    accentColor = '#ed64a6';
+                    break;
+            }
+
+            let statusClass = '';
+            let statusText = invoiceData.paymentStatus;
+            switch (invoiceData.paymentStatus) {
+                case 'paid': statusClass = 'status-paid'; statusText = 'PAID'; break;
+                case 'pending': statusClass = 'status-pending'; statusText = 'PENDING'; break;
+                case 'overdue': statusClass = 'status-overdue'; statusText = 'OVERDUE'; break;
+                case 'cancelled': statusClass = 'bg-gray-500'; statusText = 'CANCELLED'; break;
+            }
+
+            const currentSymbol = currencySymbols[invoiceData.currency]; // Use the currency stored in invoiceData
+
+            let itemsHtml = invoiceData.items.map(item => `
+                <tr class="border-b border-gray-200">
+                    <td class="py-2 px-1 text-gray-700">${item.description}</td>
+                    <td class="py-2 px-1 text-right text-gray-700">${item.quantity}</td>
+                    <td class="py-2 px-1 text-right text-gray-700">${currentSymbol}${item.rate.toFixed(2)}</td>
+                    <td class="py-2 px-1 text-right font-semibold text-gray-800">${currentSymbol}${item.amount.toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            fullPreview.innerHTML = `
+                <div class="p-6 bg-white rounded-lg">
                     <div class="${headerBgClass} p-6 rounded-t-lg flex justify-between items-center ${textColorClass}">
                         <div>
                             <h2 class="text-3xl font-bold">${invoiceData.companyName || 'Your Company'}</h2>
