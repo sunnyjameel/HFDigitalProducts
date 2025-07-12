@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Calorie Calculator with WhatsApp Share</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .calculator-card {
+            background: linear-gradient(145deg, #ffffff, #f0f4f8);
+            border: 1px solid #e2e8f0;
+        }
+        .food-item {
+            transition: all 0.3s ease;
+        }
+        .food-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        .chart-container {
+            height: 400px;
+            position: relative;
+        }
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
+        }
+        .whatsapp-btn {
+            background: linear-gradient(45deg, #25d366, #128c7e);
+            transition: all 0.3s ease;
+        }
+        .whatsapp-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+        }
+        .animated-icon {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="sticky-header border-b border-gray-200 py-4 mb-6">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-calculator text-3xl text-blue-600 animated-icon"></i>
+                    <h1 class="text-2xl font-bold text-gray-800">Advanced Calorie Calculator</h1>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-flag text-green-600"></i>
+                    <span class="text-sm text-gray-600">🇵🇰 Pakistani Food Database</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 pb-8">
+        <!-- BMI Calculator Section -->
+        <div class="mb-8">
+            <div class="calculator-card rounded-lg p-6 card-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-weight text-blue-600 mr-3"></i>
+                    BMI Calculator
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Height (cm)</label>
+                            <input type="number" id="height" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter height in cm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Weight (kg)</label>
+                            <input type="number" id="weight" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter weight in kg">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                                <input type="number" id="age" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Age">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                                <select id="gender" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Activity Level</label>
+                            <select id="activity" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="1.2">Sedentary (little/no exercise)</option>
+                                <option value="1.375">Light activity (light exercise 1-3 days/week)</option>
+                                <option value="1.55">Moderate activity (moderate exercise 3-5 days/week)</option>
+                                <option value="1.725">Very active (hard exercise 6-7 days/week)</option>
+                                <option value="1.9">Extra active (very hard exercise, physical job)</option>
+                            </select>
+                        </div>
+                        <button onclick="calculateBMI()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300">
+                            <i class="fas fa-calculator mr-2"></i>Calculate BMI & Calories
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div id="bmiResult" class="bg-gradient-to-r from-blue-100 to-purple-100 p-4 rounded-lg">
+                            <div class="text-center">
+                                <i class="fas fa-heartbeat text-4xl text-blue-600 mb-3"></i>
+                                <p class="text-gray-600">Enter your details to calculate BMI</p>
+                            </div>
+                        </div>
+                        <div id="calorieResult" class="bg-gradient-to-r from-green-100 to-blue-100 p-4 rounded-lg">
+                            <div class="text-center">
+                                <i class="fas fa-fire text-4xl text-orange-600 mb-3"></i>
+                                <p class="text-gray-600">Daily calorie needs will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Macro Nutrients Breakdown -->
+        <div class="mb-8">
+            <div class="calculator-card rounded-lg p-6 card-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-chart-pie text-green-600 mr-3"></i>
+                    Macro Nutrients Breakdown
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="chart-container">
+                        <canvas id="macroChart"></canvas>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium text-red-800">Proteins</span>
+                                <span id="proteinAmount" class="text-red-600 font-bold">0g</span>
+                            </div>
+                            <div class="mt-2 bg-red-200 rounded-full h-2">
+                                <div id="proteinBar" class="bg-red-500 h-2 rounded-full progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium text-yellow-800">Carbohydrates</span>
+                                <span id="carbAmount" class="text-yellow-600 font-bold">0g</span>
+                            </div>
+                            <div class="mt-2 bg-yellow-200 rounded-full h-2">
+                                <div id="carbBar" class="bg-yellow-500 h-2 rounded-full progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium text-blue-800">Fats</span>
+                                <span id="fatAmount" class="text-blue-600 font-bold">0g</span>
+                            </div>
+                            <div class="mt-2 bg-blue-200 rounded-full h-2">
+                                <div id="fatBar" class="bg-blue-500 h-2 rounded-full progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pakistani Food Database -->
+        <div class="mb-8">
+            <div class="calculator-card rounded-lg p-6 card-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-utensils text-orange-600 mr-3"></i>
+                    Pakistani Food Database
+                </h2>
+                <div class="mb-4">
+                    <input type="text" id="foodSearch" placeholder="Search Pakistani foods..." class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4" id="foodGrid">
+                    <!-- Food items will be populated here -->
+                </div>
+                <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-bold text-gray-800 mb-3">Selected Foods</h3>
+                    <div id="selectedFoods" class="space-y-2">
+                        <p class="text-gray-600">No foods selected yet</p>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <span class="font-bold text-lg">Total Calories: <span id="totalCalories" class="text-orange-600">0</span></span>
+                        <button onclick="clearSelectedFoods()" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-300">
+                            <i class="fas fa-trash mr-2"></i>Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exercise Calorie Calculator -->
+        <div class="mb-8">
+            <div class="calculator-card rounded-lg p-6 card-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-dumbbell text-purple-600 mr-3"></i>
+                    Exercise Calorie Calculator
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Exercise Type</label>
+                            <select id="exerciseType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="3.5">Walking (3.5 mph)</option>
+                                <option value="7">Running (6 mph)</option>
+                                <option value="6">Cycling (moderate)</option>
+                                <option value="8">Swimming</option>
+                                <option value="5">Yoga</option>
+                                <option value="4">Weight Training</option>
+                                <option value="6">Dancing</option>
+                                <option value="3">Household Activities</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
+                            <input type="number" id="exerciseDuration" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter duration">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Body Weight (kg)</label>
+                            <input type="number" id="exerciseWeight" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Enter weight">
+                        </div>
+                        <button onclick="calculateExerciseCalories()" class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition duration-300">
+                            <i class="fas fa-calculator mr-2"></i>Calculate Calories Burned
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div id="exerciseResult" class="bg-gradient-to-r from-purple-100 to-pink-100 p-4 rounded-lg">
+                            <div class="text-center">
+                                <i class="fas fa-fire text-4xl text-purple-600 mb-3"></i>
+                                <p class="text-gray-600">Select exercise and duration to calculate calories burned</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-gray-800 mb-3">Exercise Log</h3>
+                            <div id="exerciseLog" class="space-y-2">
+                                <p class="text-gray-600">No exercises logged yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meal Planning -->
+        <div class="mb-8">
+            <div class="calculator-card rounded-lg p-6 card-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-calendar-alt text-indigo-600 mr-3"></i>
+                    Meal Planning
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Meal Type</label>
+                            <select id="mealType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="breakfast">Breakfast</option>
+                                <option value="lunch">Lunch</option>
+                                <option value="dinner">Dinner</option>
+                                <option value="snack">Snack</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Meal Description</label>
+                            <input type="text" id="mealDescription" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., Chicken Karahi with Rice">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Calories</label>
+                            <input type="number" id="mealCalories" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Enter calories">
+                        </div>
+                        <button onclick="addMeal()" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300">
+                            <i class="fas fa-plus mr-2"></i>Add Meal
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-gray-800 mb-3">Today's Meals</h3>
+                            <div id="todaysMeals" class="space-y-2">
+                                <p class="text-gray-600">No meals added yet</p>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-lg">Total Daily Calories:</span>
+                                    <span id="dailyTotalCalories" class="text-indigo-600 font-bold text-lg">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Tracking -->
+        <div class="mb-8">
+            <div class="calculator-card rounded-lg p-6 card-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-chart-line text-teal-600 mr-3"></i>
+                    Progress Tracking
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="bg-teal-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-teal-800 mb-3">Weekly Summary</h3>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span>Average Daily Calories:</span>
+                                    <span id="avgCalories" class="font-bold">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Total Exercise Sessions:</span>
+                                    <span id="totalExercise" class="font-bold">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Calories Burned:</span>
+                                    <span id="totalBurned" class="font-bold">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-blue-800 mb-3">Goals</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-sm">Daily Calorie Goal</span>
+                                        <span class="text-sm font-bold">75%</span>
+                                    </div>
+                                    <div class="bg-blue-200 rounded-full h-2">
+                                        <div class="bg-blue-500 h-2 rounded-full" style="width: 75%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-sm">Weekly Exercise Goal</span>
+                                        <span class="text-sm font-bold">60%</span>
+                                    </div>
+                                    <div class="bg-green-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 60%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WhatsApp Share Section -->
+        <div class="mb-8">
+            <div class="calculator-card rounded-lg p-6 card-shadow">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fab fa-whatsapp text-green-600 mr-3"></i>
+                    Share Your Progress
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-green-800 mb-3">Share Summary</h3>
+                            <div id="shareSummary" class="space-y-2 text-sm">
+                                <p>📊 <strong>BMI:</strong> <span id="shareBMI">Not calculated</span></p>
+                                <p>🔥 <strong>Daily Calories:</strong> <span id="shareCalories">Not calculated</span></p>
+                                <p>🍽️ <strong>Today's Meals:</strong> <span id="shareMeals">0 meals</span></p>
+                                <p>💪 <strong>Exercise:</strong> <span id="shareExercise">0 calories burned</span></p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">Custom Message (Optional)</label>
+                            <textarea id="customMessage" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Add your personal message..."></textarea>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="text-center">
+                            <i class="fab fa-whatsapp text-8xl text-green-600 mb-4"></i>
+                            <p class="text-gray-600 mb-4">Share your health journey with friends and family</p>
+                            <button onclick="shareOnWhatsApp()" class="whatsapp-btn text-white px-6 py-3 rounded-lg font-bold flex items-center justify-center mx-auto">
+                                <i class="fab fa-whatsapp mr-2 text-xl"></i>
+                                Share on WhatsApp
+                            </button>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-bold text-gray-800 mb-3">Share Options</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="shareBMICheck" class="mr-2" checked>
+                                    <span class="text-sm">Include BMI information</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="shareCaloriesCheck" class="mr-2" checked>
+                                    <span class="text-sm">Include calorie information</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="shareMealsCheck" class="mr-2" checked>
+                                    <span class="text-sm">Include meal information</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="shareExerciseCheck" class="mr-2" checked>
+                                    <span class="text-sm">Include exercise information</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pakistani Food Database
+        const pakistaniFoods = [
+            { name: 'Chicken Karahi', calories: 450, protein: 35, carbs: 25, fat: 22 },
+            { name: 'Biryani (1 cup)', calories: 380, protein: 15, carbs: 65, fat: 12 },
+            { name: 'Chapati (1 piece)', calories: 120, protein: 3, carbs: 20, fat: 3 },
+            { name: 'Dal Chawal', calories: 320, protein: 12, carbs: 55, fat: 8 },
+            { name: 'Samosa (1 piece)', calories: 180, protein: 4, carbs: 20, fat: 10 },
+            { name: 'Pakora (100g)', calories: 250, protein: 6, carbs: 25, fat: 15 },
+            { name: 'Halwa (100g)', calories: 300, protein: 5, carbs: 45, fat: 12 },
+            { name: 'Kebab (1 piece)', calories: 200, protein: 18, carbs: 5, fat: 12 },
+            { name: 'Nihari (1 bowl)', calories: 420, protein: 28, carbs: 15, fat: 25 },
+            { name: 'Palak Paneer', calories: 280, protein: 15, carbs: 12, fat: 18 },
+            { name: 'Chicken Tikka', calories: 160, protein: 25, carbs: 3, fat: 6 },
+            { name: 'Mutton Curry', calories: 380, protein: 32, carbs: 8, fat: 24 },
+            { name: 'Fish Curry', calories: 220, protein: 28, carbs: 6, fat: 10 },
+            { name: 'Aloo Gosht', calories: 350, protein: 25, carbs: 20, fat: 18 },
+            { name: 'Seekh Kebab', calories: 240, protein: 20, carbs: 2, fat: 16 },
+            { name: 'Chicken Qorma', calories: 400, protein: 30, carbs: 10, fat: 26 },
+            { name: 'Daal Makhani', calories: 180, protein: 8, carbs: 25, fat: 6 },
+            { name: 'Butter Chicken', calories: 340, protein: 28, carbs: 8, fat: 22 },
+            { name: 'Malai Kofta', calories: 320, protein: 12, carbs: 15, fat: 24 },
+            { name: 'Chole Bhature', calories: 480, protein: 15, carbs: 65, fat: 18 }
+        ];
+
+        // Global variables
+        let selectedFoods = [];
+        let exerciseLog = [];
+        let mealPlan = [];
+        let currentBMI = 0;
+        let currentCalories = 0;
+        let macroChart = null;
+        let progressChart = null;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            displayFoods();
+            initializeCharts();
+            loadStoredData();
+            setupEventListeners();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('foodSearch').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredFoods = pakistaniFoods.filter(food => 
+                    food.name.toLowerCase().includes(searchTerm)
+                );
+                displayFoods(filteredFoods);
+            });
+        }
+
+        // BMI Calculator
+        function calculateBMI() {
+            const height = parseFloat(document.getElementById('height').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const age = parseFloat(document.getElementById('age').value);
+            const gender = document.getElementById('gender').value;
+            const activity = parseFloat(document.getElementById('activity').value);
+
+            if (!height || !weight || !age) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Calculate BMI
+            const bmi = weight / ((height / 100) ** 2);
+            currentBMI = bmi;
+
+            // Calculate BMR using Mifflin-St Jeor Equation
+            let bmr;
+            if (gender === 'male') {
+                bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+            } else {
+                bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+            }
+
+            // Calculate daily calories
+            const dailyCalories = Math.round(bmr * activity);
+            currentCalories = dailyCalories;
+
+            // Display BMI result
+            let bmiCategory = '';
+            let bmiColor = '';
+            if (bmi < 18.5) {
+                bmiCategory = 'Underweight';
+                bmiColor = 'text-blue-600';
+            } else if (bmi < 25) {
+                bmiCategory = 'Normal weight';
+                bmiColor = 'text-green-600';
+            } else if (bmi < 30) {
+                bmiCategory = 'Overweight';
+                bmiColor = 'text-orange-600';
+            } else {
+                bmiCategory = 'Obese';
+                bmiColor = 'text-red-600';
+            }
+
+            document.getElementById('bmiResult').innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-heartbeat text-4xl text-blue-600 mb-3"></i>
+                    <h3 class="text-2xl font-bold ${bmiColor}">${bmi.toFixed(1)}</h3>
+                    <p class="text-lg font-semibold ${bmiColor}">${bmiCategory}</p>
+                    <p class="text-sm text-gray-600 mt-2">BMI Range: ${bmiCategory}</p>
+                </div>
+            `;
+
+            document.getElementById('calorieResult').innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-fire text-4xl text-orange-600 mb-3"></i>
+                    <h3 class="text-2xl font-bold text-orange-600">${dailyCalories}</h3>
+                    <p class="text-lg font-semibold text-orange-600">Calories/Day</p>
+                    <p class="text-sm text-gray-600 mt-2">Daily calorie needs</p>
+                </div>
+            `;
+
+            // Calculate and display macros
+            calculateMacros(dailyCalories);
+            updateShareSummary();
+            saveData();
+        }
+
+        // Calculate Macros
+        function calculateMacros(calories) {
+            // Standard macro distribution: 30% protein, 40% carbs, 30% fat
+            const protein = Math.round((calories * 0.3) / 4); // 4 calories per gram
+            const carbs = Math.round((calories * 0.4) / 4); // 4 calories per gram
+            const fat = Math.round((calories * 0.3) / 9); // 9 calories per gram
+
+            document.getElementById('proteinAmount').textContent = protein + 'g';
+            document.getElementById('carbAmount').textContent = carbs + 'g';
+            document.getElementById('fatAmount').textContent = fat + 'g';
+
+            // Update progress bars
+            document.getElementById('proteinBar').style.width = '30%';
+            document.getElementById('carbBar').style.width = '40%';
+            document.getElementById('fatBar').style.width = '30%';
+
+            // Update macro chart
+            if (macroChart) {
+                macroChart.data.datasets[0].data = [protein, carbs, fat];
+                macroChart.update();
+            }
+        }
+
+        // Display Foods
+        function displayFoods(foods = pakistaniFoods) {
+            const foodGrid = document.getElementById('foodGrid');
+            foodGrid.innerHTML = '';
+
+            foods.forEach((food, index) => {
+                const foodCard = document.createElement('div');
+                foodCard.className = 'food-item bg-white p-4 rounded-lg border border-gray-200 cursor-pointer';
+                foodCard.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-semibold text-gray-800">${food.name}</h3>
+                            <p class="text-sm text-gray-600">${food.calories} cal</p>
+                            <p class="text-xs text-gray-500">P: ${food.protein}g C: ${food.carbs}g F: ${food.fat}g</p>
+                        </div>
+                        <button onclick="addFood(${index})" class="bg-orange-500 text-white px-3 py-1 rounded-md hover:bg-orange-600 transition duration-300">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                `;
+                foodGrid.appendChild(foodCard);
+            });
+        }
+
+        // Add Food to Selection
+        function addFood(index) {
+            const food = pakistaniFoods[index];
+            selectedFoods.push(food);
+            updateSelectedFoods();
+            updateShareSummary();
+            saveData();
+        }
+
+        // Update Selected Foods Display
+        function updateSelectedFoods() {
+            const selectedContainer = document.getElementById('selectedFoods');
+            const totalCaloriesSpan = document.getElementById('totalCalories');
+
+            if (selectedFoods.length === 0) {
+                selectedContainer.innerHTML = '<p class="text-gray-600">No foods selected yet</p>';
+                totalCaloriesSpan.textContent = '0';
+                return;
+            }
+
+            let totalCalories = 0;
+            selectedContainer.innerHTML = '';
+
+            selectedFoods.forEach((food, index) => {
+                totalCalories += food.calories;
+                const foodItem = document.createElement('div');
+                foodItem.className = 'flex items-center justify-between bg-white p-2 rounded border';
+                foodItem.innerHTML = `
+                    <div>
+                        <span class="font-medium">${food.name}</span>
+                        <span class="text-sm text-gray-600 ml-2">${food.calories} cal</span>
+                    </div>
+                    <button onclick="removeFood(${index})" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                selectedContainer.appendChild(foodItem);
+            });
+
+            totalCaloriesSpan.textContent = totalCalories;
+        }
+
+        // Remove Food from Selection
+        function removeFood(index) {
+            selectedFoods.splice(index, 1);
+            updateSelectedFoods();
+            updateShareSummary();
+            saveData();
+        }
+
+        // Clear Selected Foods
+        function clearSelectedFoods() {
+            selectedFoods = [];
+            updateSelectedFoods();
+            updateShareSummary();
+            saveData();
+        }
+
+        // Calculate Exercise Calories
+        function calculateExerciseCalories() {
+            const met = parseFloat(document.getElementById('exerciseType').value);
+            const duration = parseFloat(document.getElementById('exerciseDuration').value);
+            const weight = parseFloat(document.getElementById('exerciseWeight').value);
+
+            if (!met || !duration || !weight) {
+                alert('Please fill in all exercise fields');
+                return;
+            }
+
+            const caloriesBurned = Math.round((met * weight * duration) / 60);
+            const exerciseTypeName = document.getElementById('exerciseType').options[document.getElementById('exerciseType').selectedIndex].text;
+
+            document.getElementById('exerciseResult').innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-fire text-4xl text-purple-600 mb-3"></i>
+                    <h3 class="text-2xl font-bold text-purple-600">${caloriesBurned}</h3>
+                    <p class="text-lg font-semibold text-purple-600">Calories Burned</p>
+                    <p class="text-sm text-gray-600 mt-2">${exerciseTypeName} for ${duration} minutes</p>
+                </div>
+            `;
+
+            // Add to exercise log
+            exerciseLog.push({
+                type: exerciseTypeName,
+                duration: duration,
+                calories: caloriesBurned,
+                date: new Date().toLocaleDateString()
+            });
+
+            updateExerciseLog();
+            updateShareSummary();
+            saveData();
+        }
+
+        // Update Exercise Log
+        function updateExerciseLog() {
+            const logContainer = document.getElementById('exerciseLog');
+            
+            if (exerciseLog.length === 0) {
+                logContainer.innerHTML = '<p class="text-gray-600">No exercises logged yet</p>';
+                return;
+            }
+
+            logContainer.innerHTML = '';
+            exerciseLog.slice(-5).forEach(exercise => {
+                const exerciseItem = document.createElement('div');
+                exerciseItem.className = 'flex items-center justify-between bg-white p-2 rounded border';
+                exerciseItem.innerHTML = `
+                    <div>
+                        <span class="font-medium">${exercise.type}</span>
+                        <span class="text-sm text-gray-600 ml-2">${exercise.duration} min</span>
+                    </div>
+                    <span class="text-purple-600 font-bold">${exercise.calories} cal</span>
+                `;
+                logContainer.appendChild(exerciseItem);
+            });
+        }
+
+        // Add Meal to Plan
+        function addMeal() {
+            const mealType = document.getElementById('mealType').value;
+            const description = document.getElementById('mealDescription').value;
+            const calories = parseFloat(document.getElementById('mealCalories').value);
+
+            if (!description || !calories) {
+                alert('Please fill in meal description and calories');
+                return;
+            }
+
+            mealPlan.push({
+                type: mealType,
+                description: description,
+                calories: calories,
+                date: new Date().toLocaleDateString()
+            });
+
+            updateMealPlan();
+            updateShareSummary();
+            saveData();
+
+            // Clear form
+            document.getElementById('mealDescription').value = '';
+            document.getElementById('mealCalories').value = '';
+        }
+
+        // Update Meal Plan Display
+        function updateMealPlan() {
+            const mealContainer = document.getElementById('todaysMeals');
+            const totalCaloriesSpan = document.getElementById('dailyTotalCalories');
+
+            const todaysMeals = mealPlan.filter(meal => meal.date === new Date().toLocaleDateString());
+
+            if (todaysMeals.length === 0) {
+                mealContainer.innerHTML = '<p class="text-gray-600">No meals added yet</p>';
+                totalCaloriesSpan.textContent = '0';
+                return;
+            }
+
+            let totalCalories = 0;
+            mealContainer.innerHTML = '';
+
+            todaysMeals.forEach(meal => {
+                totalCalories += meal.calories;
+                const mealItem = document.createElement('div');
+                mealItem.className = 'flex items-center justify-between bg-white p-2 rounded border';
+                mealItem.innerHTML = `
+                    <div>
+                        <span class="font-medium capitalize">${meal.type}</span>
+                        <span class="text-sm text-gray-600 ml-2">${meal.description}</span>
+                    </div>
+                    <span class="text-indigo-600 font-bold">${meal.calories} cal</span>
+                `;
+                mealContainer.appendChild(mealItem);
+            });
+
+            totalCaloriesSpan.textContent = totalCalories;
+        }
+
+        // Share on WhatsApp
+        function shareOnWhatsApp() {
+            const customMessage = document.getElementById('customMessage').value;
+            
+            let shareText = '🏥 *My Health Progress* 🏥\n\n';
+            
+            if (document.getElementById('shareBMICheck').checked && currentBMI > 0) {
+                shareText += `📊 *BMI:* ${currentBMI.toFixed(1)}\n`;
+            }
+            
+            if (document.getElementById('shareCaloriesCheck').checked && currentCalories > 0) {
+                shareText += `🔥 *Daily Calories:* ${currentCalories}\n`;
+            }
+            
+            if (document.getElementById('shareMealsCheck').checked) {
+                const todaysMeals = mealPlan.filter(meal => meal.date === new Date().toLocaleDateString());
+                shareText += `🍽️ *Today's Meals:* ${todaysMeals.length} meals\n`;
+                const totalMealCalories = todaysMeals.reduce((sum, meal) => sum + meal.calories, 0);
+                if (totalMealCalories > 0) {
+                    shareText += `   Total: ${totalMealCalories} calories\n`;
+                }
+            }
+            
+            if (document.getElementById('shareExerciseCheck').checked) {
+                const todaysExercise = exerciseLog.filter(exercise => exercise.date === new Date().toLocaleDateString());
+                const totalBurnedCalories = todaysExercise.reduce((sum, exercise) => sum + exercise.calories, 0);
+                shareText += `💪 *Exercise:* ${totalBurnedCalories} calories burned\n`;
+            }
+            
+            if (customMessage) {
+                shareText += `\n📝 *Note:* ${customMessage}\n`;
+            }
+            
+            shareText += '\n🌟 Tracking my health with Advanced Calorie Calculator!';
+            
+            const encodedText = encodeURIComponent(shareText);
+            const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // Update Share Summary
+        function updateShareSummary() {
+            document.getElementById('shareBMI').textContent = currentBMI > 0 ? currentBMI.toFixed(1) : 'Not calculated';
+            document.getElementById('shareCalories').textContent = currentCalories > 0 ? currentCalories : 'Not calculated';
+            
+            const todaysMeals = mealPlan.filter(meal => meal.date === new Date().toLocaleDateString());
+            document.getElementById('shareMeals').textContent = `${todaysMeals.length} meals`;
+            
+            const todaysExercise = exerciseLog.filter(exercise => exercise.date === new Date().toLocaleDateString());
+            const totalBurnedCalories = todaysExercise.reduce((sum, exercise) => sum + exercise.calories, 0);
+            document.getElementById('shareExercise').textContent = `${totalBurnedCalories} calories burned`;
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Macro Chart
+            const macroCtx = document.getElementById('macroChart').getContext('2d');
+            macroChart = new Chart(macroCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Protein', 'Carbohydrates', 'Fats'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ['#EF4444', '#F59E0B', '#3B82F6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Progress Chart
+            const progressCtx = document.getElementById('progressChart').getContext('2d');
+            progressChart = new Chart(progressCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Calories Consumed',
+                        data: [0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true
+                    }, {
+                        label: 'Calories Burned',
+                        data: [0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#F59E0B',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Save Data to Local Storage
+        function saveData() {
+            const data = {
+                selectedFoods: selectedFoods,
+                exerciseLog: exerciseLog,
+                mealPlan: mealPlan,
+                currentBMI: currentBMI,
+                currentCalories: currentCalories
+            };
+            localStorage.setItem('calorieCalculatorData', JSON.stringify(data));
+        }
+
+        // Load Data from Local Storage
+        function loadStoredData() {
+            const storedData = localStorage.getItem('calorieCalculatorData');
+            if (storedData) {
+                const data = JSON.parse(storedData);
+                selectedFoods = data.selectedFoods || [];
+                exerciseLog = data.exerciseLog || [];
+                mealPlan = data.mealPlan || [];
+                currentBMI = data.currentBMI || 0;
+                currentCalories = data.currentCalories || 0;
+                
+                updateSelectedFoods();
+                updateExerciseLog();
+                updateMealPlan();
+                updateShareSummary();
+                
+                if (currentCalories > 0) {
+                    calculateMacros(currentCalories);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
