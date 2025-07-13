@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced QR Code Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        /* General styling for Inter font and gradients */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+        /* Custom styling for QR code container to ensure it's visible */
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+        #qrcode img, #qrcode canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-4 shadow-lg">
+        <div class="container mx-auto px-4 flex items-center justify-center">
+            <i class="fas fa-qrcode text-2xl mr-3"></i>
+            <h1 class="text-2xl font-bold">Advanced QR Code Generator</h1>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-8 shadow-md w-full max-w-2xl card-shadow">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Generate Your Custom QR Code</h2>
+            
+            <!-- QR Code Type Selector -->
+            <div class="mb-6">
+                <label for="qrTypeSelect" class="block text-gray-700 text-sm font-bold mb-2">Select QR Code Type:</label>
+                <select id="qrTypeSelect" onchange="updateInputFields()" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="url">URL</option>
+                    <option value="text">Text</option>
+                    <option value="wifi">Wi-Fi</option>
+                    <option value="email">Email</option>
+                    <option value="phone">Phone Number</option>
+                    <option value="sms">SMS</option>
+                    <option value="vcard">VCard (Contact)</option>
+                    <option value="social">Social Media</option>
+                </select>
+            </div>
+
+            <!-- Dynamic Input Fields Container -->
+            <div id="dynamicInputs" class="mb-6 space-y-4">
+                <!-- URL Input (Default) -->
+                <div id="urlInput" class="qr-input-group">
+                    <label for="urlContent" class="block text-gray-700 text-sm font-bold mb-2">URL:</label>
+                    <input type="url" id="urlContent" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., https://www.example.com">
+                </div>
+
+                <!-- Text Input -->
+                <div id="textInput" class="qr-input-group hidden">
+                    <label for="textContent" class="block text-gray-700 text-sm font-bold mb-2">Text Content:</label>
+                    <textarea id="textContent" rows="4" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter your text here"></textarea>
+                </div>
+
+                <!-- Wi-Fi Input -->
+                <div id="wifiInput" class="qr-input-group hidden space-y-4">
+                    <div>
+                        <label for="wifiSsid" class="block text-gray-700 text-sm font-bold mb-2">Network Name (SSID):</label>
+                        <input type="text" id="wifiSsid" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="MyHomeNetwork">
+                    </div>
+                    <div>
+                        <label for="wifiPassword" class="block text-gray-700 text-sm font-bold mb-2">Password:</label>
+                        <input type="password" id="wifiPassword" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="password123">
+                    </div>
+                    <div>
+                        <label for="wifiEncryption" class="block text-gray-700 text-sm font-bold mb-2">Encryption:</label>
+                        <select id="wifiEncryption" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="WPA">WPA/WPA2</option>
+                            <option value="WEP">WEP</option>
+                            <option value="nopass">No Encryption</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="wifiHidden" class="form-checkbox h-5 w-5 text-blue-600 rounded">
+                        <label for="wifiHidden" class="ml-2 text-gray-700">Hidden Network</label>
+                    </div>
+                </div>
+
+                <!-- Email Input -->
+                <div id="emailInput" class="qr-input-group hidden space-y-4">
+                    <div>
+                        <label for="emailAddress" class="block text-gray-700 text-sm font-bold mb-2">Email Address:</label>
+                        <input type="email" id="emailAddress" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="your.email@example.com">
+                    </div>
+                    <div>
+                        <label for="emailSubject" class="block text-gray-700 text-sm font-bold mb-2">Subject (Optional):</label>
+                        <input type="text" id="emailSubject" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Subject of email">
+                    </div>
+                    <div>
+                        <label for="emailBody" class="block text-gray-700 text-sm font-bold mb-2">Body (Optional):</label>
+                        <textarea id="emailBody" rows="3" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Body of email"></textarea>
+                    </div>
+                </div>
+
+                <!-- Phone Input -->
+                <div id="phoneInput" class="qr-input-group hidden">
+                    <label for="phoneNumber" class="block text-gray-700 text-sm font-bold mb-2">Phone Number:</label>
+                    <input type="tel" id="phoneNumber" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="+1234567890">
+                </div>
+
+                <!-- SMS Input -->
+                <div id="smsInput" class="qr-input-group hidden space-y-4">
+                    <div>
+                        <label for="smsNumber" class="block text-gray-700 text-sm font-bold mb-2">SMS Number:</label>
+                        <input type="tel" id="smsNumber" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="+1234567890">
+                    </div>
+                    <div>
+                        <label for="smsBody" class="block text-gray-700 text-sm font-bold mb-2">Message Body (Optional):</label>
+                        <textarea id="smsBody" rows="3" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Your message here"></textarea>
+                    </div>
+                </div>
+
+                <!-- VCard Input -->
+                <div id="vcardInput" class="qr-input-group hidden space-y-4">
+                    <div>
+                        <label for="vcardName" class="block text-gray-700 text-sm font-bold mb-2">Full Name:</label>
+                        <input type="text" id="vcardName" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label for="vcardOrg" class="block text-gray-700 text-sm font-bold mb-2">Organization (Optional):</label>
+                        <input type="text" id="vcardOrg" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Acme Corp">
+                    </div>
+                    <div>
+                        <label for="vcardPhone" class="block text-gray-700 text-sm font-bold mb-2">Phone (Optional):</label>
+                        <input type="tel" id="vcardPhone" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="+1234567890">
+                    </div>
+                    <div>
+                        <label for="vcardEmail" class="block text-gray-700 text-sm font-bold mb-2">Email (Optional):</label>
+                        <input type="email" id="vcardEmail" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="john.doe@example.com">
+                    </div>
+                </div>
+
+                <!-- Social Media Input -->
+                <div id="socialInput" class="qr-input-group hidden space-y-4">
+                    <div>
+                        <label for="socialPlatform" class="block text-gray-700 text-sm font-bold mb-2">Social Platform:</label>
+                        <select id="socialPlatform" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="facebook">Facebook</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="twitter">Twitter</option>
+                            <option value="linkedin">LinkedIn</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="socialUsername" class="block text-gray-700 text-sm font-bold mb-2">Username / Profile ID:</label>
+                        <input type="text" id="socialUsername" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="your_username">
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Code Size Selector -->
+            <div class="mb-6">
+                <label for="qrSizeSelect" class="block text-gray-700 text-sm font-bold mb-2">QR Code Size:</label>
+                <select id="qrSizeSelect" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="128">Small (128x128)</option>
+                    <option value="256" selected>Medium (256x256)</option>
+                    <option value="512">Large (512x512)</option>
+                </select>
+            </div>
+            
+            <div class="flex justify-center mb-6">
+                <button onclick="generateQRCode()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                    Generate QR Code
+                </button>
+            </div>
+
+            <div id="qrcodeContainer" class="mt-8 text-center hidden">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Your QR Code:</h3>
+                <div id="qrcode" class="mx-auto border border-gray-200 p-4 rounded-xl">
+                    <!-- QR Code will be rendered here -->
+                </div>
+                <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
+                    <button id="downloadQrBtn" onclick="downloadQRCode()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium text-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                        <i class="fas fa-download mr-2"></i>Download QR Code (PNG)
+                    </button>
+                    <button id="whatsappShareBtn" onclick="shareOnWhatsApp()" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors font-medium text-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                        <i class="fab fa-whatsapp mr-2"></i>Share on WhatsApp
+                    </button>
+                </div>
+            </div>
+
+            <div id="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-6 hidden" role="alert">
+                <strong class="font-bold">Error!</strong>
+                <span class="block sm:inline" id="errorText"></span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-200 text-gray-700 py-3 text-center text-sm shadow-inner">
+        <p>App Developed by Sunny Jameel</p>
+    </footer>
+
+    <script>
+        let qrcodeInstance = null; // Variable to hold the QRCode instance for proper clearing
+
+        // Function to update input fields based on selected QR Code type
+        function updateInputFields() {
+            const qrType = document.getElementById('qrTypeSelect').value;
+            // Hide all input groups
+            document.querySelectorAll('.qr-input-group').forEach(group => {
+                group.classList.add('hidden');
+                // Clear inputs when hiding
+                group.querySelectorAll('input, textarea, select').forEach(input => {
+                    if (input.type === 'checkbox') {
+                        input.checked = false;
+                    } else if (input.tagName === 'SELECT') {
+                        input.value = input.options[0].value; // Reset dropdown to first option
+                    } else {
+                        input.value = '';
+                    }
+                });
+            });
+
+            // Show the relevant input group
+            document.getElementById(`${qrType}Input`).classList.remove('hidden');
+
+            // Set default values for specific types if needed
+            if (qrType === 'url') {
+                document.getElementById('urlContent').value = 'https://www.google.com';
+            } else if (qrType === 'text') {
+                document.getElementById('textContent').value = 'Hello, QR Code!';
+            } else if (qrType === 'wifi') {
+                document.getElementById('wifiEncryption').value = 'WPA';
+            } else if (qrType === 'social') {
+                document.getElementById('socialPlatform').value = 'facebook';
+            }
+        }
+
+        // Function to generate the QR code
+        function generateQRCode() {
+            const qrType = document.getElementById('qrTypeSelect').value;
+            let qrContent = '';
+            const qrSize = parseInt(document.getElementById('qrSizeSelect').value);
+            const qrcodeContainer = document.getElementById('qrcodeContainer');
+            const qrcodeDiv = document.getElementById('qrcode');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+
+            // Clear previous QR code and error message
+            if (qrcodeInstance) {
+                qrcodeInstance.clear(); // Clear the QR code canvas/image
+                qrcodeInstance = null; // Dereference the old instance
+            }
+            qrcodeDiv.innerHTML = ''; // Ensure the div is empty
+            errorMessage.classList.add('hidden');
+            qrcodeContainer.classList.add('hidden');
+
+            // Construct QR content based on type
+            try {
+                switch (qrType) {
+                    case 'url':
+                        qrContent = document.getElementById('urlContent').value.trim();
+                        if (!qrContent) throw new Error('Please enter a URL.');
+                        break;
+                    case 'text':
+                        qrContent = document.getElementById('textContent').value.trim();
+                        if (!qrContent) throw new Error('Please enter text content.');
+                        break;
+                    case 'wifi':
+                        const ssid = document.getElementById('wifiSsid').value.trim();
+                        const password = document.getElementById('wifiPassword').value.trim();
+                        const encryption = document.getElementById('wifiEncryption').value;
+                        const hidden = document.getElementById('wifiHidden').checked;
+                        if (!ssid) throw new Error('Please enter Wi-Fi network name (SSID).');
+                        // Format: WIFI:S:<SSID>;T:<encryption>;P:<password>;H:<hidden>;;
+                        qrContent = `WIFI:S:${ssid};T:${encryption};P:${password};H:${hidden ? 'true' : 'false'};;`;
+                        break;
+                    case 'email':
+                        const emailAddress = document.getElementById('emailAddress').value.trim();
+                        const emailSubject = document.getElementById('emailSubject').value.trim();
+                        const emailBody = document.getElementById('emailBody').value.trim();
+                        if (!emailAddress) throw new Error('Please enter an Email Address.');
+                        qrContent = `mailto:${emailAddress}`;
+                        if (emailSubject) qrContent += `?subject=${encodeURIComponent(emailSubject)}`;
+                        if (emailBody) qrContent += `${emailSubject ? '&' : '?'}body=${encodeURIComponent(emailBody)}`;
+                        break;
+                    case 'phone':
+                        const phoneNumber = document.getElementById('phoneNumber').value.trim();
+                        if (!phoneNumber) throw new Error('Please enter a Phone Number.');
+                        qrContent = `tel:${phoneNumber}`;
+                        break;
+                    case 'sms':
+                        const smsNumber = document.getElementById('smsNumber').value.trim();
+                        const smsBody = document.getElementById('smsBody').value.trim();
+                        if (!smsNumber) throw new Error('Please enter an SMS Number.');
+                        qrContent = `sms:${smsNumber}`;
+                        if (smsBody) qrContent += `?body=${encodeURIComponent(smsBody)}`;
+                        break;
+                    case 'vcard':
+                        const vcardName = document.getElementById('vcardName').value.trim();
+                        const vcardOrg = document.getElementById('vcardOrg').value.trim();
+                        const vcardPhone = document.getElementById('vcardPhone').value.trim();
+                        const vcardEmail = document.getElementById('vcardEmail').value.trim();
+                        if (!vcardName) throw new Error('Please enter Full Name for VCard.');
+                        qrContent = `BEGIN:VCARD\nVERSION:3.0\nFN:${vcardName}\n`;
+                        if (vcardOrg) qrContent += `ORG:${vcardOrg}\n`;
+                        if (vcardPhone) qrContent += `TEL:${vcardPhone}\n`;
+                        if (vcardEmail) qrContent += `EMAIL:${vcardEmail}\n`;
+                        qrContent += `END:VCARD`;
+                        break;
+                    case 'social':
+                        const socialPlatform = document.getElementById('socialPlatform').value;
+                        const socialUsername = document.getElementById('socialUsername').value.trim();
+                        if (!socialUsername) throw new Error('Please enter a Username/Profile ID for social media.');
+                        let baseUrl = '';
+                        switch (socialPlatform) {
+                            case 'facebook': baseUrl = 'https://www.facebook.com/'; break;
+                            case 'instagram': baseUrl = 'https://www.instagram.com/'; break;
+                            case 'twitter': baseUrl = 'https://twitter.com/'; break;
+                            case 'linkedin': baseUrl = 'https://www.linkedin.com/in/'; break;
+                            default: throw new Error('Invalid social platform selected.');
+                        }
+                        qrContent = `${baseUrl}${socialUsername}`;
+                        break;
+                    default:
+                        throw new Error('Invalid QR Code type selected.');
+                }
+
+                if (!qrContent) {
+                    errorText.textContent = 'QR Code content cannot be empty.';
+                    errorMessage.classList.remove('hidden');
+                    return;
+                }
+
+                // Create new QR code instance
+                qrcodeInstance = new QRCode(qrcodeDiv, {
+                    text: qrContent,
+                    width: qrSize,
+                    height: qrSize,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H // High error correction
+                });
+
+                qrcodeContainer.classList.remove('hidden'); // Show the QR code container
+            } catch (e) {
+                console.error("Error generating QR code:", e);
+                errorText.textContent = `Failed to generate QR code: ${e.message}`;
+                errorMessage.classList.remove('hidden');
+            }
+        }
+
+        // Function to download the generated QR code as a PNG image
+        function downloadQRCode() {
+            const qrcodeDiv = document.getElementById('qrcode');
+            const canvas = qrcodeDiv.querySelector('canvas'); 
+
+            if (!canvas) {
+                // Fallback for older browsers or if QR code wasn't generated
+                const img = qrcodeDiv.querySelector('img');
+                if (img) {
+                    const link = document.createElement('a');
+                    link.href = img.src;
+                    link.download = 'qrcode.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    alert('QR Code not found to download.'); // Fallback alert
+                }
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png'); // Get data URL of the canvas as PNG
+            link.download = 'qrcode.png'; // Set the download file name
+            document.body.appendChild(link); // Append to body (required for Firefox)
+            link.click(); // Programmatically click the link to trigger download
+            document.body.removeChild(link); // Clean up the temporary link
+        }
+
+        // Function to share the QR code on WhatsApp
+        function shareOnWhatsApp() {
+            const qrContent = document.getElementById('qrTypeSelect').value === 'url' ? document.getElementById('urlContent').value.trim() : document.getElementById('textContent').value.trim();
+            const message = `Assalamu Alaikum!\n\nYeh aapka QR Code hai. Kripya is message ke saath attach ki gayi QR code image check karein.\n\nContent: ${qrContent.substring(0, 100)}${qrContent.length > 100 ? '...' : ''}`; // Truncate long content
+
+            // Using WhatsApp Web link for broader compatibility
+            // Note: Direct image attachment via web WhatsApp link is not possible from client-side JS for security reasons.
+            // User will need to manually attach the downloaded QR code image.
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+            alert('WhatsApp Web khul gaya hai. Kripya download ki gayi QR Code image ko message ke saath manually attach karein.');
+        }
+
+        // Initial setup when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            updateInputFields(); // Set initial input fields (URL by default)
+            generateQRCode(); // Generate initial QR code
+        });
+    </script>
+</body>
+</html>
