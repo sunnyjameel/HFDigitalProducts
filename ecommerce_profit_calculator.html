@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce Profit Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-4 shadow-lg">
+        <div class="container mx-auto px-4 flex items-center justify-center">
+            <i class="fas fa-calculator text-2xl mr-3"></i>
+            <h1 class="text-2xl font-bold">E-commerce Profit Calculator</h1>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-8 shadow-md w-full max-w-3xl card-shadow">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Calculate Your Profit</h2>
+
+            <!-- Currency Selector -->
+            <div class="mb-6">
+                <label for="currencySelect" class="block text-gray-700 text-sm font-bold mb-2">Select Currency:</label>
+                <select id="currencySelect" onchange="updateCurrencySymbol(); calculateProfit();" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="USD" selected>USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="PKR">PKR (Rs.)</option>
+                    <option value="INR">INR (₹)</option>
+                    <option value="AED">AED (د.إ)</option>
+                    <option value="CAD">CAD (C$)</option>
+                    <option value="AUD">AUD (A$)</option>
+                </select>
+            </div>
+
+            <!-- Input Fields with Quantity -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Product Cost -->
+                <div>
+                    <label for="productCost" class="block text-gray-700 text-sm font-bold mb-2">Product Cost (per unit):</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm" id="currencySymbolProductCost">$</span>
+                        </div>
+                        <input type="number" id="productCost" oninput="calculateProfit()" class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-3 py-2 border-gray-300 rounded-lg" placeholder="0.00" min="0">
+                    </div>
+                </div>
+                <!-- Selling Price -->
+                <div>
+                    <label for="sellingPrice" class="block text-gray-700 text-sm font-bold mb-2">Selling Price (per unit):</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm" id="currencySymbolSellingPrice">$</span>
+                        </div>
+                        <input type="number" id="sellingPrice" oninput="calculateProfit()" class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-3 py-2 border-gray-300 rounded-lg" placeholder="0.00" min="0">
+                    </div>
+                </div>
+                <!-- Quantity -->
+                <div>
+                    <label for="quantity" class="block text-gray-700 text-sm font-bold mb-2">Quantity:</label>
+                    <input type="number" id="quantity" oninput="calculateProfit()" class="shadow border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="1" min="1" value="1">
+                </div>
+
+                <!-- Shipping Cost -->
+                <div>
+                    <label for="shippingCost" class="block text-gray-700 text-sm font-bold mb-2">Shipping Cost (per order):</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm" id="currencySymbolShippingCost">$</span>
+                        </div>
+                        <input type="number" id="shippingCost" oninput="calculateProfit()" class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-3 py-2 border-gray-300 rounded-lg" placeholder="0.00" min="0">
+                    </div>
+                </div>
+
+                <!-- Tax Rate (%) -->
+                <div>
+                    <label for="taxRate" class="block text-gray-700 text-sm font-bold mb-2">Tax Rate (% of Total Selling Price):</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <input type="number" id="taxRate" oninput="calculateProfit()" class="focus:ring-blue-500 focus:border-blue-500 block w-full pr-8 py-2 border-gray-300 rounded-lg text-right" placeholder="0" min="0" max="100" step="0.01">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Marketing Cost -->
+                <div>
+                    <label for="marketingCost" class="block text-gray-700 text-sm font-bold mb-2">Marketing Cost (per order):</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm" id="currencySymbolMarketingCost">$</span>
+                        </div>
+                        <input type="number" id="marketingCost" oninput="calculateProfit()" class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-3 py-2 border-gray-300 rounded-lg" placeholder="0.00" min="0">
+                    </div>
+                </div>
+
+                <!-- Payment Gateway Fees (%) -->
+                <div>
+                    <label for="paymentGatewayFee" class="block text-gray-700 text-sm font-bold mb-2">Payment Gateway Fee (% of Total Selling Price):</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <input type="number" id="paymentGatewayFee" oninput="calculateProfit()" class="focus:ring-blue-500 focus:border-blue-500 block w-full pr-8 py-2 border-gray-300 rounded-lg text-right" placeholder="2.5" min="0" max="100" step="0.01">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Costs -->
+                <div>
+                    <label for="otherCosts" class="block text-gray-700 text-sm font-bold mb-2">Other Costs (per order):</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm" id="currencySymbolOtherCosts">$</span>
+                        </div>
+                        <input type="number" id="otherCosts" oninput="calculateProfit()" class="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-3 py-2 border-gray-300 rounded-lg" placeholder="0.00" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="mb-8">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Results:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Total Revenue -->
+                    <div class="bg-white rounded-lg p-4 shadow-md border border-blue-200">
+                        <h4 class="text-md font-semibold text-gray-700 mb-2">Total Revenue:</h4>
+                        <p class="text-2xl font-bold text-blue-800" id="totalRevenueDisplay">
+                            <span id="currencySymbolTotalRevenue">$</span>0.00
+                        </p>
+                    </div>
+                    <!-- Total Costs -->
+                    <div class="bg-white rounded-lg p-4 shadow-md border border-red-200">
+                        <h4 class="text-md font-semibold text-gray-700 mb-2">Total Costs:</h4>
+                        <p class="text-2xl font-bold text-red-600" id="totalCostsDisplay">
+                            <span id="currencySymbolTotalCosts">$</span>0.00
+                        </p>
+                    </div>
+                    <!-- Gross Profit -->
+                    <div class="bg-white rounded-lg p-4 shadow-md border border-green-200">
+                        <h4 class="text-md font-semibold text-gray-700 mb-2">Gross Profit:</h4>
+                        <p class="text-2xl font-bold text-green-600" id="grossProfitDisplay">
+                            <span id="currencySymbolGrossProfit">$</span>0.00
+                        </p>
+                    </div>
+                    <!-- Net Profit -->
+                    <div class="bg-white rounded-lg p-4 shadow-md border border-purple-200">
+                        <h4 class="text-md font-semibold text-gray-700 mb-2">Net Profit:</h4>
+                        <p class="text-2xl font-bold text-purple-600" id="netProfitDisplay">
+                            <span id="currencySymbolNetProfit">$</span>0.00
+                        </p>
+                    </div>
+                    <!-- Profit Margin -->
+                    <div class="bg-white rounded-lg p-4 shadow-md border border-blue-200">
+                        <h4 class="text-md font-semibold text-gray-700 mb-2">Profit Margin:</h4>
+                        <p class="text-2xl font-bold text-blue-600" id="profitMarginDisplay">0.00%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clear Button -->
+            <div class="mt-8 text-center">
+                <button onclick="clearInputs()" class="bg-gray-300 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-400 transition-colors font-medium text-lg">
+                    <i class="fas fa-eraser mr-2"></i>Clear All Inputs
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-200 text-gray-700 py-3 text-center text-sm shadow-inner">
+        <p>App Developed by Sunny Jameel</p>
+    </footer>
+
+    <script>
+        // Currency symbols mapping
+        const currencySymbols = {
+            'USD': '$',
+            'EUR': '€',
+            'GBP': '£',
+            'PKR': 'Rs.',
+            'INR': '₹',
+            'AED': 'د.إ',
+            'CAD': 'C$',
+            'AUD': 'A$'
+        };
+
+        // Function to update currency symbols across the UI
+        function updateCurrencySymbol() {
+            const selectedCurrency = document.getElementById('currencySelect').value;
+            const symbol = currencySymbols[selectedCurrency];
+
+            // Define all elements that need currency symbols
+            const elementsToUpdate = [
+                document.getElementById('currencySymbolProductCost'),
+                document.getElementById('currencySymbolSellingPrice'),
+                document.getElementById('currencySymbolShippingCost'),
+                document.getElementById('currencySymbolMarketingCost'),
+                document.getElementById('currencySymbolOtherCosts'),
+                document.getElementById('currencySymbolTotalRevenue'),
+                document.getElementById('currencySymbolTotalCosts'),
+                document.getElementById('currencySymbolGrossProfit'),
+                document.getElementById('currencySymbolNetProfit')
+            ];
+
+            // Iterate and update textContent if the element exists
+            elementsToUpdate.forEach(element => {
+                if (element) {
+                    element.textContent = symbol;
+                } else {
+                    // Log a warning if an element is not found, but prevent the TypeError
+                    console.warn(`Element not found for currency symbol update. Check ID or DOM readiness.`);
+                }
+            });
+        }
+
+        // Function to calculate profit based on input values
+        function calculateProfit() {
+            // Get input values, defaulting to 0 if empty or invalid
+            const productCostPerUnit = parseFloat(document.getElementById('productCost').value) || 0;
+            const sellingPricePerUnit = parseFloat(document.getElementById('sellingPrice').value) || 0;
+            const quantity = parseInt(document.getElementById('quantity').value) || 1; // Default quantity to 1
+
+            const shippingCostPerOrder = parseFloat(document.getElementById('shippingCost').value) || 0;
+            const taxRatePercentage = parseFloat(document.getElementById('taxRate').value) || 0;
+            const marketingCostPerOrder = parseFloat(document.getElementById('marketingCost').value) || 0;
+            const paymentGatewayFeePercentage = parseFloat(document.getElementById('paymentGatewayFee').value) || 0;
+            const otherCostsPerOrder = parseFloat(document.getElementById('otherCosts').value) || 0;
+
+            // Calculate total revenue
+            const totalRevenue = sellingPricePerUnit * quantity;
+
+            // Calculate total product cost
+            const totalProductCost = productCostPerUnit * quantity;
+
+            // Calculate tax amount based on total revenue
+            const taxAmount = totalRevenue * (taxRatePercentage / 100);
+
+            // Calculate payment gateway fee based on total revenue
+            const paymentGatewayFeeAmount = totalRevenue * (paymentGatewayFeePercentage / 100);
+
+            // Calculate total costs (total product cost + fixed costs per order + variable costs per unit * quantity + tax + payment gateway fees)
+            const totalCosts = totalProductCost + shippingCostPerOrder + marketingCostPerOrder + paymentGatewayFeeAmount + otherCostsPerOrder + taxAmount;
+
+            // Calculate gross profit (Total Revenue - Total Product Cost)
+            const grossProfit = totalRevenue - totalProductCost;
+
+            // Calculate net profit (Total Revenue - Total Costs)
+            const netProfit = totalRevenue - totalCosts;
+
+            // Calculate profit margin (Net Profit / Total Revenue * 100)
+            const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+
+            // Get the current currency symbol (already updated by updateCurrencySymbol)
+            const currentSymbol = currencySymbols[document.getElementById('currencySelect').value];
+
+            // Update display elements
+            document.getElementById('totalRevenueDisplay').innerHTML = `${currentSymbol}${totalRevenue.toFixed(2)}`;
+            document.getElementById('totalCostsDisplay').innerHTML = `${currentSymbol}${totalCosts.toFixed(2)}`;
+            document.getElementById('grossProfitDisplay').innerHTML = `${currentSymbol}${grossProfit.toFixed(2)}`;
+            document.getElementById('netProfitDisplay').innerHTML = `${currentSymbol}${netProfit.toFixed(2)}`;
+            document.getElementById('profitMarginDisplay').textContent = `${profitMargin.toFixed(2)}%`;
+        }
+
+        // Function to clear all input fields and reset results
+        function clearInputs() {
+            document.getElementById('productCost').value = '';
+            document.getElementById('sellingPrice').value = '';
+            document.getElementById('quantity').value = '1';
+            document.getElementById('shippingCost').value = '';
+            document.getElementById('taxRate').value = '0'; // Reset tax rate
+            document.getElementById('marketingCost').value = '';
+            document.getElementById('paymentGatewayFee').value = '2.5'; // Reset to a common default
+            document.getElementById('otherCosts').value = '';
+
+            // Recalculate to reset display values to 0.00
+            calculateProfit();
+        }
+
+        // Initial setup when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCurrencySymbol(); // Set initial currency symbol
+            calculateProfit(); // Perform initial calculation with default values
+        });
+    </script>
+</body>
+</html>
