@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Counter</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* General styling for Inter font and gradients */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+        textarea {
+            resize: vertical; /* Allow vertical resizing only */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-4 shadow-lg">
+        <div class="container mx-auto px-4 flex items-center justify-center">
+            <i class="fas fa-text-width text-2xl mr-3"></i>
+            <h1 class="text-2xl font-bold">Word Counter</h1>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-8 shadow-md w-full max-w-2xl card-shadow">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Enter Your Text Below</h2>
+            
+            <!-- Text Input Area -->
+            <div class="mb-6">
+                <textarea id="textInput" rows="10" oninput="countText()" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Type or paste your text here..."></textarea>
+            </div>
+            
+            <!-- Counting Results -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Words Count -->
+                <div class="bg-blue-50 rounded-lg p-4 text-center border border-blue-200">
+                    <h3 class="text-lg font-semibold text-gray-700">Words</h3>
+                    <p class="text-4xl font-bold text-blue-600" id="wordCount">0</p>
+                </div>
+                <!-- Characters Count -->
+                <div class="bg-green-50 rounded-lg p-4 text-center border border-green-200">
+                    <h3 class="text-lg font-semibold text-gray-700">Characters</h3>
+                    <p class="text-4xl font-bold text-green-600" id="charCount">0</p>
+                </div>
+                <!-- Sentences Count -->
+                <div class="bg-purple-50 rounded-lg p-4 text-center border border-purple-200">
+                    <h3 class="text-lg font-semibold text-gray-700">Sentences</h3>
+                    <p class="text-4xl font-bold text-purple-600" id="sentenceCount">0</p>
+                </div>
+            </div>
+
+            <!-- Clear Button -->
+            <div class="text-center">
+                <button onclick="clearText()" class="bg-gray-300 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-400 transition-colors font-medium text-lg">
+                    <i class="fas fa-eraser mr-2"></i>Clear
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-200 text-gray-700 py-3 text-center text-sm shadow-inner">
+        <p>App Developed by Sunny Jameel</p>
+    </footer>
+
+    <script>
+        // Function to count words, characters, and sentences
+        function countText() {
+            const textInput = document.getElementById('textInput').value;
+
+            // Count words
+            // Splits the text by spaces, newlines, tabs, and filters out empty strings
+            const words = textInput.match(/\b\w+\b/g);
+            const wordCount = words ? words.length : 0;
+            document.getElementById('wordCount').textContent = wordCount;
+
+            // Count characters (including spaces)
+            const charCount = textInput.length;
+            document.getElementById('charCount').textContent = charCount;
+
+            // Count sentences
+            // Splits the text by common sentence-ending punctuation, followed by a space or end of string
+            // Filters out empty strings after splitting
+            const sentences = textInput.split(/[.!?]+\s*|\n+/).filter(s => s.trim().length > 0);
+            const sentenceCount = sentences.length;
+            document.getElementById('sentenceCount').textContent = sentenceCount;
+        }
+
+        // Function to clear the text input and reset counts
+        function clearText() {
+            document.getElementById('textInput').value = '';
+            countText(); // Call countText to reset display to 0
+        }
+
+        // Initial count when the page loads (in case there's default text)
+        document.addEventListener('DOMContentLoaded', () => {
+            countText();
+        });
+    </script>
+</body>
+</html>
