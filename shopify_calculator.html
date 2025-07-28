@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopify Fee Calculator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%); /* Light gradient background */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .container {
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.85rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.625rem; /* More rounded corners */
+            font-size: 1rem;
+            transition: all 0.2s ease-in-out;
+            background-color: #f8fafc;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #6366f1; /* Indigo focus */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.85rem 1.75rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn-primary {
+            background-color: #6366f1; /* Indigo */
+            color: white;
+            box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
+        }
+        .btn-primary:hover {
+            background-color: #4f46e5; /* Darker Indigo */
+            box-shadow: 0 6px 8px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+        .result-box {
+            background-color: #ecfdf5; /* Light green for results */
+            border: 1px solid #a7f3d0;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            font-size: 1.125rem;
+            color: #065f46;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed #d1fae5;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            color: #047857;
+            font-size: 1.25rem;
+            padding-top: 1rem;
+        }
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Custom Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.open .modal-content {
+            transform: translateY(0);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #374151;
+        }
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #9ca3af;
+            cursor: pointer;
+        }
+        .modal-close-btn:hover {
+            color: #6b7280;
+        }
+        .modal-body {
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+        }
+        .modal-footer {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-6 text-center flex items-center justify-center">
+            <i class="fas fa-calculator mr-3 text-indigo-600"></i> Shopify Fee Calculator
+        </h1>
+
+        <div class="form-group">
+            <label for="saleAmount">Sale Amount (₹ / $ / € / £):</label>
+            <input type="number" id="saleAmount" placeholder="Maslan: 100.00" step="0.01" min="0">
+            <p id="saleAmountError" class="error-message hidden">Baraye meherbani sahi sale amount darj karein.</p>
+        </div>
+
+        <div class="form-group">
+            <label for="shopifyPlan">Shopify Plan:</label>
+            <select id="shopifyPlan">
+                <option value="basic">Basic Shopify (2.9% + $0.30)</option>
+                <option value="shopify">Shopify (2.6% + $0.30)</option>
+                <option value="advanced">Advanced Shopify (2.4% + $0.30)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="currencySelect">Currency:</label>
+            <select id="currencySelect" onchange="updateCurrencySymbol()">
+                <option value="USD">USD ($)</option>
+                <option value="PKR">PKR (Rs.)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+            </select>
+        </div>
+
+        <button onclick="calculateFees()" class="btn btn-primary">
+            <i class="fas fa-dollar-sign"></i> Fees Calculate Karein
+        </button>
+
+        <div id="results" class="result-box hidden">
+            <div class="result-item">
+                <span>Shopify Fees:</span>
+                <span id="shopifyFees"></span>
+            </div>
+            <div class="result-item">
+                <span>Transaction Fee:</span>
+                <span id="transactionFee"></span>
+            </div>
+            <div class="result-item">
+                <span>Percentage Fee:</span>
+                <span id="percentageFee"></span>
+            </div>
+            <div class="result-item">
+                <span>Net Amount (Business Owner Ko):</span>
+                <span id="netAmount"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div id="customAlertModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="customAlertTitle"></h3>
+                <button class="modal-close-btn" onclick="closeCustomAlert()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="customAlertMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeCustomAlert()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fee structures (percentage and fixed fee per transaction)
+        const feeStructures = {
+            basic: { percentage: 0.029, fixed: 0.30 }, // 2.9% + $0.30
+            shopify: { percentage: 0.026, fixed: 0.30 }, // 2.6% + $0.30
+            advanced: { percentage: 0.024, fixed: 0.30 } // 2.4% + $0.30
+        };
+
+        // Currency symbols
+        const currencySymbols = {
+            USD: '$',
+            PKR: 'Rs.',
+            EUR: '€',
+            GBP: '£'
+        };
+
+        let currentCurrency = 'USD'; // Default currency
+
+        // Function to show custom alert modal
+        function showCustomAlert(title, message) {
+            document.getElementById('customAlertTitle').textContent = title;
+            document.getElementById('customAlertMessage').textContent = message;
+            document.getElementById('customAlertModal').classList.add('open');
+        }
+
+        // Function to close custom alert modal
+        function closeCustomAlert() {
+            document.getElementById('customAlertModal').classList.remove('open');
+        }
+
+        // Function to update currency symbol in the input placeholder
+        function updateCurrencySymbol() {
+            currentCurrency = document.getElementById('currencySelect').value;
+            const saleAmountInput = document.getElementById('saleAmount');
+            saleAmountInput.placeholder = `Maslan: 100.00 (${currencySymbols[currentCurrency]})`;
+            // Re-calculate fees if there's already an amount to update display
+            if (saleAmountInput.value !== '') {
+                calculateFees();
+            }
+        }
+
+        function calculateFees() {
+            const saleAmountInput = document.getElementById('saleAmount');
+            const saleAmount = parseFloat(saleAmountInput.value);
+            const shopifyPlan = document.getElementById('shopifyPlan').value;
+            const saleAmountError = document.getElementById('saleAmountError');
+            const resultsDiv = document.getElementById('results');
+
+            // Input validation
+            if (isNaN(saleAmount) || saleAmount <= 0) {
+                saleAmountError.classList.remove('hidden');
+                resultsDiv.classList.add('hidden');
+                showCustomAlert('Input Error', 'Baraye meherbani sale amount sahi tareeqe se darj karein.');
+                return;
+            } else {
+                saleAmountError.classList.add('hidden');
+            }
+
+            const planFees = feeStructures[shopifyPlan];
+            if (!planFees) {
+                showCustomAlert('Error', 'Invalid Shopify plan selected.');
+                return;
+            }
+
+            const percentageFee = saleAmount * planFees.percentage;
+            const fixedFee = planFees.fixed;
+            const totalShopifyFees = percentageFee + fixedFee;
+            const netAmount = saleAmount - totalShopifyFees;
+
+            // Display results
+            document.getElementById('shopifyFees').textContent = `${currencySymbols[currentCurrency]}${totalShopifyFees.toFixed(2)}`;
+            document.getElementById('transactionFee').textContent = `${currencySymbols[currentCurrency]}${fixedFee.toFixed(2)}`;
+            document.getElementById('percentageFee').textContent = `${currencySymbols[currentCurrency]}${percentageFee.toFixed(2)}`;
+            document.getElementById('netAmount').textContent = `${currencySymbols[currentCurrency]}${netAmount.toFixed(2)}`;
+
+            resultsDiv.classList.remove('hidden');
+        }
+
+        // Initialize currency symbol on page load
+        document.addEventListener('DOMContentLoaded', updateCurrencySymbol);
+    </script>
+</body>
+</html>
